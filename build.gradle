@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+}
+apply plugin: 'application'
+group 'kr.nanoit'
+version 'v0.0.1'
+
+repositories {
+    mavenCentral()
+}
+compileJava.options.encoding = 'UTF-8'
+
+dependencies {
+    // TEST IMPLEMENTS
+    testImplementation 'org.assertj:assertj-core:3.23.1'
+    testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation "org.testcontainers:testcontainers:1.17.3"
+    testImplementation "org.testcontainers:junit-jupiter:1.17.3"
+    testImplementation "org.testcontainers:postgresql:1.17.3"
+    implementation group: 'com.google.inject', name: 'guice', version: '4.2.2'
+    implementation group: 'org.mybatis', name: 'mybatis-guice', version: '3.17'
+
+    // UTILS
+    implementation 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.4'
+
+    // log
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
+    implementation 'ch.qos.logback:logback-core:1.2.11'
+    implementation 'ch.qos.logback:logback-access:1.2.11'
+}
+
+test {
+    useJUnitPlatform()
+}
