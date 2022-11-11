@@ -1,6 +1,6 @@
 package kr.nanoit.module.borker;
 
-import kr.nanoit.domain.InternalDataType;
+import kr.nanoit.domain.broker.InternalDataType;
 
 public interface Broker {
     boolean publish(Object object);

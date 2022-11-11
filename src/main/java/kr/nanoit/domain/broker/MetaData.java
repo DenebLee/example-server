@@ -1,4 +1,4 @@
-package kr.nanoit.domain;
+package kr.nanoit.domain.broker;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

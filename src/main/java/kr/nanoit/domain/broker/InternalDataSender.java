@@ -1,12 +1,11 @@
-package kr.nanoit.domain;
+package kr.nanoit.domain.broker;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-public class InternalDataOutBound implements InternalData {
+public class InternalDataSender implements InternalData {
 
     @Override
     public String UUID() {

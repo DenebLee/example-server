@@ -1,8 +1,8 @@
 package kr.nanoit.module.inbound.thread;
 
 
-import kr.nanoit.domain.InternalDataMapper;
-import kr.nanoit.domain.MetaData;
+import kr.nanoit.domain.broker.InternalDataMapper;
+import kr.nanoit.domain.broker.MetaData;
 import kr.nanoit.module.borker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +33,7 @@ public class ReadStreamThread implements Runnable {
         boolean flag = true;
         while (flag) {
             try {
-                String readData = read();
+                String readData = bufferedReader.readLine();
                 log.info("[SERVER:SOCKET:{}] length={} payload=[{}]", uuid, readData.length(), readData);
                 if (readData != null) {
                     broker.publish(new InternalDataMapper(new MetaData(uuid), readData));
@@ -42,9 +42,5 @@ public class ReadStreamThread implements Runnable {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    private String read() throws IOException {
-        return bufferedReader.readLine();
     }
 }

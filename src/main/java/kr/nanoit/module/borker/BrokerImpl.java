@@ -1,9 +1,9 @@
 package kr.nanoit.module.borker;
 
-import kr.nanoit.domain.InternalData;
-import kr.nanoit.domain.InternalDataFilter;
-import kr.nanoit.domain.InternalDataMapper;
-import kr.nanoit.domain.InternalDataType;
+import kr.nanoit.domain.broker.InternalData;
+import kr.nanoit.domain.broker.InternalDataFilter;
+import kr.nanoit.domain.broker.InternalDataMapper;
+import kr.nanoit.domain.broker.InternalDataType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;

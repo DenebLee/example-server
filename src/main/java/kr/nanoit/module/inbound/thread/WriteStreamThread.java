@@ -1,6 +1,7 @@
 package kr.nanoit.module.inbound.thread;
 
-import kr.nanoit.domain.InternalDataType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.module.borker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,11 +14,14 @@ public class WriteStreamThread implements Runnable {
     private final BufferedWriter bufferedWriter;
     private final Broker broker;
     private final String uuid;
+    private final ObjectMapper objectMapper;
 
     public WriteStreamThread(Broker broker, BufferedWriter bufferedWriter, String uuid) {
         this.bufferedWriter = bufferedWriter;
         this.broker = broker;
         this.uuid = uuid;
+        this.objectMapper = new ObjectMapper();
+
     }
 
 

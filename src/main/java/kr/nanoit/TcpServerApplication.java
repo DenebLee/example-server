@@ -16,12 +16,14 @@ public class TcpServerApplication {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         Broker broker = new BrokerImpl();
+        SocketManager socketManager = new SocketManager();
+
         Mapper mapper = new Mapper(broker);
+
         Thread mapperThread = new Thread(mapper);
         mapperThread.setDaemon(true);
         mapperThread.start();
 
-        SocketManager socketManager = new SocketManager();
         TcpServer tcpServer = new TcpServer(socketManager, broker, 12323);
         tcpServer.serve();
         Thread.sleep(999999999);

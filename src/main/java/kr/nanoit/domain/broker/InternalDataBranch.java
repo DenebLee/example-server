@@ -1,5 +1,6 @@
-package kr.nanoit.domain;
+package kr.nanoit.domain.broker;
 
+import kr.nanoit.domain.payload.Payload;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,9 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InternalDataMapper implements InternalData {
+public class InternalDataBranch implements InternalData {
+
     private MetaData metaData;
-    private String payload;
+    private Payload payload;
 
     @Override
     public String UUID() {
