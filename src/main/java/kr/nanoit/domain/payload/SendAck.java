@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Payload {
-    private PayloadType type;
-    private String messageUuid;
-    private Object data;
+public class SendAck {
+    private long id;
+    private String result;
 }

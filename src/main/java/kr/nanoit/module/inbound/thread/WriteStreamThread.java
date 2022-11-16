@@ -1,51 +1,46 @@
 package kr.nanoit.module.inbound.thread;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.module.borker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 @Slf4j
 public class WriteStreamThread implements Runnable {
 
+    private final Consumer<String> cleaner;
     private final BufferedWriter bufferedWriter;
-    private final Broker broker;
     private final String uuid;
-    private final ObjectMapper objectMapper;
+    private final LinkedBlockingQueue<String> writeBuffer;
 
-    public WriteStreamThread(Broker broker, BufferedWriter bufferedWriter, String uuid) {
+    public WriteStreamThread(Consumer<String> cleaner, BufferedWriter bufferedWriter, String uuid, LinkedBlockingQueue<String> writeBuffer) {
+        this.cleaner = cleaner;
         this.bufferedWriter = bufferedWriter;
-        this.broker = broker;
         this.uuid = uuid;
-        this.objectMapper = new ObjectMapper();
-
+        this.writeBuffer = writeBuffer;
     }
 
 
     @Override
-    public void run() {
-        log.info("[SERVER:SOCKET:{}] write start", uuid);
-        boolean flag = true;
+    public void run() { // THREAD run을 실행 하는데 지금 while 무한루프
+        log.info("[SERVER : SOCKET : {}] WRITE START", uuid.substring(0, 7));
         try {
-            while (flag) {
-                Object data = broker.outBound(InternalDataType.OUTBOUND, uuid);
-                //TODO data object를 변환 후 JSON 전송
-
-//                if (data != null) {
-//                    if (send(data)) {
-//                        log.info("[SERVER:SOCKET:{}] length={} payload=[{}]", uuid, data.length(), data);
-//                    }
-//                }
-
+            while (true) { // BUSY WAITING : 리소스 낭비가 제일 심한 로직
+                log.info("작동 테스트");
+                String payload = writeBuffer.poll(1, TimeUnit.SECONDS); // BLOCKING 유도해서 1초 안에 데이터가 있으면 가져오고 없으면 1초 후 로직 실행
+                if (payload != null) {
+                    if (send(payload)) {
+                        log.info("[SERVER : SOCKET : {}] WRITE SUCCESS! => Payload : {}", uuid.substring(0, 7), payload);
+                    }
+                }
             }
-        } catch (Exception e) {
-            flag = false;
-            throw new RuntimeException(e);
+        } catch (Throwable e) {
+            log.info("[@SOCKET:READ:{}@] terminating...", uuid, e);
+            cleaner.accept(this.getClass().getName());
         }
-
     }
 
     private boolean send(String data) throws IOException {

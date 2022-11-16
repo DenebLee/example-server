@@ -1,6 +1,6 @@
 package kr.nanoit.common.exception;
 
-public class ReadException extends Exception {
+public class ReadException extends RuntimeException {
 
     private final String reason;
     private final String uuid;

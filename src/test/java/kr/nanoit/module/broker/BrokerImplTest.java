@@ -1,14 +1,10 @@
-package kr.nanoit.module.borker;
+package kr.nanoit.module.broker;
 
-import static org.assertj.core.api.Assertions.*;
-
-import kr.nanoit.domain.broker.InternalDataFilter;
-import kr.nanoit.domain.broker.InternalDataMapper;
-import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.domain.broker.MetaData;
+import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.payload.Authentication;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.module.inbound.socket.SocketManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,15 +14,19 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Random;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 class BrokerImplTest {
 
     private Broker broker;
     private ObjectMapper objectMapper;
     private String payload;
+    private SocketManager socketManager;
 
     @BeforeEach
     void setUp() throws JsonProcessingException {
-        broker = new BrokerImpl();
+        socketManager = new SocketManager();
+        broker = new BrokerImpl(socketManager);
         objectMapper = new ObjectMapper();
         payload = objectMapper.writeValueAsString(new Payload(PayloadType.AUTHENTICATION, randomString(10), objectMapper.writeValueAsString(new Authentication(randomString(10), randomString(10)))));
     }
@@ -70,13 +70,23 @@ class BrokerImplTest {
         // 동등성은 DTO안에 있는 값이 일치하는지만 보고 동일성은 해당 DTO가 비교되는 DTO와 완벽 일치되는지 ex) 지폐라고 치면 같은 만원권은 만원이지만 일련번호까지 같으면 동일성이다
         // 필드값 비교를 통해 계산하면 nested한 객체도 함께 필드로 비교한다
 
-
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test
-    void should_get_branch_data_when_input_branch() {
+    void should_get_branch_data_when_input_branch() throws IOException, InterruptedException {
+        // given d
+        InternalDataBranch expected = new InternalDataBranch();
+        expected.setMetaData(new MetaData(randomString(10)));
+        expected.setPayload(objectMapper.readValue(payload, Payload.class));
 
+        // when
+        broker.publish(expected);
+        Object actual = broker.subscribe(InternalDataType.BRANCH);
+
+        //then
+        assertThat(actual).isExactlyInstanceOf(InternalDataBranch.class);
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test

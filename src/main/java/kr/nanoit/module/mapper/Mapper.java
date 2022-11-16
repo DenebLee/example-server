@@ -1,14 +1,12 @@
 package kr.nanoit.module.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.domain.payload.Authentication;
 import kr.nanoit.domain.payload.Payload;
-import kr.nanoit.module.borker.Broker;
+import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -32,19 +30,20 @@ public class Mapper implements Runnable {
     public void run() {
         while (true) {
             Object object;
-            Payload payload;
-            // 맵핑 후 바로 filter로 넘김
             try {
                 object = broker.subscribe(InternalDataType.MAPPER);
-                if (object instanceof InternalDataMapper) {
+                if (object != null && object instanceof InternalDataMapper) {
+                    log.info("[MAPPER]   READ-THREAD DATA INPUT => [{}]", object);
                     InternalDataMapper internalDataMapper = (InternalDataMapper) object;
-                    payload = objectMapper.readValue(internalDataMapper.getPayload(), Payload.class);
-                    // TODO json mapper 처리
-                    broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), payload));
-                    log.info("Mapper send to Filter [Type : {} data : {}]", internalDataMapper.getMetaData(), payload.getData());
-                } else {
-                    log.error(" NOT FOUND : {}", object);
+                    Payload payload = objectMapper.readValue(internalDataMapper.getPayload(), Payload.class);
+
+                    if (broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), payload))) {
+                        log.info("[MAPPER]   TO FILTER => [TYPE : {} DATA : {}]", payload.getType(), payload.getData());
+                    } else {
+                        log.error("[MAPPER]   NOT FOUND DATA => [{}]", payload);
+                    }
                 }
+
             } catch (InterruptedException | JsonProcessingException e) {
                 throw new RuntimeException(e);
             }

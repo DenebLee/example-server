@@ -1,4 +1,4 @@
-package kr.nanoit.module.borker;
+package kr.nanoit.module.broker;
 
 public class BrokerQueuePair<I, O> {
     private I input;

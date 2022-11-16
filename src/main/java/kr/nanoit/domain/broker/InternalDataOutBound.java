@@ -1,6 +1,6 @@
 package kr.nanoit.domain.broker;
 
-import kr.nanoit.domain.payload.ErrorType;
+import kr.nanoit.domain.payload.Payload;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InternalDataOutBound implements InternalData {
 
-    private ErrorType errorType;
-    private String errorContent;
+    private MetaData metaData;
+    private Payload payload;
 
     @Override
     public String UUID() {
-        return null;
+        return metaData.getSocketUuid();
     }
 }
