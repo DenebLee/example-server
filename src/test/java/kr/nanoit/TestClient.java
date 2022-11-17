@@ -1,7 +1,5 @@
 package kr.nanoit;
 
-import kr.nanoit.module.inbound.socket.SocketResource;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;

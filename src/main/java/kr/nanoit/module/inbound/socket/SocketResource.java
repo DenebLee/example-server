@@ -1,33 +1,45 @@
 package kr.nanoit.module.inbound.socket;
 
 import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.thread.ReadStreamThread;
+import kr.nanoit.module.inbound.thread.WriteStreamThread;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
 @Data
+
+// 접속된 클라이언트어ㅣ 1:1 생성
 public class SocketResource {
     private final String uuid;
     private final Socket socket;
     private final Broker broker;
-    private final SocketResourceThread socketResourceThread;
     private final LinkedBlockingQueue<String> writeBuffer;
+    private final Thread readStreamThread;
+    private final Thread writeStreamThread;
+    private boolean readThreadStatus = true;
+    private boolean writeThreadStatus = true;
 
     public SocketResource(Socket socket, Broker broker) throws IOException {
-        this.uuid = UUID.randomUUID().toString();
+        this.uuid = UUID.randomUUID().toString().substring(0, 7);
         this.socket = socket;
         this.broker = broker;
         this.writeBuffer = new LinkedBlockingQueue<>();
-        this.socketResourceThread = new SocketResourceThread(uuid, broker, writeBuffer, socket);
+        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, new BufferedReader(new InputStreamReader(socket.getInputStream())), uuid));
+        readStreamThread.setName(uuid + "-read");
+        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer));
+        writeStreamThread.setName(uuid + "-write");
+
     }
 
     public void serve() {
-        socketResourceThread.start();
+        readStreamThread.start();
+        writeStreamThread.start();
     }
 
     public void write(String payload) {
@@ -36,7 +48,41 @@ public class SocketResource {
         }
     }
 
+    public void readThreadCleaner(String calledClassName) {
+        try {
+            writeStreamThread.interrupt();
+            this.socket.shutdownInput();
+            readThreadStatus = false;
+        } catch (IOException e) {
+            log.error("[@SOCKET:RESOURCE@] key={} SOCKET INPUT STREAM CLOSE FAILED", uuid, e);
+        }
+    }
+
+    public void writeThreadCleaner(String calledClassName) {
+        try {
+            readStreamThread.interrupt();
+            this.socket.shutdownOutput();
+            writeThreadStatus = false;
+        } catch (IOException e) {
+            log.error("[@SOCKET:RESOURCE@] key={} SOCKET OUT STREAM CLOSE FAILED", uuid, e);
+        }
+
+    }
+
     public boolean isTerminated() {
-        return socketResourceThread.isTerminated() && socket.isClosed();
+        return readStreamThread.getState().equals(Thread.State.TERMINATED) && writeStreamThread.getState().equals(Thread.State.TERMINATED);
+    }
+
+    public void socketClose() throws IOException {
+        socket.close();
+        log.warn("[@SOCKET:RESOURCE@] key={} SOCKET CLOSE", uuid);
+    }
+
+    public boolean isSocketInputStreamClose() {
+        return socket.isInputShutdown();
+    }
+
+    public boolean isSocketOutputStreamClose() {
+        return socket.isOutputShutdown();
     }
 }

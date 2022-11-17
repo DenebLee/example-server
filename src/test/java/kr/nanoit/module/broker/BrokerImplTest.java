@@ -4,6 +4,7 @@ import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.payload.Authentication;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.domain.payload.Send;
 import kr.nanoit.module.inbound.socket.SocketManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ class BrokerImplTest {
     private ObjectMapper objectMapper;
     private String payload;
     private SocketManager socketManager;
+    private String senderPayload;
 
     @BeforeEach
     void setUp() throws JsonProcessingException {
@@ -75,7 +77,7 @@ class BrokerImplTest {
 
     @Test
     void should_get_branch_data_when_input_branch() throws IOException, InterruptedException {
-        // given d
+        // given
         InternalDataBranch expected = new InternalDataBranch();
         expected.setMetaData(new MetaData(randomString(10)));
         expected.setPayload(objectMapper.readValue(payload, Payload.class));
@@ -90,13 +92,35 @@ class BrokerImplTest {
     }
 
     @Test
-    void should_get_outbound_data_when_input_outbound() {
+    void should_get_outbound_data_when_input_outbound() throws IOException, InterruptedException {
+        // given
+        InternalDataOutBound expected = new InternalDataOutBound();
+        expected.setMetaData(new MetaData(randomString(11)));
+        expected.setPayload(objectMapper.readValue(payload, Payload.class));
 
+        // when
+        broker.publish(expected);
+        Object actual = broker.subscribe(InternalDataType.OUTBOUND);
+
+        // then
+        assertThat(actual).isExactlyInstanceOf(InternalDataOutBound.class);
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test
-    void should_get_sender_data_when_input_sender() {
+    void should_get_sender_data_when_input_sender() throws IOException, InterruptedException {
+        // given
+        InternalDataSender expected = new InternalDataSender();
+        expected.setMetaData(new MetaData(randomString(4)));
+        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, randomString(10), randomString(10), randomString(10)))));
 
+        // when
+        broker.publish(expected);
+        Object actual = broker.subscribe(InternalDataType.SENDER);
+
+        // then
+        assertThat(actual).isExactlyInstanceOf(InternalDataSender.class);
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package kr.nanoit.module.inbound;
 
-import kr.nanoit.common.exception.ReadException;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.SocketManager;
 import kr.nanoit.module.inbound.socket.SocketResource;
@@ -11,7 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 @Slf4j
-public class TcpServer {
+public class TcpServer implements Runnable {
 
     private final SocketManager socketManager;
     private final Broker broker;
@@ -24,27 +23,19 @@ public class TcpServer {
         this.serverSocket = new ServerSocket(port);
     }
 
-    public void serve() {
-        Thread socketServerThread = new Thread(() -> {
-            try {
-                while (flag) {
-                    Socket socket = serverSocket.accept();
-                    SocketResource socketResource = new SocketResource(socket, broker);
-                    log.info("[TCPSERVER : SOCKET : {}] ACCEPT => ADDRESS = {}", socketResource.getUuid().substring(0, 7), socket.getRemoteSocketAddress().toString());
-                    socketManager.register(socketResource);
-                    socketResource.serve();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ReadException e) {
-                log.error(e.getReason());
-                socketManager.terminatedSocketMap(e.getUuid());
-                socketManager.getSocketResourcesSize();
+    @Override
+    public void run() {
+        try {
+            while (flag) {
+                Socket socket = serverSocket.accept();
+                SocketResource socketResource = new SocketResource(socket, broker);
+                log.info("[TCPSERVER : SOCKET : {}] ACCEPT => ADDRESS = {}", socketResource.getUuid().substring(0, 7), socket.getRemoteSocketAddress().toString());
+                socketManager.register(socketResource);
+                socketResource.serve();
             }
-        });
-
-        socketServerThread.setDaemon(true);
-        socketServerThread.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void connectClose() throws IOException {
@@ -54,4 +45,6 @@ public class TcpServer {
     public void shutDown() {
         flag = false;
     }
+
+
 }

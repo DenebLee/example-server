@@ -1,15 +1,12 @@
 package kr.nanoit.module.inbound.thread;
 
 
-import kr.nanoit.common.exception.ReadException;
 import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.MetaData;
 import kr.nanoit.module.broker.Broker;
-import kr.nanoit.module.inbound.socket.SocketResource;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.function.Consumer;
 
 /**
@@ -40,15 +37,11 @@ public class ReadStreamThread implements Runnable {
             while (true) {
                 String readData = bufferedReader.readLine();
                 log.info("[SERVER : SOCKET : {}] READ DATA => [LENGTH = {} PAYLOAD = {}]", uuid.substring(0, 7), readData.length(), readData);
-                if (readData != null) {
-                    broker.publish(new InternalDataMapper(new MetaData(uuid), readData));
-                    log.info("[SERVER : SOCKET : {}] TO MAPPER => {}", uuid.substring(0, 7), readData);
-                } else {
-                    Thread.sleep(2000);
-                }
+                broker.publish(new InternalDataMapper(new MetaData(uuid), readData));
+                log.info("[SERVER : SOCKET : {}] TO MAPPER => {}", uuid.substring(0, 7), readData);
             }
         } catch (Throwable e) {
-            log.info("[@SOCKET:READ:{}@] terminating...", uuid, e);
+            log.info("[@SOCKET:READ:{}@] terminating...", uuid);
             cleaner.accept(this.getClass().getName());
         }
     }

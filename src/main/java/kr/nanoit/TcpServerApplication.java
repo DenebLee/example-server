@@ -36,11 +36,6 @@ public class TcpServerApplication {
         Thread outBoundThread = new Thread(outBound);
 
         socketManagerThread.setDaemon(true);
-        mapperThread.setDaemon(true);
-        filterThread.setDaemon(true);
-        branchThread.setDaemon(true);
-        senderThread.setDaemon(true);
-        outBoundThread.setDaemon(true);
 
         socketManagerThread.start();
         mapperThread.start();
@@ -50,14 +45,11 @@ public class TcpServerApplication {
         outBoundThread.start();
 
 
-        TcpServer tcpServer = new TcpServer(socketManager, broker, 12323);
+        Thread tcpServer = new Thread(new TcpServer(socketManager, broker, 12323));
+        tcpServer.start();
         System.out.println("==========================================================================================================================================");
         log.info("  ECHO SERVER START  ");
         System.out.println("==========================================================================================================================================");
 
-        tcpServer.serve();
-
-
-        Thread.sleep(999999999);
     }
 }

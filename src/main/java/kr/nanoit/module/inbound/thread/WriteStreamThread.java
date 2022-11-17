@@ -15,6 +15,7 @@ public class WriteStreamThread implements Runnable {
     private final BufferedWriter bufferedWriter;
     private final String uuid;
     private final LinkedBlockingQueue<String> writeBuffer;
+    private String payload;
 
     public WriteStreamThread(Consumer<String> cleaner, BufferedWriter bufferedWriter, String uuid, LinkedBlockingQueue<String> writeBuffer) {
         this.cleaner = cleaner;
@@ -25,12 +26,11 @@ public class WriteStreamThread implements Runnable {
 
 
     @Override
-    public void run() { // THREAD run을 실행 하는데 지금 while 무한루프
+    public void run() {
         log.info("[SERVER : SOCKET : {}] WRITE START", uuid.substring(0, 7));
         try {
-            while (true) { // BUSY WAITING : 리소스 낭비가 제일 심한 로직
-                log.info("작동 테스트");
-                String payload = writeBuffer.poll(1, TimeUnit.SECONDS); // BLOCKING 유도해서 1초 안에 데이터가 있으면 가져오고 없으면 1초 후 로직 실행
+            while (true) { // BUSY WAITING : 리소스
+                payload = writeBuffer.poll(1, TimeUnit.SECONDS);
                 if (payload != null) {
                     if (send(payload)) {
                         log.info("[SERVER : SOCKET : {}] WRITE SUCCESS! => Payload : {}", uuid.substring(0, 7), payload);
@@ -38,7 +38,7 @@ public class WriteStreamThread implements Runnable {
                 }
             }
         } catch (Throwable e) {
-            log.info("[@SOCKET:READ:{}@] terminating...", uuid, e);
+            log.info("[@SOCKET:READ:{}@] terminating...", uuid);
             cleaner.accept(this.getClass().getName());
         }
     }
