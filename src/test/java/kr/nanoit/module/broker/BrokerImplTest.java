@@ -23,7 +23,6 @@ class BrokerImplTest {
     private ObjectMapper objectMapper;
     private String payload;
     private SocketManager socketManager;
-    private String senderPayload;
 
     @BeforeEach
     void setUp() throws JsonProcessingException {

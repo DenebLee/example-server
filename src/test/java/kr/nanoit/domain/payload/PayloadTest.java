@@ -7,10 +7,7 @@ import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.MetaData;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 class PayloadTest {
     @Test

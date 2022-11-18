@@ -14,9 +14,9 @@ public class TestClient {
         this.socket = new Socket();
     }
 
-    public void connect() {
+    public void connect(int port) {
         try {
-            socket.connect(new InetSocketAddress("localhost", 24242));
+            socket.connect(new InetSocketAddress("localhost", port));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -26,7 +26,13 @@ public class TestClient {
         socket.close();
     }
 
+    public void delay() throws InterruptedException {
+        Thread.sleep(3000);
+    }
+
+
     public void write(String value) throws IOException {
+
         value = value + "\r\n";
         dataOutputStream = new DataOutputStream(socket.getOutputStream());
         byte[] payload = value.getBytes(StandardCharsets.UTF_8);

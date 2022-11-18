@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class SocketManager implements Runnable {
     private final Map<String, SocketResource> socketResources;
+    private boolean flag;
 
     public SocketManager() {
         this.socketResources = new ConcurrentHashMap<>();
@@ -28,10 +29,17 @@ public class SocketManager implements Runnable {
         return null;
     }
 
+
+    public int hashMapSize() {
+        return socketResources.size();
+    }
+
+
     @Override
     public void run() {
-        while (true) {
-            try {
+        try {
+            flag = true;
+            while (flag) {
                 for (Map.Entry<String, SocketResource> entry : socketResources.entrySet()) {
                     if (entry.getValue().isTerminated()) {
                         log.info("[@SOCKET:MANAGER@] key={} isTerminated={}", entry.getKey(), entry.getValue().isTerminated());
@@ -46,11 +54,13 @@ public class SocketManager implements Runnable {
                     // 삭제로 인해 socketResource 를 gc가 삭제시킴
                 }
                 Thread.sleep(1000L);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            flag = false;
+            log.error("[SOCKET-MANAGER] ERROR => {}", e);
+            throw new RuntimeException(e);
         }
     }
 }

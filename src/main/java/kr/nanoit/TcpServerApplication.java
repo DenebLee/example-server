@@ -16,6 +16,7 @@ import java.io.IOException;
 
 @Slf4j
 public class TcpServerApplication {
+    public static int port = 12323;
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -27,6 +28,8 @@ public class TcpServerApplication {
         Branch branch = new Branch(broker);
         Sender sender = new Sender(broker);
         OutBound outBound = new OutBound(broker);
+        TcpServer tcpServer = new TcpServer(socketManager, broker, port);
+
 
         Thread socketManagerThread = new Thread(socketManager);
         Thread mapperThread = new Thread(mapper);
@@ -34,6 +37,7 @@ public class TcpServerApplication {
         Thread branchThread = new Thread(branch);
         Thread senderThread = new Thread(sender);
         Thread outBoundThread = new Thread(outBound);
+        Thread tcpserverThread = new Thread(tcpServer);
 
         socketManagerThread.setDaemon(true);
 
@@ -45,11 +49,11 @@ public class TcpServerApplication {
         outBoundThread.start();
 
 
-        Thread tcpServer = new Thread(new TcpServer(socketManager, broker, 12323));
-        tcpServer.start();
+        tcpserverThread.start();
+
         System.out.println("==========================================================================================================================================");
         log.info("  ECHO SERVER START  ");
         System.out.println("==========================================================================================================================================");
-
+//        Thread.sleep(999999999);
     }
 }

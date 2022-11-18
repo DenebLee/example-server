@@ -16,12 +16,14 @@ public class TcpServer implements Runnable {
     private final Broker broker;
     private final ServerSocket serverSocket;
     private boolean flag = true;
+    private SocketResource socketResource;
 
     public TcpServer(SocketManager socketManager, Broker broker, int port) throws IOException {
         this.socketManager = socketManager;
         this.broker = broker;
         this.serverSocket = new ServerSocket(port);
     }
+
 
     @Override
     public void run() {
@@ -45,6 +47,4 @@ public class TcpServer implements Runnable {
     public void shutDown() {
         flag = false;
     }
-
-
 }
