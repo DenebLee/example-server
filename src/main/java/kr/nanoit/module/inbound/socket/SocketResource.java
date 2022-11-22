@@ -20,6 +20,7 @@ public class SocketResource {
     private final Socket socket;
     private final Broker broker;
     private final LinkedBlockingQueue<String> writeBuffer;
+
     private final Thread readStreamThread;
     private final Thread writeStreamThread;
     private boolean readThreadStatus = true;
@@ -32,6 +33,7 @@ public class SocketResource {
         this.writeBuffer = new LinkedBlockingQueue<>();
         this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, new BufferedReader(new InputStreamReader(socket.getInputStream())), uuid));
         readStreamThread.setName(uuid + "-read");
+
         this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer));
         writeStreamThread.setName(uuid + "-write");
 
@@ -74,13 +76,14 @@ public class SocketResource {
     }
 
     public void socketClose() throws IOException {
-        socket.close();
         log.warn("[@SOCKET:RESOURCE@] key={} SOCKET CLOSE", uuid);
+        socket.close();
     }
 
     public boolean isSocketInputStreamClose() {
         return socket.isInputShutdown();
     }
+
 
     public boolean isSocketOutputStreamClose() {
         return socket.isOutputShutdown();

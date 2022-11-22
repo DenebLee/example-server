@@ -1,32 +1,31 @@
 package kr.nanoit.module.outbound;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.nanoit.abst.NanoItThread;
+import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
+import kr.nanoit.domain.broker.InternalDataSender;
 import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Client로 전송하는 모듈
- * - 컨슈머 ( 들어온 메시지를 소비만 하는 모듈 )
- * - MetaData에 세션 정보를 찾아서 SocketManager의 소켓리스트에서 검색
- * - 소켓에 실제로 Write 할수 있는 로직이 필요함
- */
 @Slf4j
-public class OutBound implements Runnable {
-    private final Broker broker;
-    private final ObjectMapper objectMapper;
+public class ThreadOutBound extends NanoItThread {
 
-    public OutBound(Broker broker) {
-        this.broker = broker;
-        this.objectMapper = new ObjectMapper();
+    private final Auth auth;
+
+    public ThreadOutBound(Broker broker, String uuid) {
+        super(broker, uuid);
+        this.auth = new Auth();
     }
 
     @Override
-    public void run() {
+    public void execute() {
         try {
-            while (true) {
+            this.flag = true;
+            while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.OUTBOUND);
                 if (object != null && object instanceof InternalDataOutBound) {
 //                    log.info("[OUTBOUND] DATA INPUT => {}", object);
@@ -52,6 +51,17 @@ public class OutBound implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void shoutDown() {
+        this.flag = false;
+        log.warn("[OUTBOUND   THIS THREAD SHUTDOWN]");
+    }
+
+    @Override
+    public Thread.State getState() {
+        return this.thread.getState();
     }
 
     private String toJSON(Object object) throws JsonProcessingException {

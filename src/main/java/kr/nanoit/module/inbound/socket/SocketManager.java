@@ -1,5 +1,7 @@
 package kr.nanoit.module.inbound.socket;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -9,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class SocketManager implements Runnable {
     private final Map<String, SocketResource> socketResources;
+    @Getter
+    @Setter
+    public boolean testResult;
     private boolean flag;
 
     public SocketManager() {
@@ -18,7 +23,6 @@ public class SocketManager implements Runnable {
     public void register(SocketResource socketResource) {
         if (socketResource.getSocket().isBound() && socketResource.getSocket().isConnected() && socketResource.getSocket() != null) {
             socketResources.put(socketResource.getUuid(), socketResource);
-            System.out.println(socketResources.size());
         }
     }
 
@@ -34,6 +38,10 @@ public class SocketManager implements Runnable {
         return socketResources.size();
     }
 
+    public void socketManagerStop() {
+        flag = false;
+    }
+
 
     @Override
     public void run() {
@@ -42,16 +50,16 @@ public class SocketManager implements Runnable {
             while (flag) {
                 for (Map.Entry<String, SocketResource> entry : socketResources.entrySet()) {
                     if (entry.getValue().isTerminated()) {
-                        log.info("[@SOCKET:MANAGER@] key={} isTerminated={}", entry.getKey(), entry.getValue().isTerminated());
+                        log.info("[@SOCKET:MANAGER@] key = {} isTerminated = {}", entry.getKey(), entry.getValue().isTerminated());
                         if (entry.getValue().isSocketInputStreamClose() && entry.getValue().isSocketOutputStreamClose()) {
+                            setTestResult(true);
                             entry.getValue().socketClose();
                             if (entry.getValue().getSocket().isClosed()) {
                                 socketResources.remove(entry.getKey());
+                                log.info("[@SOCKET:MANAGER@] CLIENT DISCONNECTED COMPLETE");
                             }
                         }
                     }
-                    // 참조되던 생성됐던 socketResource 삭제
-                    // 삭제로 인해 socketResource 를 gc가 삭제시킴
                 }
                 Thread.sleep(1000L);
             }
@@ -59,7 +67,8 @@ public class SocketManager implements Runnable {
             e.printStackTrace();
         } catch (InterruptedException e) {
             flag = false;
-            log.error("[SOCKET-MANAGER] ERROR => {}", e);
+            setTestResult(false);
+            log.error("[SOCKET-MANAGER] ERROR => ", e);
             throw new RuntimeException(e);
         }
     }

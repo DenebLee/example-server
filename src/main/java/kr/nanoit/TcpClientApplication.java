@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClientApplication {
 
-    public static final int TOTAL_COUNT = 5;
+    public static final int TOTAL_COUNT = 100000;
     private static final AtomicInteger readCounter = new AtomicInteger(0);
     private static final AtomicInteger writeCounter = new AtomicInteger(0);
 
@@ -42,10 +42,10 @@ public class TcpClientApplication {
         Thread writeThread = new Thread(() -> {
             for (int i = 0; i < TOTAL_COUNT; i++) {
                 try {
-                    Thread.sleep(3000);
+//                    Thread.sleep(1000);
                     dataOutputStream.write(payload);
                     writeCounter.incrementAndGet();
-                } catch (IOException | InterruptedException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }

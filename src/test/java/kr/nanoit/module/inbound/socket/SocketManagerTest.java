@@ -4,12 +4,10 @@ import kr.nanoit.TestClient;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.TcpServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,29 +18,34 @@ class SocketManagerTest {
 
     private TcpServer tcpServer;
     private Broker broker;
-    private final int port = 24242;
+    private int port;
     private SocketManager socketManager;
     private TestClient client;
     private String payload;
     private Thread tcpServerThread;
+    private Thread socketManagerThread;
 
 
     @BeforeEach
     void setUp() throws IOException {
+        port = getRandomPort();
         this.socketManager = new SocketManager();
         this.broker = new BrokerImpl(socketManager);
         this.tcpServer = new TcpServer(socketManager, broker, port);
         this.tcpServerThread = new Thread(this.tcpServer);
+        this.socketManagerThread = new Thread(this.socketManager);
         this.payload = "{\"type\": \"SEND\",\"messageUuid\": \"test01\",\"data\": {\"id\": 123123, \"phone\": \"01044445555\", \"callback\": \"053555444\", \"content\": \" ㅎㅇㅎㅇㅎ\"}}";
         client = new TestClient();
+        socketManagerThread.start();
         tcpServerThread.start();
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws InterruptedException {
+        socketManager.socketManagerStop();
         tcpServer.shutDown();
+        Thread.sleep(1000);
     }
-
 
     @Test
     @DisplayName("SocketManager -> Register")
@@ -59,24 +62,39 @@ class SocketManagerTest {
     }
 
     @Test
-    @DisplayName("SocketManager -> 접속 끊겼을 때 hashmap사이즈가 0이여야 함")
+    @DisplayName("SocketManager -> 접속 끊겼을 때 hashmap 사이즈가 0이여야 함")
     void should_hash_map_size_0_when_client_connect_close() throws InterruptedException, IOException {
-        // givn
+        // given
         client.connect(port);
-        client.write(payload);
+        client.write(payload, 1);
         int expected = socketManager.hashMapSize();
-        System.out.println(expected);
 
         // when
         client.stop();
-        int actual = socketManager.hashMapSize();
-        System.out.println(actual);
+        Thread.sleep(1000);
 
         // then
         assertThat(expected).isEqualTo(1);
-        assertThat(expected).isNotEqualTo(actual);
-
+        assertThat(socketManager.hashMapSize()).isEqualTo(0);
     }
+
+    @Test
+    @DisplayName("SocketManager -> 접속 끊겼을 때 각 stream의 자원이 정리 되어야 함")
+    void should_resources_of_each_stream_must_be_organized() throws IOException, InterruptedException {
+        // given
+        client.connect(port);
+        client.write(payload, 3);
+
+        // when
+        client.stop();
+        Thread.sleep(1000);
+        boolean expected = socketManager.isTestResult();
+
+
+        // then
+        assertThat(expected).isTrue();
+    }
+
 
     public String randomString(int targetLength) {
         int leftLimit = 97; // letter 'a'
@@ -90,4 +108,9 @@ class SocketManagerTest {
         }
         return buffer.toString();
     }
+
+    private int getRandomPort() {
+        return new SecureRandom().nextInt(64511) + 1024;
+    }
+
 }

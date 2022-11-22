@@ -29,23 +29,23 @@ public class BrokerImpl implements Broker {
         if (object != null) {
             if (object instanceof InternalData) {
                 if (object instanceof InternalDataMapper) {
-                    log.info("[BROKER : PUBLISH : {}] To MAPPER => {}", ((InternalData) object).UUID().substring(0, 7), object);
+//                    log.info("[BROKER : PUBLISH : {}] To MAPPER => {}", ((InternalData) object).UUID().substring(0, 7), object);
                     brokerQueue.get(InternalDataType.MAPPER).offer(object); // BLOCKING 가능성
                     return true;
                 } else if (object instanceof InternalDataFilter) {
-                    log.info("[BROKER : PUBLISH : {}] To FILTER => {}", ((InternalData) object).UUID().substring(0, 7), object);
+//                    log.info("[BROKER : PUBLISH : {}] To FILTER => {}", ((InternalData) object).UUID().substring(0, 7), object);
                     brokerQueue.get(InternalDataType.FILTER).offer(object);
                     return true;
                 } else if (object instanceof InternalDataBranch) {
-                    log.info("[BROKER : PUBLISH : {}] TO BRANCH => {}", ((InternalData) object).UUID().substring(0, 7), object);
+//                    log.info("[BROKER : PUBLISH : {}] TO BRANCH => {}", ((InternalData) object).UUID().substring(0, 7), object);
                     brokerQueue.get(InternalDataType.BRANCH).offer(object);
                     return true;
                 } else if (object instanceof InternalDataSender) {
-                    log.info("[BROKER : PUBLISH : {}] TO SENDER => {}", ((InternalData) object).UUID().substring(0, 7), object);
+//                    log.info("[BROKER : PUBLISH : {}] TO SENDER => {}", ((InternalData) object).UUID().substring(0, 7), object);
                     brokerQueue.get(InternalDataType.SENDER).offer(object);
                     return true;
                 } else if (object instanceof InternalDataOutBound) {
-                    log.info("[BROKER : PUBLISH : {}] to OUTBOUND => {}", ((InternalData) object).UUID().substring(0, 7), object);
+//                    log.info("[BROKER : PUBLISH : {}] to OUTBOUND => {}", ((InternalData) object).UUID().substring(0, 7), object);
                     brokerQueue.get(InternalDataType.OUTBOUND).offer(object);
                     return true;
                 } else {
@@ -68,5 +68,10 @@ public class BrokerImpl implements Broker {
     public void outBound(String uuid, String payload) {
         SocketResource socketResource = socketManager.getSocketUuid(uuid);
         socketResource.write(payload);
+    }
+
+    @Override
+    public int getSize() {
+        return brokerQueue.size();
     }
 }

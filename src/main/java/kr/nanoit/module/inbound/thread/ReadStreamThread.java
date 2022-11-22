@@ -36,9 +36,9 @@ public class ReadStreamThread implements Runnable {
         try {
             while (true) {
                 String readData = bufferedReader.readLine();
-                log.info("[SERVER : SOCKET : {}] READ DATA => [LENGTH = {} PAYLOAD = {}]", uuid.substring(0, 7), readData.length(), readData);
+//                log.info("[SERVER : SOCKET : {}] READ DATA => [LENGTH = {} PAYLOAD = {}]", uuid.substring(0, 7), readData.length(), readData);
                 broker.publish(new InternalDataMapper(new MetaData(uuid), readData));
-                log.info("[SERVER : SOCKET : {}] TO MAPPER => {}", uuid.substring(0, 7), readData);
+//                log.info("[SERVER : SOCKET : {}] TO MAPPER => {}", uuid.substring(0, 7), readData);
             }
         } catch (Throwable e) {
             log.info("[@SOCKET:READ:{}@] terminating...", uuid);

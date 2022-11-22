@@ -33,6 +33,7 @@ public class WriteStreamThread implements Runnable {
                 payload = writeBuffer.poll(1, TimeUnit.SECONDS);
                 if (payload != null) {
                     if (send(payload)) {
+
                         log.info("[SERVER : SOCKET : {}] WRITE SUCCESS! => Payload : {}", uuid.substring(0, 7), payload);
                     }
                 }

@@ -8,6 +8,7 @@ public interface Broker {
     Object subscribe(InternalDataType type) throws InterruptedException;
 
     void outBound(String uuid, String payload);
-    // 전송하는것
+
+    int getSize();
 
 }

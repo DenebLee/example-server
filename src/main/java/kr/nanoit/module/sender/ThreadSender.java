@@ -1,6 +1,7 @@
 package kr.nanoit.module.sender;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.nanoit.abst.NanoItThread;
+import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataSender;
 import kr.nanoit.domain.broker.InternalDataType;
@@ -8,34 +9,31 @@ import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.domain.payload.Send;
 import kr.nanoit.domain.payload.SendAck;
+import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Random;
-
-/**
- * sender는 통신사로 보내는 모듈
- * <p>
- * 실제로 통신사 소켓을 연결해서 관리해야 하지만 지금은 성공 또는 실패했다고 가정하고 코딩
- * 통신사 소켓 연결 후 지속적인 통신이 필요로 하기 때문에 Thread
- * <p>
- * * * - 성공 -> 아웃바운드로
- * * * - 실패 -> 아웃바운드로 ( 실패 메시지를 Client 로 전송 해야됨 )
- */
 @Slf4j
-public class Sender implements Runnable {
+public class ThreadSender extends NanoItThread {
 
-    private Broker broker;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    /**
+     * sender는 통신사로 보내는 모듈
+     * 실제로 통신사 소켓을 연결해서 관리해야 하지만 지금은 성공 또는 실패했다고 가정하고 코딩
+     * 통신사 소켓 연결 후 지속적인 통신이 필요로 하기 때문에 Thread
+     * * * - 성공 -> 아웃바운드로
+     * * * - 실패 -> 아웃바운드로 ( 실패 메시지를 Client 로 전송 해야됨 )
+     */
 
-    public Sender(Broker broker) {
-        this.broker = broker;
+
+    public ThreadSender(Broker broker, String uuid) {
+        super(broker, uuid);
     }
 
     @Override
-    public void run() {
+    public void execute() {
         try {
-            while (true) {
+            this.flag = true;
+            while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.SENDER);
 
                 if (object != null && object instanceof InternalDataSender) {
@@ -57,11 +55,17 @@ public class Sender implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    private boolean randomBoolean() {
-        Random random = new Random();
-        return random.nextBoolean();
+    @Override
+    public void shoutDown() {
+        this.flag = false;
+        log.warn("[SENDER   THIS THREAD SHUTDOWN]");
+    }
+
+    @Override
+    public Thread.State getState() {
+        return this.thread.getState();
+
     }
 }

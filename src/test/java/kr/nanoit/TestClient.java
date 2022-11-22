@@ -31,12 +31,13 @@ public class TestClient {
     }
 
 
-    public void write(String value) throws IOException {
-
+    public void write(String value, int count) throws IOException, InterruptedException {
         value = value + "\r\n";
-        dataOutputStream = new DataOutputStream(socket.getOutputStream());
-        byte[] payload = value.getBytes(StandardCharsets.UTF_8);
-        dataOutputStream.write(payload);
+        for (int i = 0; i < count; i++) {
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
+            byte[] payload = value.getBytes(StandardCharsets.UTF_8);
+            dataOutputStream.write(payload);
+            Thread.sleep(1000);
+        }
     }
-
 }

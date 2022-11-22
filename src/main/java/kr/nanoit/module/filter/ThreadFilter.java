@@ -1,33 +1,27 @@
 package kr.nanoit.module.filter;
 
-import kr.nanoit.domain.broker.InternalDataBranch;
-import kr.nanoit.domain.broker.InternalDataFilter;
-import kr.nanoit.domain.broker.InternalDataOutBound;
-import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.abst.NanoItThread;
+import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.payload.ErrorDto;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * InBound메시지를 유효성 검사만 수행
- * <p>
- * * - 성공 -> Branch로 전송
- * * - 실패 -> 아웃바운드로 ( 실패 메시지를 Client 로 전송 해야됨 )
- */
+// Filter
 @Slf4j
-public class Filter implements Runnable {
-    private final Broker broker;
+public class ThreadFilter extends NanoItThread {
 
-    public Filter(Broker broker) {
-        this.broker = broker;
+
+    public ThreadFilter(Broker broker, String uuid) {
+        super(broker, uuid);
     }
 
     @Override
-    public void run() {
+    public void execute() {
         try {
-            while (true) {
+            this.flag = true;
+            while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.FILTER);
                 if (object != null && object instanceof InternalDataFilter) {
 //                    log.info("[FILTER]   DATA INPUT => [{}]", object);
@@ -47,5 +41,17 @@ public class Filter implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void shoutDown() {
+        this.flag = false;
+        log.warn("[FILTER   THIS THREAD SHUTDOWN]");
+    }
+
+    @Override
+    public Thread.State getState() {
+        return this.thread.getState();
+
     }
 }
