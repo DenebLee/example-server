@@ -59,12 +59,18 @@ public class ThreadBranch extends NanoItThread {
 
     @Override
     public void shoutDown() {
-        flag = false;
+//        flag = false;
+        Thread.interrupted();
         log.warn("[BRANCH   THIS THREAD SHUTDOWN]");
     }
 
     @Override
     public Thread.State getState() {
         return this.thread.getState();
+    }
+
+    @Override
+    public void sleep() throws InterruptedException {
+        Thread.sleep(500);
     }
 }

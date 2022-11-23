@@ -30,24 +30,39 @@ public class BrokerImpl implements Broker {
             if (object instanceof InternalData) {
                 if (object instanceof InternalDataMapper) {
 //                    log.info("[BROKER : PUBLISH : {}] To MAPPER => {}", ((InternalData) object).UUID().substring(0, 7), object);
-                    brokerQueue.get(InternalDataType.MAPPER).offer(object); // BLOCKING 가능성
-                    return true;
+                    if (brokerQueue.get(InternalDataType.MAPPER).offer(object)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else if (object instanceof InternalDataFilter) {
 //                    log.info("[BROKER : PUBLISH : {}] To FILTER => {}", ((InternalData) object).UUID().substring(0, 7), object);
-                    brokerQueue.get(InternalDataType.FILTER).offer(object);
-                    return true;
+                    if (brokerQueue.get(InternalDataType.FILTER).offer(object)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else if (object instanceof InternalDataBranch) {
 //                    log.info("[BROKER : PUBLISH : {}] TO BRANCH => {}", ((InternalData) object).UUID().substring(0, 7), object);
-                    brokerQueue.get(InternalDataType.BRANCH).offer(object);
-                    return true;
+                    if (brokerQueue.get(InternalDataType.BRANCH).offer(object)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else if (object instanceof InternalDataSender) {
 //                    log.info("[BROKER : PUBLISH : {}] TO SENDER => {}", ((InternalData) object).UUID().substring(0, 7), object);
-                    brokerQueue.get(InternalDataType.SENDER).offer(object);
-                    return true;
+                    if (brokerQueue.get(InternalDataType.SENDER).offer(object)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else if (object instanceof InternalDataOutBound) {
 //                    log.info("[BROKER : PUBLISH : {}] to OUTBOUND => {}", ((InternalData) object).UUID().substring(0, 7), object);
-                    brokerQueue.get(InternalDataType.OUTBOUND).offer(object);
-                    return true;
+                    if (brokerQueue.get(InternalDataType.OUTBOUND).offer(object)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else {
                     return false;
                 }

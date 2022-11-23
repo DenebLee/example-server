@@ -64,10 +64,13 @@ public class ThreadOutBound extends NanoItThread {
         return this.thread.getState();
     }
 
+    @Override
+    public void sleep() throws InterruptedException {
+        Thread.sleep(1000);
+    }
+
     private String toJSON(Object object) throws JsonProcessingException {
         return objectMapper.writeValueAsString(((InternalDataOutBound) object).getPayload());
     }
 
-    private void changeType() {
-    }
 }

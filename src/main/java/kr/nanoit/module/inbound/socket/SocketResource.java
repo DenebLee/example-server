@@ -37,6 +37,8 @@ public class SocketResource {
         this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer));
         writeStreamThread.setName(uuid + "-write");
 
+
+
     }
 
     public void serve() {

@@ -54,4 +54,9 @@ public class ThreadFilter extends NanoItThread {
         return this.thread.getState();
 
     }
+
+    @Override
+    public void sleep() throws InterruptedException {
+        Thread.sleep(1000);
+    }
 }

@@ -24,7 +24,6 @@ public class ThreadSender extends NanoItThread {
      * * * - 실패 -> 아웃바운드로 ( 실패 메시지를 Client 로 전송 해야됨 )
      */
 
-
     public ThreadSender(Broker broker, String uuid) {
         super(broker, uuid);
     }
@@ -67,5 +66,10 @@ public class ThreadSender extends NanoItThread {
     public Thread.State getState() {
         return this.thread.getState();
 
+    }
+
+    @Override
+    public void sleep() throws InterruptedException {
+        Thread.sleep(1000);
     }
 }

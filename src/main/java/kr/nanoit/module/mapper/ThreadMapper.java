@@ -52,4 +52,9 @@ public class ThreadMapper extends NanoItThread {
     public Thread.State getState() {
         return this.thread.getState();
     }
+
+    @Override
+    public void sleep() throws InterruptedException {
+        Thread.sleep(1000);
+    }
 }

@@ -5,7 +5,7 @@ import kr.nanoit.module.broker.Broker;
 
 public abstract class NanoItThread {
 
-    private static ThreadManager threadManager;
+    public static ThreadManager threadManager;
 
     static {
         threadManager = new ThreadManager();
@@ -24,6 +24,8 @@ public abstract class NanoItThread {
     abstract public void shoutDown();
 
     abstract public Thread.State getState();
+
+    abstract public void sleep() throws InterruptedException;
 
 
     public NanoItThread(Broker broker, String uuid) {

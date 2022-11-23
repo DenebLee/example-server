@@ -21,12 +21,10 @@ public class ThreadManager {
     scheduleWithFixedDelay(Runnable command, long initialDelay, long period, TimeUnit unit) : 태스크가 완료되면 일정 시간 후에 다시 실행
      */
 
-
     public ThreadManager() {
         this.nanoItThreadMap = new ConcurrentHashMap<>();
         this.scheduledExecutorService = Executors.newScheduledThreadPool(1);
-        scheduledExecutorService.scheduleAtFixedRate(this::monitor, 1, 1, TimeUnit.SECONDS);
-//        scheduledExecutorService.scheduleWithFixedDelay(this::monitor, 10, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(this::monitor, 1, 500, TimeUnit.MILLISECONDS);
     }
 
     public void register(String key, NanoItThread nanoItThread) {
@@ -35,42 +33,35 @@ public class ThreadManager {
 
     public void monitor() {
         for (Map.Entry<String, NanoItThread> entry : nanoItThreadMap.entrySet()) {
-//            log.info("[@THREAD:MANAGER:SCHEDULER@] key={} value={}", entry.getKey(), entry.getValue());
-//            log.info("[@THREAD:MANAGER:SCHEDULER@] status = {}", entry.getValue().getState());
-            if (entry.getValue().getState() == Thread.State.RUNNABLE) {
-                System.out.println("================================================================================================================");
-                System.out.println("Runnable 인 스레드 : " + entry.getValue());
-                System.out.println("================================================================================================================");
+            if (isRegistered(entry.getValue())) {
+                if (entry.getValue().getState() == Thread.State.RUNNABLE) {
+                    System.out.println("RUNNABLE 인 스레드 발견  => " + entry.getValue() + entry.getValue().getState());
+                }
+                if (isTerminated(entry.getValue())) {
+                    // 이미 죽은 스레드는 재 실행 불가능하고 새 객체를 생성하고 시작해야되는데 속도가 떨어진다
+                }
+                if (entry.getValue().getState() == Thread.State.TIMED_WAITING) {
+                    log.info("[@THREAD:MANAGER:SCHEDULER@] WAIT STATE THREADS => {}  STATE : {}", entry.getValue(), entry.getValue().getState());
+                }
             }
 
-//            if (entry.getValue().getState() == Thread.State.WAITING) {
-//
-//            }
-            // TODO 스레드가 정상인지 확인
-            // TODO 스레드가 비정상이면 재실행 or 선택
-
-            // TODO 스레드 정상 판별 로직
-
-            // TODO 스레드가 비정상이면 재실행 or 선택 로직
         }
+
     }
 
-    private void getNanoItThreadMapSize() {
+    public int getNanoItThreadMapSize() {
         log.info("[@THREAD:MANAGER:SCHEDULER@] THREAD-MAP SIZE => {}", nanoItThreadMap.size());
-        // TODO 사이즈 체크후 5개가 안될 경우 찾아내서 act
+        return nanoItThreadMap.size();
     }
 
-    private void reStart() {
 
-    }
-
-    private boolean isRegistered(NanoItThread thread) {
+    public boolean isRegistered(NanoItThread thread) {
         return nanoItThreadMap.containsValue(thread);
     }
 
-//    private boolean isTerminated(NanoItThread thread) {
-//
-//    }
+    public boolean isTerminated(NanoItThread thread) {
+        return thread.getState() == Thread.State.TERMINATED;
+    }
 
 
 }
