@@ -1,7 +1,7 @@
 package kr.nanoit.module.sender;
 
-import kr.nanoit.abst.NanoItThread;
-import kr.nanoit.domain.broker.InternalDataBranch;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataSender;
 import kr.nanoit.domain.broker.InternalDataType;
@@ -9,12 +9,12 @@ import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.domain.payload.Send;
 import kr.nanoit.domain.payload.SendAck;
-import kr.nanoit.module.auth.Auth;
+import kr.nanoit.extension.Jackson;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ThreadSender extends NanoItThread {
+public class ThreadSender extends ModuleProcess {
 
     /**
      * sender는 통신사로 보내는 모듈
@@ -23,13 +23,15 @@ public class ThreadSender extends NanoItThread {
      * * * - 성공 -> 아웃바운드로
      * * * - 실패 -> 아웃바운드로 ( 실패 메시지를 Client 로 전송 해야됨 )
      */
+    private final ObjectMapper objectMapper;
 
     public ThreadSender(Broker broker, String uuid) {
         super(broker, uuid);
+        this.objectMapper = Jackson.getInstance().getObjectMapper();
     }
 
     @Override
-    public void execute() {
+    public void run() {
         try {
             this.flag = true;
             while (this.flag) {
@@ -60,12 +62,6 @@ public class ThreadSender extends NanoItThread {
     public void shoutDown() {
         this.flag = false;
         log.warn("[SENDER   THIS THREAD SHUTDOWN]");
-    }
-
-    @Override
-    public Thread.State getState() {
-        return this.thread.getState();
-
     }
 
     @Override

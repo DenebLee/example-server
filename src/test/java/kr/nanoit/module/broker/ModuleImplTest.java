@@ -26,7 +26,6 @@ class ModuleImplTest {
     private final String inputData = "{\"type\": \"SEND\", \"data\": {\"username\": \"lee\", \"password\": \"123123\"}}";
     private Thread thread;
 
-
     @BeforeEach
     void setUp() {
         socketManager = new SocketManager();
@@ -100,7 +99,7 @@ class ModuleImplTest {
 
     public String randomString(int targetLength) {
         int leftLimit = 97; // letter 'a'
-        int rightLimit = 122; // letter 'z'x
+        int rightLimit = 122; // letter 'z'
         Random random = new Random();
         StringBuilder buffer = new StringBuilder(targetLength);
         for (int i = 0; i < targetLength; i++) {

@@ -1,5 +1,6 @@
 package kr.nanoit.module.branch;
 
+import kr.nanoit.abst.Process;
 import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataSender;
@@ -9,6 +10,8 @@ import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.UUID;
+
 /**
  * filter에서 받은 정제된 데이터를 목적에 맞게 각 모듈로 분배하는 분배기 역할
  * - to outbound
@@ -16,9 +19,10 @@ import lombok.extern.slf4j.Slf4j;
  * - to 어디로 보내기
  */
 @Slf4j
-public class Branch implements Runnable {
+public class Branch implements Process {
     private Broker broker;
     public Auth auth;
+    private boolean flag;
 
     public Branch(Broker broker) {
         this.broker = broker;
@@ -28,8 +32,9 @@ public class Branch implements Runnable {
     @Override
     public void run() {
         try {
+            flag =true;
             Object object;
-            while (true) {
+            while (flag) {
                 object = broker.subscribe(InternalDataType.BRANCH);
                 if (object != null && object instanceof InternalDataBranch) {
 //                    log.info("[BRANCH]   DATA INPUT => {}", object);
@@ -56,8 +61,14 @@ public class Branch implements Runnable {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            flag = false;
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String getUuid() {
+        return UUID.randomUUID().toString().substring(0, 7);
     }
 }

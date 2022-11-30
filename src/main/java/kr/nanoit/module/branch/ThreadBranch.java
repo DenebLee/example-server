@@ -1,6 +1,6 @@
 package kr.nanoit.module.branch;
 
-import kr.nanoit.abst.NanoItThread;
+import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataSender;
@@ -11,7 +11,7 @@ import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ThreadBranch extends NanoItThread {
+public class ThreadBranch extends ModuleProcess {
 
     private final Auth auth;
 
@@ -21,7 +21,7 @@ public class ThreadBranch extends NanoItThread {
     }
 
     @Override
-    public void execute() {
+    public void run() {
         try {
             Object object;
             flag = true;
@@ -64,10 +64,7 @@ public class ThreadBranch extends NanoItThread {
         log.warn("[BRANCH   THIS THREAD SHUTDOWN]");
     }
 
-    @Override
-    public Thread.State getState() {
-        return this.thread.getState();
-    }
+
 
     @Override
     public void sleep() throws InterruptedException {

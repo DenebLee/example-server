@@ -1,6 +1,6 @@
 package kr.nanoit.module.filter;
 
-import kr.nanoit.abst.NanoItThread;
+import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.payload.ErrorDto;
 import kr.nanoit.domain.payload.Payload;
@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 // Filter
 @Slf4j
-public class ThreadFilter extends NanoItThread {
+public class ThreadFilter extends ModuleProcess {
 
 
     public ThreadFilter(Broker broker, String uuid) {
@@ -18,7 +18,7 @@ public class ThreadFilter extends NanoItThread {
     }
 
     @Override
-    public void execute() {
+    public void run() {
         try {
             this.flag = true;
             while (this.flag) {
@@ -49,11 +49,7 @@ public class ThreadFilter extends NanoItThread {
         log.warn("[FILTER   THIS THREAD SHUTDOWN]");
     }
 
-    @Override
-    public Thread.State getState() {
-        return this.thread.getState();
 
-    }
 
     @Override
     public void sleep() throws InterruptedException {

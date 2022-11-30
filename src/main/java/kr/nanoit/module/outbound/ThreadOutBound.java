@@ -1,28 +1,29 @@
 package kr.nanoit.module.outbound;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import kr.nanoit.abst.NanoItThread;
-import kr.nanoit.domain.broker.InternalDataBranch;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
-import kr.nanoit.domain.broker.InternalDataSender;
 import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.extension.Jackson;
 import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ThreadOutBound extends NanoItThread {
+public class ThreadOutBound extends ModuleProcess {
 
+    private final ObjectMapper objectMapper;
     private final Auth auth;
 
     public ThreadOutBound(Broker broker, String uuid) {
         super(broker, uuid);
+        this.objectMapper = Jackson.getInstance().getObjectMapper();
         this.auth = new Auth();
     }
 
     @Override
-    public void execute() {
+    public void run() {
         try {
             this.flag = true;
             while (this.flag) {
@@ -59,10 +60,6 @@ public class ThreadOutBound extends NanoItThread {
         log.warn("[OUTBOUND   THIS THREAD SHUTDOWN]");
     }
 
-    @Override
-    public Thread.State getState() {
-        return this.thread.getState();
-    }
 
     @Override
     public void sleep() throws InterruptedException {

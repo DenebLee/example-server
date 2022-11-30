@@ -2,10 +2,13 @@ package kr.nanoit.module.outbound;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.nanoit.abst.Process;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.UUID;
 
 /**
  * Client로 전송하는 모듈
@@ -14,9 +17,10 @@ import lombok.extern.slf4j.Slf4j;
  * - 소켓에 실제로 Write 할수 있는 로직이 필요함
  */
 @Slf4j
-public class OutBound implements Runnable {
+public class OutBound implements Process {
     private final Broker broker;
     private final ObjectMapper objectMapper;
+    public boolean flag;
 
     public OutBound(Broker broker) {
         this.broker = broker;
@@ -26,7 +30,8 @@ public class OutBound implements Runnable {
     @Override
     public void run() {
         try {
-            while (true) {
+            flag = true;
+            while (flag) {
                 Object object = broker.subscribe(InternalDataType.OUTBOUND);
                 if (object != null && object instanceof InternalDataOutBound) {
 //                    log.info("[OUTBOUND] DATA INPUT => {}", object);
@@ -49,8 +54,11 @@ public class OutBound implements Runnable {
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (InterruptedException e) {
+            flag= false;
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -58,6 +66,8 @@ public class OutBound implements Runnable {
         return objectMapper.writeValueAsString(((InternalDataOutBound) object).getPayload());
     }
 
-    private void changeType() {
+    @Override
+    public String getUuid() {
+        return UUID.randomUUID().toString().substring(0, 7);
     }
 }

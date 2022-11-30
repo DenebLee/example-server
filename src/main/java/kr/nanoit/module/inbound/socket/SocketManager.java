@@ -48,6 +48,7 @@ public class SocketManager implements Runnable {
         try {
             flag = true;
             while (flag) {
+
                 for (Map.Entry<String, SocketResource> entry : socketResources.entrySet()) {
                     if (entry.getValue().isTerminated()) {
                         log.info("[@SOCKET:MANAGER@] key = {} isTerminated = {}", entry.getKey(), entry.getValue().isTerminated());

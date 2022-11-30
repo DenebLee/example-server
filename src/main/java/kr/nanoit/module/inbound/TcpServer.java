@@ -1,5 +1,6 @@
 package kr.nanoit.module.inbound;
 
+import kr.nanoit.abst.Process;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.SocketManager;
 import kr.nanoit.module.inbound.socket.SocketResource;
@@ -8,15 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.UUID;
 
 @Slf4j
-public class TcpServer implements Runnable {
+public class TcpServer implements Process {
 
     private final SocketManager socketManager;
     private final Broker broker;
     private final ServerSocket serverSocket;
     private boolean flag = true;
-    private SocketResource socketResource;
 
     public TcpServer(SocketManager socketManager, Broker broker, int port) throws IOException {
         this.socketManager = socketManager;
@@ -46,5 +47,10 @@ public class TcpServer implements Runnable {
 
     public void shutDown() {
         flag = false;
+    }
+
+    @Override
+    public String getUuid() {
+        return UUID.randomUUID().toString().substring(0, 7);
     }
 }

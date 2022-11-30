@@ -1,9 +1,10 @@
 package kr.nanoit;
 
 
+import kr.nanoit.abst.ThreadManager;
+import kr.nanoit.module.branch.Branch;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
-import kr.nanoit.module.branch.Branch;
 import kr.nanoit.module.filter.Filter;
 import kr.nanoit.module.inbound.TcpServer;
 import kr.nanoit.module.inbound.socket.SocketManager;
@@ -18,41 +19,22 @@ import java.io.IOException;
 public class TcpServerApplication {
     public static int port = 12323;
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
 
         SocketManager socketManager = new SocketManager();
         Broker broker = new BrokerImpl(socketManager);
 
-        Mapper mapper = new Mapper(broker);
-        Filter filter = new Filter(broker);
-        Branch branch = new Branch(broker);
-        Sender sender = new Sender(broker);
-        OutBound outBound = new OutBound(broker);
-        TcpServer tcpServer = new TcpServer(socketManager, broker, port);
-
-
         Thread socketManagerThread = new Thread(socketManager);
-        Thread mapperThread = new Thread(mapper);
-        Thread filterThread = new Thread(filter);
-        Thread branchThread = new Thread(branch);
-        Thread senderThread = new Thread(sender);
-        Thread outBoundThread = new Thread(outBound);
-        Thread tcpserverThread = new Thread(tcpServer);
-
         socketManagerThread.setDaemon(true);
 
+        ThreadManager threadManager = new ThreadManager(new Mapper(broker), new Filter(broker), new Branch(broker), new Sender(broker), new OutBound(broker), new TcpServer(socketManager, broker, port));
+
         socketManagerThread.start();
-        mapperThread.start();
-        filterThread.start();
-        branchThread.start();
-        senderThread.start();
-        outBoundThread.start();
-
-
-        tcpserverThread.start();
+        threadManager.monitor();
 
         System.out.println("==========================================================================================================================================");
         log.info("  ECHO SERVER START  ");
         System.out.println("==========================================================================================================================================");
+
     }
 }
