@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ThreadMapper extends ModuleProcess {
 
     private final ObjectMapper objectMapper;
+
     public ThreadMapper(Broker broker, String uuid) {
         super(broker, uuid);
         this.objectMapper = Jackson.getInstance().getObjectMapper();
@@ -41,6 +42,7 @@ public class ThreadMapper extends ModuleProcess {
                 }
 
             } catch (InterruptedException | JsonProcessingException e) {
+                shoutDown();
                 throw new RuntimeException(e);
             }
         }
@@ -53,9 +55,13 @@ public class ThreadMapper extends ModuleProcess {
     }
 
 
-
     @Override
     public void sleep() throws InterruptedException {
         Thread.sleep(1000);
+    }
+
+    @Override
+    public String getUuid() {
+        return this.uuid;
     }
 }

@@ -5,5 +5,6 @@ public enum InternalDataType {
     FILTER,
     OUTBOUND,
     SENDER,
-    BRANCH
+    BRANCH,
+    CARRIER
 }

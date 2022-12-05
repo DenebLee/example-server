@@ -1,7 +1,6 @@
-package kr.nanoit.module.sender;
+package kr.nanoit.old;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kr.nanoit.abst.Process;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataSender;
 import kr.nanoit.domain.broker.InternalDataType;
@@ -12,6 +11,8 @@ import kr.nanoit.domain.payload.SendAck;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Random;
 import java.util.UUID;
 
@@ -24,12 +25,15 @@ import java.util.UUID;
  * * * - 성공 -> 아웃바운드로
  * * * - 실패 -> 아웃바운드로 ( 실패 메시지를 Client 로 전송 해야됨 )
  */
+
 @Slf4j
 public class Sender implements Process {
 
-    private Broker broker;
+    private final Broker broker;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private boolean flag;
+    private Instant start;
+    private Instant finish;
 
     public Sender(Broker broker) {
         this.broker = broker;
@@ -38,7 +42,9 @@ public class Sender implements Process {
     @Override
     public void run() {
         try {
-            flag= true;
+            start = Instant.now();
+            flag = true;
+
             while (flag) {
                 Object object = broker.subscribe(InternalDataType.SENDER);
 
@@ -58,6 +64,7 @@ public class Sender implements Process {
                 // 실제 통신사와 socket통신 로직 추후 구현해야됨
                 // Random boolean 으로 통신사 연결 여부 랜덤으로 제공
             }
+            finish = Instant.now();
         } catch (InterruptedException e) {
             flag = false;
             e.printStackTrace();
@@ -73,5 +80,15 @@ public class Sender implements Process {
     @Override
     public String getUuid() {
         return UUID.randomUUID().toString().substring(0, 7);
+    }
+
+    @Override
+    public boolean getFlag() {
+        return this.flag;
+    }
+
+    @Override
+    public long getRunningTime() {
+        return Duration.between(start, finish).toMillis();
     }
 }

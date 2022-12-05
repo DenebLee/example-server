@@ -1,4 +1,4 @@
-package kr.nanoit.abst;
+package kr.nanoit.old;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,8 +15,8 @@ public class ThreadManager {
     public final Map<String, Process> originalObjects;
     public final Map<String, Thread> currentThreads;
     public final Map<String, Thread> testMap;
-
     private final ScheduledExecutorService scheduledExecutorService;
+    public boolean getStatusForTest;
 
     public ThreadManager(Process mapper, Process filter, Process branch, Process sender, Process outBound, Process tcpServer) {
         this.originalObjects = new HashMap<>();
@@ -34,6 +34,8 @@ public class ThreadManager {
         scheduledExecutorService.scheduleAtFixedRate(this::monitor, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
+
+
     public void monitor() {
 
         for (Map.Entry<String, Process> entry : originalObjects.entrySet()) {
@@ -47,6 +49,8 @@ public class ThreadManager {
 
         for (Map.Entry<String, Thread> threadEntry : currentThreads.entrySet()) {
             if (threadEntry.getValue().getState().equals(Thread.State.TERMINATED)) {
+                getStatusForTest = true;
+
                 String terminatedThreadUuid = threadEntry.getKey();
 
                 System.out.println(threadEntry.getValue().getState() + "  " + threadEntry.getValue().getName());
@@ -55,9 +59,24 @@ public class ThreadManager {
                 Thread restorationThread = new Thread(originalObjects.get(terminatedThreadUuid));
                 restorationThread.setName(terminatedThreadUuid);
                 restorationThread.start();
-                currentThreads.put(terminatedThreadUuid,restorationThread);
+                currentThreads.put(terminatedThreadUuid, restorationThread);
+            }
+
+            if (originalObjects.get(threadEntry.getKey()).getRunningTime() != 0) {
+                if (originalObjects.get(threadEntry.getKey()).getRunningTime() > 4000 && threadEntry.getValue().getState() == Thread.State.BLOCKED) {
+                    threadEntry.getValue().interrupt();
+
+                    currentThreads.remove(threadEntry.getKey(), threadEntry.getValue());
+
+                    Thread restorationThread = new Thread(originalObjects.get(threadEntry.getKey()));
+                    restorationThread.setName(threadEntry.getKey());
+                    restorationThread.start();
+                    currentThreads.put(threadEntry.getKey(), threadEntry.getValue());
+                }
             }
         }
+
+
     }
 
     public void register(Process process) {
@@ -72,7 +91,7 @@ public class ThreadManager {
         return currentThreads.size();
     }
 
-    public void shoutDownThreadManager() {
+    public void shutDownThreadManager() {
         scheduledExecutorService.shutdown();
     }
 

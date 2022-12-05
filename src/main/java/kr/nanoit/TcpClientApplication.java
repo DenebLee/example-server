@@ -12,12 +12,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClientApplication {
 
-    public static final int TOTAL_COUNT = 100000;
+    public static final int TOTAL_COUNT = 6000;
     private static final AtomicInteger readCounter = new AtomicInteger(0);
     private static final AtomicInteger writeCounter = new AtomicInteger(0);
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        String data = "{\"type\": \"SEND\",\"messageUuid\": \"test01\",\"data\": {\"id\": 123123, \"phone\": \"01044445555\", \"callback\": \"053555444\", \"content\": \" ㅎㅇㅎㅇㅎ\"}}" + "\r\n";
+        String data = "{\"type\": \"SEND\",\"messageUuid\": \"test01\",\"data\": {\"id\": 123123, \"phone\": \"01044445555\", \"callback\": \"053555444\", \"content\": \" 안녕하세요\"}}" + "\r\n";
         byte[] payload = data.getBytes(StandardCharsets.UTF_8);
         Socket socket = new Socket();
         socket.connect(new InetSocketAddress("localhost", 12323));

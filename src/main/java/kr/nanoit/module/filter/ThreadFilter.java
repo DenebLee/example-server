@@ -38,7 +38,8 @@ public class ThreadFilter extends ModuleProcess {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            shoutDown();
             e.printStackTrace();
         }
     }
@@ -50,9 +51,14 @@ public class ThreadFilter extends ModuleProcess {
     }
 
 
-
     @Override
     public void sleep() throws InterruptedException {
         Thread.sleep(1000);
     }
+
+    @Override
+    public String getUuid() {
+        return this.uuid;
+    }
+
 }

@@ -85,6 +85,7 @@ public class BrokerImpl implements Broker {
         socketResource.write(payload);
     }
 
+
     @Override
     public int getSize() {
         return brokerQueue.size();

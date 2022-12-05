@@ -1,6 +1,5 @@
-package kr.nanoit.module.branch;
+package kr.nanoit.old;
 
-import kr.nanoit.abst.Process;
 import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataSender;
@@ -10,6 +9,8 @@ import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -23,6 +24,8 @@ public class Branch implements Process {
     private Broker broker;
     public Auth auth;
     private boolean flag;
+    Instant start;
+    Instant finish;
 
     public Branch(Broker broker) {
         this.broker = broker;
@@ -32,8 +35,10 @@ public class Branch implements Process {
     @Override
     public void run() {
         try {
-            flag =true;
+            flag = true;
             Object object;
+            start = Instant.now();
+
             while (flag) {
                 object = broker.subscribe(InternalDataType.BRANCH);
                 if (object != null && object instanceof InternalDataBranch) {
@@ -61,6 +66,7 @@ public class Branch implements Process {
                     }
                 }
             }
+            finish = Instant.now();
         } catch (InterruptedException e) {
             flag = false;
             e.printStackTrace();
@@ -70,5 +76,15 @@ public class Branch implements Process {
     @Override
     public String getUuid() {
         return UUID.randomUUID().toString().substring(0, 7);
+    }
+
+    @Override
+    public boolean getFlag() {
+        return this.flag;
+    }
+
+    @Override
+    public long getRunningTime() {
+        return Duration.between(start, finish).toMillis();
     }
 }

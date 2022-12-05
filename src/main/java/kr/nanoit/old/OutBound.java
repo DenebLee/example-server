@@ -1,13 +1,14 @@
-package kr.nanoit.module.outbound;
+package kr.nanoit.old;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kr.nanoit.abst.Process;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -16,11 +17,14 @@ import java.util.UUID;
  * - MetaData에 세션 정보를 찾아서 SocketManager의 소켓리스트에서 검색
  * - 소켓에 실제로 Write 할수 있는 로직이 필요함
  */
+
 @Slf4j
 public class OutBound implements Process {
     private final Broker broker;
     private final ObjectMapper objectMapper;
     public boolean flag;
+    private Instant start;
+    private Instant finish;
 
     public OutBound(Broker broker) {
         this.broker = broker;
@@ -31,6 +35,7 @@ public class OutBound implements Process {
     public void run() {
         try {
             flag = true;
+
             while (flag) {
                 Object object = broker.subscribe(InternalDataType.OUTBOUND);
                 if (object != null && object instanceof InternalDataOutBound) {
@@ -54,8 +59,9 @@ public class OutBound implements Process {
                     }
                 }
             }
+            finish = Instant.now();
         } catch (InterruptedException e) {
-            flag= false;
+            flag = false;
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -69,5 +75,15 @@ public class OutBound implements Process {
     @Override
     public String getUuid() {
         return UUID.randomUUID().toString().substring(0, 7);
+    }
+
+    @Override
+    public boolean getFlag() {
+        return this.flag;
+    }
+
+    @Override
+    public long getRunningTime() {
+        return Duration.between(start, finish).toMillis();
     }
 }

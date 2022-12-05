@@ -3,7 +3,7 @@ package kr.nanoit.module.inbound.socket;
 import kr.nanoit.TestClient;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
-import kr.nanoit.module.inbound.TcpServer;
+import kr.nanoit.old.TcpServer;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;

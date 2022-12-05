@@ -1,8 +1,7 @@
-package kr.nanoit.module.mapper;
+package kr.nanoit.old;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kr.nanoit.abst.Process;
 import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.InternalDataType;
@@ -10,6 +9,8 @@ import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 
@@ -23,6 +24,9 @@ import java.util.UUID;
 public class Mapper implements Process {
     private final Broker broker;
     private final ObjectMapper objectMapper;
+    private boolean flag;
+    private Instant start;
+    private Instant finish;
 
     public Mapper(Broker broker) {
         this.objectMapper = new ObjectMapper();
@@ -31,9 +35,13 @@ public class Mapper implements Process {
 
     @Override
     public void run() {
-        while (true) {
-            Object object;
-            try {
+        try {
+
+            flag = true;
+            start = Instant.now();
+
+            while (flag) {
+                Object object;
                 object = broker.subscribe(InternalDataType.MAPPER);
                 if (object != null && object instanceof InternalDataMapper) {
 //                    log.info("[MAPPER]   READ-THREAD DATA INPUT => [{}]", object);
@@ -46,15 +54,26 @@ public class Mapper implements Process {
                         log.error("[MAPPER]   NOT FOUND DATA => [{}]", payload);
                     }
                 }
-
-            } catch (InterruptedException | JsonProcessingException e) {
-                throw new RuntimeException(e);
+                finish = Instant.now();
             }
+        } catch (InterruptedException | JsonProcessingException e) {
+            flag = false;
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public String getUuid() {
         return UUID.randomUUID().toString().substring(0, 7);
+    }
+
+    @Override
+    public boolean getFlag() {
+        return this.flag;
+    }
+
+    @Override
+    public long getRunningTime() {
+        return Duration.between(start, finish).toMillis();
     }
 }

@@ -9,9 +9,8 @@
    ~~- 스레드풀로 스레드 관리법 공부 및 테스트 코드 작성~~<br/>
 
 2. Broker
-    - broker queue에 publish 혹은 subscribe 실패시 에러처리
-    - socket 연결 끊긴 client에 대응하는 queue 내 리소스 정리
-
+   ~~- broker queue에 publish 혹은 subscribe 실패시 에러처리~~<br/>
+   ~~- socket 연결 끊긴 client에 대응하는 queue 내 리소스 정리~~<br/>
 3. Mapper
 4. OutBound
 5. Filter
@@ -19,6 +18,10 @@
 7. Sender
 
 # TODO
+
+- ThreadManager 비즈니스 로직 완성
+- 각 Thread DeadLock 방지 로직 구현 필요
+- DB 연결
 
 # DISCOVERED PROBLEM
 

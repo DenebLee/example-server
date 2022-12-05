@@ -4,22 +4,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
-import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.extension.Jackson;
-import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.*;
 
 @Slf4j
 public class ThreadOutBound extends ModuleProcess {
 
     private final ObjectMapper objectMapper;
-    private final Auth auth;
+    private BufferedReader bufferedReader;
 
-    public ThreadOutBound(Broker broker, String uuid) {
+    public ThreadOutBound(Broker broker, String uuid) throws IOException {
         super(broker, uuid);
         this.objectMapper = Jackson.getInstance().getObjectMapper();
-        this.auth = new Auth();
     }
 
     @Override
@@ -27,16 +27,17 @@ public class ThreadOutBound extends ModuleProcess {
         try {
             this.flag = true;
             while (this.flag) {
-                Object object = broker.subscribe(InternalDataType.OUTBOUND);
-                if (object != null && object instanceof InternalDataOutBound) {
+                if (connectCarrier.isConnected()) {
+                    InternalDataOutBound internalDataOutBound = objectMapper.readValue(bufferedReader.readLine(), InternalDataOutBound.class);
+
+                    String payload = toJSON(internalDataOutBound.getPayload());
 //                    log.info("[OUTBOUND] DATA INPUT => {}", object);
-                    String payload = toJSON(object);
-                    switch (((InternalDataOutBound) object).getPayload().getType()) {
+                    switch (internalDataOutBound.getPayload().getType()) {
 
                         // ReportACK? SEND_ACK, ALIVE_ACK, BAD_SEND,AUTHENTICATION_ACK
 
                         case SEND_ACK:
-                            broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload);
+                            broker.outBound(internalDataOutBound.getMetaData().getSocketUuid(), payload);
 //                            log.info("[OUTBOUND]   TO READ-THREAD => [{}]", payload);
                             break;
                         case ALIVE:
@@ -45,12 +46,14 @@ public class ThreadOutBound extends ModuleProcess {
                             break;
                         case AUTHENTICATION:
                             break;
-
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
+            shoutDown();
             e.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -68,6 +71,11 @@ public class ThreadOutBound extends ModuleProcess {
 
     private String toJSON(Object object) throws JsonProcessingException {
         return objectMapper.writeValueAsString(((InternalDataOutBound) object).getPayload());
+    }
+
+    @Override
+    public String getUuid() {
+        return this.uuid;
     }
 
 }

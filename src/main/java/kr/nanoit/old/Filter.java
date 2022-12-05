@@ -1,6 +1,5 @@
-package kr.nanoit.module.filter;
+package kr.nanoit.old;
 
-import kr.nanoit.abst.Process;
 import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataOutBound;
@@ -11,6 +10,8 @@ import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -23,6 +24,8 @@ import java.util.UUID;
 public class Filter implements Process {
     private final Broker broker;
     private boolean flag;
+    private Instant start;
+    private Instant finish;
 
     public Filter(Broker broker) {
         this.broker = broker;
@@ -31,7 +34,9 @@ public class Filter implements Process {
     @Override
     public void run() {
         try {
+            start = Instant.now();
             flag = true;
+
             while (flag) {
                 Object object = broker.subscribe(InternalDataType.FILTER);
                 if (object != null && object instanceof InternalDataFilter) {
@@ -49,6 +54,7 @@ public class Filter implements Process {
                     }
                 }
             }
+            finish = Instant.now();
         } catch (InterruptedException e) {
             flag = false;
             e.printStackTrace();
@@ -58,5 +64,15 @@ public class Filter implements Process {
     @Override
     public String getUuid() {
         return UUID.randomUUID().toString().substring(0, 7);
+    }
+
+    @Override
+    public boolean getFlag() {
+        return this.flag;
+    }
+
+    @Override
+    public long getRunningTime() {
+        return Duration.between(start, finish).toMillis();
     }
 }

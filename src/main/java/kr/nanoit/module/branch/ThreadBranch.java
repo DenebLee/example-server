@@ -52,22 +52,25 @@ public class ThreadBranch extends ModuleProcess {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            shoutDown();
             e.printStackTrace();
         }
     }
 
     @Override
     public void shoutDown() {
-//        flag = false;
-        Thread.interrupted();
+        flag = false;
         log.warn("[BRANCH   THIS THREAD SHUTDOWN]");
     }
 
-
-
     @Override
     public void sleep() throws InterruptedException {
-        Thread.sleep(500);
+        Thread.sleep(1000);
+    }
+
+    @Override
+    public String getUuid() {
+        return this.uuid;
     }
 }
