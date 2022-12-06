@@ -27,8 +27,10 @@ public class ThreadFilter extends ModuleProcess {
 //                    log.info("[FILTER]   DATA INPUT => [{}]", object);
                     InternalDataFilter internalDataFilter = (InternalDataFilter) object;
 
+
                     if (internalDataFilter.getMetaData() != null && internalDataFilter.getPayload().getData() != null) {
-                        if (broker.publish(new InternalDataBranch(internalDataFilter.getMetaData(), new Payload(internalDataFilter.getPayload().getType(), internalDataFilter.getPayload().getMessageUuid(), internalDataFilter.getPayload().getData())))) {
+                        if (broker.publish(new InternalDataBranch(internalDataFilter.getMetaData(), internalDataFilter.getPayload()))) ;
+                        {
 //                            log.info("[FILTER]   TO BRANCH => [TYPE : {} DATA : {}]", internalDataFilter.getMetaData(), internalDataFilter.getPayload().getData());
                         }
                     } else {

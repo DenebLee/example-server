@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +23,9 @@ public class SocketManager implements Runnable {
     }
 
     public void register(SocketResource socketResource) {
-        if (socketResource.getSocket().isBound() && socketResource.getSocket().isConnected() && socketResource.getSocket() != null) {
+        if (socketResource.getSocket().isBound() && socketResource.getSocket().isConnected() && socketResource.getSocket() != null
+                && socketResource.getConnectCarrier().isBound() && socketResource.getConnectCarrier().isConnected() && socketResource.getConnectCarrier() != null
+        ) {
             socketResources.put(socketResource.getUuid(), socketResource);
         }
     }
@@ -50,14 +53,19 @@ public class SocketManager implements Runnable {
             flag = true;
             while (flag) {
                 for (Map.Entry<String, SocketResource> entry : socketResources.entrySet()) {
+                    if (entry.getValue().getSocket().isConnected() && entry.getValue().getConnectCarrier().isClosed()) {
+                        log.error("[@SOCKET-{}:MANAGER@] LOST COMMUNICATION WITH CARRIER", entry.getKey());
+                        entry.getValue().getConnectCarrier().connect(new InetSocketAddress("localhost", 54321));
+                        log.warn("[@SOCKET-{}:MANAGER@] RETRY TO CONNECT CARRIER ", entry.getKey());
+                    }
                     if (entry.getValue().isTerminated()) {
                         log.info("[@SOCKET:MANAGER@] key = {} isTerminated = {}", entry.getKey(), entry.getValue().isTerminated());
                         if (entry.getValue().isSocketInputStreamClose() && entry.getValue().isSocketOutputStreamClose()) {
                             setTestResult(true);
-                            entry.getValue().socketClose();
-                            if (entry.getValue().getSocket().isClosed()) {
+                            entry.getValue().connectClose();
+                            if (entry.getValue().getSocket().isClosed() && entry.getValue().getConnectCarrier().isClosed()) {
                                 socketResources.remove(entry.getKey());
-                                log.info("[@SOCKET:MANAGER@] CLIENT DISCONNECTED COMPLETE");
+                                log.info("[@SOCKET-{}:MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
                             }
                         }
                     }

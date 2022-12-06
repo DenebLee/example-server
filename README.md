@@ -16,23 +16,23 @@
 5. Filter
 6. Branch
 7. Sender
+8. Carrier
+    - 기본적인 기능 구현
 
 # TODO
 
-- ThreadManager 비즈니스 로직 완성
-- 각 Thread DeadLock 방지 로직 구현 필요
 - DB 연결
-
-# DISCOVERED PROBLEM
-
-~~ReadThread에서 readline() 구문에서 exception이 발생하면서 ReadThread는 작동을 멈춤 -> WriteThread는 ReadThread의 종료 이벤트를 받지 않아 무한
-루프~~<br/>
-~~Socket이 끊겨서 Client와의 연결이 종료 됐을 때 SocketManager에 있는 HashMap에 해당 socket 값 삭제 필요~~<br/>
+- 통신사 모듈에 대응하는 Carrier에 대한 세부적인 기능 구현( 접속 및 에러 정책 )
+- Carrier 테스트 코드 작성
+- Carrier Socket 에 대한 에러 핸들링
 
 ## COMMIT
 
-| DATE         | content                                                                                                |
-|--------------|--------------------------------------------------------------------------------------------------------|
-| [2022-11-17] | 인바운드 되는 비즈니스 로직에 대한 보안 로직 추가 , SocketResource에서 ReadThread, WriteThread에 대한 핸들링 메소드 추가 및 socket 리소스 정리 |                                                                                                            |                                                                                                     |
-| [2022-11-18] | SocketManager Test Code 작성중 , ThreadPool 관련 스킬 습득중, Thread pool 테스트 코드 작성                              |                                                                                                            |                                                                                                     |
-| [2022-11-23] | ThreadManager Test 코드 구현중, 병렬 Thread 상태 제어 구현이 너무 어려워 공부중                                              |                                                                                                            |                                                                                                     |
+| DATE         | content                                                                                                        |
+|--------------|----------------------------------------------------------------------------------------------------------------|
+| [2022-11-17] | 인바운드 되는 비즈니스 로직에 대한 보안 로직 추가 , SocketResource에서 ReadThread, WriteThread에 대한 핸들링 메소드 추가 및 socket 리소스 정리         |                                                                                                            |                                                                                                     |
+| [2022-11-18] | SocketManager Test Code 작성중 , ThreadPool 관련 스킬 습득중, Thread pool 테스트 코드 작성                                      |                                                                                                            |                                                                                                     |
+| [2022-11-23] | ThreadManager Test 코드 구현중, 병렬 Thread 상태 제어 구현이 너무 어려워 공부중                                                      |                                                                                                            |                                                                                                     |
+| [2022-11-26] | ThreadManager 기능 구현 완료                                                                                         |                                                                                                            |                                                                                                     |
+| [2022-11-05] | Carrier 기능 추가 (가상 통신사 모듈)                                                                                      |                                                                                                            |                                                                                                     |
+| [2022-12-06] | Sender -> Carrier -> OutBound 통신 테스트 완료 , Carrier 와 통신하는 Socket 에러 구현중, 기능에 따른 프로젝트 리팩토링 , Error Handling 시도 중 |                                                                                                            |                                                                                                     |

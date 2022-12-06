@@ -43,9 +43,12 @@ public class TcpServerApplicationAfter {
         socketManagerThread.setDaemon(true);
         socketManagerThread.start();
 
+        System.out.println("");
         System.out.println("==========================================================================================================================================");
-        log.info("  ECHO TEST SERVER START  ");
+        System.out.println("                                                     ECHO TEST SERVER START  ");
         System.out.println("==========================================================================================================================================");
+        System.out.println("");
+
     }
 
     private static String getRandomUuid() {

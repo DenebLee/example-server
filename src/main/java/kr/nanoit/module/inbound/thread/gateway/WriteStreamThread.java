@@ -1,4 +1,4 @@
-package kr.nanoit.module.inbound.thread;
+package kr.nanoit.module.inbound.thread.gateway;
 
 import lombok.extern.slf4j.Slf4j;
 

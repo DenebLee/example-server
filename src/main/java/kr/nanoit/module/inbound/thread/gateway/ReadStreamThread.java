@@ -1,4 +1,4 @@
-package kr.nanoit.module.inbound.thread;
+package kr.nanoit.module.inbound.thread.gateway;
 
 
 import kr.nanoit.domain.broker.InternalDataMapper;
@@ -15,14 +15,14 @@ import java.util.function.Consumer;
  * - blocking
  */
 @Slf4j
-public class ReceiveFromCarrierThread implements Runnable {
+public class ReadStreamThread implements Runnable {
 
     private final Consumer<String> cleaner;
     private final Broker broker;
     private final BufferedReader bufferedReader;
     private final String uuid;
 
-    public ReceiveFromCarrierThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid) {
+    public ReadStreamThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid) {
         this.cleaner = cleaner;
         this.broker = broker;
         this.bufferedReader = bufferedReader;
@@ -32,11 +32,13 @@ public class ReceiveFromCarrierThread implements Runnable {
 
     @Override
     public void run() {
-        log.info("[SERVER : SOCKET : {}] READ START", uuid.substring(0, 7));
+        log.info("[SERVER : SOCKET : {}] READ START", uuid);
         try {
             while (true) {
                 String readData = bufferedReader.readLine();
+//                log.info("[SERVER : SOCKET : {}] READ DATA => [LENGTH = {} PAYLOAD = {}]", uuid.substring(0, 7), readData.length(), readData);
                 broker.publish(new InternalDataMapper(new MetaData(uuid), readData));
+//                log.info("[SERVER : SOCKET : {}] TO MAPPER => {}", uuid.substring(0, 7), readData);
             }
         } catch (Throwable e) {
             log.info("[@SOCKET:READ:{}@] terminating...", uuid);

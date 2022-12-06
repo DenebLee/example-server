@@ -1,9 +1,12 @@
-package kr.nanoit.module.carrier;
+package kr.nanoit.carrier;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+@Slf4j
 public class CarrierAccess implements Runnable {
 
     private final ServerSocket serverSocket;
@@ -21,10 +24,14 @@ public class CarrierAccess implements Runnable {
             flag = true;
             while (flag) {
                 Socket socket = serverSocket.accept();
+                System.out.println("==========================================================================================================================================");
+                log.info("  AGENT CONNECT  {}", socket.getInetAddress());
+                System.out.println("==========================================================================================================================================");
                 CarrierSocketResource carrierSocketResource = new CarrierSocketResource(socket);
                 carrierSocketResource.serve();
             }
         } catch (Exception e) {
+            flag = false;
             e.printStackTrace();
         }
     }

@@ -63,6 +63,12 @@ public class BrokerImpl implements Broker {
                     } else {
                         return false;
                     }
+                } else if (object instanceof InternalDataCarrier) {
+                    if (brokerQueue.get(InternalDataType.CARRIER).offer(object)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 } else {
                     return false;
                 }

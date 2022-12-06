@@ -7,9 +7,7 @@ import kr.nanoit.module.inbound.socket.SocketResource;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 
 @Slf4j
 public class ThreadTcpServer extends ModuleProcess {
@@ -32,11 +30,10 @@ public class ThreadTcpServer extends ModuleProcess {
 
             while (flag) {
                 Socket socket = serverSocket.accept();
-                Socket connectCarrier;
+                Socket connectCarrier = new Socket();
 
                 // Client 와 Socket connect 이 되면 통신사와 Socket 연결 할 수 있도록 Socket 생성
                 if (socket.isConnected()) {
-                    connectCarrier = new Socket();
                     connectCarrier.connect(new InetSocketAddress("localhost", 54321));
                     System.out.println("소켓 연결 ");
                 }
@@ -46,9 +43,19 @@ public class ThreadTcpServer extends ModuleProcess {
                 socketManager.register(socketResource);
                 socketResource.serve();
             }
+        } catch (ConnectException e) {
+            log.error("[TCPSERVER : SOCKET : {}]  ERROR WHILE CONNECT = {}  ", uuid, e.getMessage());
+            this.tryToReconnect();
+        } catch (SocketTimeoutException e) {
+            log.error("[TCPSERVER : SOCKET : {}]  CONNECTION = {} ", uuid, e.getMessage());
+            this.tryToReconnect();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void tryToReconnect() {
+        System.out.println("retry !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
     public void connectClose() throws IOException {

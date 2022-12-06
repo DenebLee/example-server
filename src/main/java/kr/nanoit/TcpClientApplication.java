@@ -42,10 +42,10 @@ public class TcpClientApplication {
         Thread writeThread = new Thread(() -> {
             for (int i = 0; i < TOTAL_COUNT; i++) {
                 try {
-//                    Thread.sleep(1000);
+                    Thread.sleep(1000);
                     dataOutputStream.write(payload);
                     writeCounter.incrementAndGet();
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }

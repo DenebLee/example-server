@@ -1,4 +1,4 @@
-package kr.nanoit.module.carrier;
+package kr.nanoit.carrier;
 
 import kr.nanoit.domain.broker.InternalDataCarrier;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Slf4j
-// TODO 통신사 모듈에선 ThreadPool 로 Task 를 만든 후 작업 처리
 public class CarrierSocketResource {
     private final Socket socket;
     private final Thread readThread;
@@ -20,8 +19,8 @@ public class CarrierSocketResource {
         this.socket = socket;
         this.queue = new LinkedBlockingQueue<>();
 
-        this.readThread = new Thread(new ReadThread(this::readThreadCleaner, queue, new BufferedReader(new InputStreamReader(socket.getInputStream()))));
-        this.sendThread = new Thread(new SendThread(this::sendThreadCleaner, queue, new DataOutputStream(socket.getOutputStream())));
+        this.readThread = new Thread(new CarrierReadThread(this::readThreadCleaner, queue, new BufferedReader(new InputStreamReader(socket.getInputStream()))));
+        this.sendThread = new Thread(new CarrierSendThread(this::sendThreadCleaner, queue, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))));
     }
 
     public void serve() {

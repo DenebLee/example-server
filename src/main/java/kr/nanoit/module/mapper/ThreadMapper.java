@@ -35,7 +35,7 @@ public class ThreadMapper extends ModuleProcess {
                     Payload payload = objectMapper.readValue(internalDataMapper.getPayload(), Payload.class);
 
                     if (broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), payload))) {
-//                        log.info("[MAPPER]   TO FILTER => [TYPE : {} DATA : {}]", payload.getType(), payload.getData());
+//                        log.info("[MAPPER]   TO FILTER => [TYPE : {} DATA : {}]", payload.getType(), payload.getData());/
                     } else {
                         log.error("[MAPPER]   NOT FOUND DATA => [{}]", payload);
                     }

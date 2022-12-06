@@ -20,17 +20,8 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class ThreadSender extends ModuleProcess {
 
-
-    private final ObjectMapper objectMapper;
-    private DataOutputStream dataOutputStream;
-
-
-    public ThreadSender(Broker broker, String uuid) throws IOException {
+    public ThreadSender(Broker broker, String uuid) {
         super(broker, uuid);
-        this.objectMapper = Jackson.getInstance().getObjectMapper();
-        if (connectCarrier.isConnected()) {
-            dataOutputStream = new DataOutputStream(connectCarrier.getOutputStream());
-        }
     }
 
     @Override
@@ -39,27 +30,20 @@ public class ThreadSender extends ModuleProcess {
             this.flag = true;
             while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.SENDER);
-
                 if (object != null && object instanceof InternalDataSender) {
 //                    log.info("[SENDER]   DATA INPUT => {}", object);
-
-                    // 들어오는거 확인
                     InternalDataSender internalDataSender = (InternalDataSender) object;
                     Payload payload = ((InternalDataSender) object).getPayload();
-                    System.out.println("통신사 연결 되었는 지 " + connectCarrier.isConnected());
-                    String value = objectMapper.writeValueAsString(new InternalDataCarrier(internalDataSender.getMetaData(), payload)) + "\r\n";
-                    if (connectCarrier.isConnected()) {
-                        dataOutputStream.write(value.getBytes(StandardCharsets.UTF_8));
-                        System.out.println(" 통신사 전송 완료  => " + value);
+                    if (internalDataSender != null && payload != null) {
+                        if (payload.getType().equals(PayloadType.SEND)) {
+                            if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), payload))) ;
+                        }
                     }
                 }
-
             }
         } catch (InterruptedException e) {
             shoutDown();
             e.printStackTrace();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

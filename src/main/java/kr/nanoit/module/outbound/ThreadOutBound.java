@@ -4,20 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
-import kr.nanoit.domain.payload.Payload;
+import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.extension.Jackson;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.*;
 
 @Slf4j
 public class ThreadOutBound extends ModuleProcess {
 
     private final ObjectMapper objectMapper;
-    private BufferedReader bufferedReader;
 
-    public ThreadOutBound(Broker broker, String uuid) throws IOException {
+    public ThreadOutBound(Broker broker, String uuid)  {
         super(broker, uuid);
         this.objectMapper = Jackson.getInstance().getObjectMapper();
     }
@@ -27,17 +24,17 @@ public class ThreadOutBound extends ModuleProcess {
         try {
             this.flag = true;
             while (this.flag) {
-                if (connectCarrier.isConnected()) {
-                    InternalDataOutBound internalDataOutBound = objectMapper.readValue(bufferedReader.readLine(), InternalDataOutBound.class);
+                Object object = broker.subscribe(InternalDataType.OUTBOUND);
+                if (object != null && object instanceof InternalDataOutBound) {
+                    String payload = toJSON(object);
 
-                    String payload = toJSON(internalDataOutBound.getPayload());
 //                    log.info("[OUTBOUND] DATA INPUT => {}", object);
-                    switch (internalDataOutBound.getPayload().getType()) {
+                    switch (((InternalDataOutBound) object).getPayload().getType()) {
 
                         // ReportACK? SEND_ACK, ALIVE_ACK, BAD_SEND,AUTHENTICATION_ACK
 
                         case SEND_ACK:
-                            broker.outBound(internalDataOutBound.getMetaData().getSocketUuid(), payload);
+                            broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload);
 //                            log.info("[OUTBOUND]   TO READ-THREAD => [{}]", payload);
                             break;
                         case ALIVE:
@@ -49,12 +46,10 @@ public class ThreadOutBound extends ModuleProcess {
                     }
                 }
             }
-        } catch (JsonProcessingException e) {
-            shoutDown();
-            e.printStackTrace();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (InterruptedException | JsonProcessingException ex) {
+            throw new RuntimeException(ex);
         }
+
     }
 
     @Override
