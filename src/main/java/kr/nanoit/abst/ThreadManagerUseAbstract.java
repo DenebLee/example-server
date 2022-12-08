@@ -24,10 +24,11 @@ public class ThreadManagerUseAbstract {
 
         this.scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleAtFixedRate(this::monitor, 1000, 1000, TimeUnit.MILLISECONDS);
+        monitor();
     }
 
 
-    public void monitor() {
+    private void monitor() {
         for (Map.Entry<String, ModuleProcess> entry : objectMap.entrySet()) {
             if (objectMap.containsKey(entry.getKey()) && !threadMap.containsKey(entry.getKey()) && entry.getValue().status == ModuleProcess.Status.INIT) {
                 Thread thread = new Thread(objectMap.get(entry.getKey()));
@@ -43,7 +44,6 @@ public class ThreadManagerUseAbstract {
             if (threadEntry.getValue().getState().equals(Thread.State.TERMINATED)) {
                 String terminatedThreadUuid = threadEntry.getKey();
 
-                System.out.println(threadEntry.getValue().getState() + "  " + threadEntry.getValue().getName());
                 threadMap.remove(threadEntry.getKey(), threadEntry.getValue());
 
                 Thread restorationThread = new Thread(objectMap.get(terminatedThreadUuid));
@@ -79,8 +79,8 @@ public class ThreadManagerUseAbstract {
         return threadMap.size();
     }
 
-    public void register(String key, ModuleProcess moduleProcess) {
-        objectMap.put(key, moduleProcess);
+    public void register( ModuleProcess moduleProcess) {
+        objectMap.put(moduleProcess.getUuid(), moduleProcess);
     }
 
     public void shutDown() {

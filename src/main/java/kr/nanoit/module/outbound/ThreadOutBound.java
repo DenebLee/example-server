@@ -14,7 +14,7 @@ public class ThreadOutBound extends ModuleProcess {
 
     private final ObjectMapper objectMapper;
 
-    public ThreadOutBound(Broker broker, String uuid)  {
+    public ThreadOutBound(Broker broker, String uuid) {
         super(broker, uuid);
         this.objectMapper = Jackson.getInstance().getObjectMapper();
     }
@@ -27,23 +27,9 @@ public class ThreadOutBound extends ModuleProcess {
                 Object object = broker.subscribe(InternalDataType.OUTBOUND);
                 if (object != null && object instanceof InternalDataOutBound) {
                     String payload = toJSON(object);
+                    // ACK 들은 각 모듈에서 생성되서 아웃바운드로 넘어오기 때문에 Outbound 에선 그냥 넘겨주는 역활만
 
-//                    log.info("[OUTBOUND] DATA INPUT => {}", object);
-                    switch (((InternalDataOutBound) object).getPayload().getType()) {
-
-                        // ReportACK? SEND_ACK, ALIVE_ACK, BAD_SEND,AUTHENTICATION_ACK
-
-                        case SEND_ACK:
-                            broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload);
-//                            log.info("[OUTBOUND]   TO READ-THREAD => [{}]", payload);
-                            break;
-                        case ALIVE:
-                            break;
-                        case BAD_SEND:
-                            break;
-                        case AUTHENTICATION:
-                            break;
-                    }
+                    broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload);
                 }
             }
         } catch (InterruptedException | JsonProcessingException ex) {
@@ -57,7 +43,6 @@ public class ThreadOutBound extends ModuleProcess {
         this.flag = false;
         log.warn("[OUTBOUND   THIS THREAD SHUTDOWN]");
     }
-
 
     @Override
     public void sleep() throws InterruptedException {

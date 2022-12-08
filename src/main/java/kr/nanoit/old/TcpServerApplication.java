@@ -1,16 +1,10 @@
 package kr.nanoit.old;
 
 
-import kr.nanoit.old.ThreadManager;
-import kr.nanoit.old.Branch;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
-import kr.nanoit.old.Filter;
-import kr.nanoit.old.TcpServer;
 import kr.nanoit.module.inbound.socket.SocketManager;
-import kr.nanoit.old.Mapper;
-import kr.nanoit.old.OutBound;
-import kr.nanoit.old.Sender;
+import kr.nanoit.thread.ThreadManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -31,6 +25,9 @@ public class TcpServerApplication {
 
         socketManagerThread.start();
         threadManager.monitor();
+
+//        threadManager.register()
+//        threadManager.unregister()
 
         System.out.println("==========================================================================================================================================");
         log.info("  ECHO SERVER START  ");

@@ -47,7 +47,7 @@ public class Branch implements Process {
                     PayloadType payloadType = internalDataBranch.getPayload().getType();
 
                     if (payloadType.equals(PayloadType.AUTHENTICATION)) {
-                        auth.verification(internalDataBranch, broker);
+//                        auth.verification(internalDataBranch, broker);
 
                     } else if (payloadType.equals(PayloadType.SEND)) {
                         if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {

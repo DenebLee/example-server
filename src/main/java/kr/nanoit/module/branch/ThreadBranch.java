@@ -33,9 +33,10 @@ public class ThreadBranch extends ModuleProcess {
                     PayloadType payloadType = internalDataBranch.getPayload().getType();
 
                     if (payloadType.equals(PayloadType.AUTHENTICATION)) {
-                        auth.verification(internalDataBranch, broker);
+                        auth.verificationAccount(internalDataBranch, broker);
 
                     } else if (payloadType.equals(PayloadType.SEND)) {
+//                        auth.verificationSendData(internalDataBranch, broker);
                         if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
 //                            log.info("[BRANCH]   SEND DATA TO SENDER => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
                         }

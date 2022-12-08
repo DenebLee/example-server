@@ -34,6 +34,7 @@ public class ThreadFilter extends ModuleProcess {
 //                            log.info("[FILTER]   TO BRANCH => [TYPE : {} DATA : {}]", internalDataFilter.getMetaData(), internalDataFilter.getPayload().getData());
                         }
                     } else {
+                        // 메타 데이터는 그대로 get 하며 Payload 만 수정 및 추가
                         if (broker.publish(new InternalDataOutBound(internalDataFilter.getMetaData(), new Payload(PayloadType.BAD_SEND, internalDataFilter.getPayload().getMessageUuid(), new ErrorDto("Data null"))))) {
                             log.error("[FILTER]   There is null data ");
                         }

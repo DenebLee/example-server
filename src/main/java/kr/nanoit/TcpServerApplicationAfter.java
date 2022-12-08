@@ -1,6 +1,7 @@
 package kr.nanoit;
 
 
+import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.abst.ThreadManagerUseAbstract;
 import kr.nanoit.module.branch.ThreadBranch;
 import kr.nanoit.module.broker.Broker;
@@ -12,6 +13,8 @@ import kr.nanoit.module.inbound.socket.ThreadTcpServer;
 import kr.nanoit.module.mapper.ThreadMapper;
 import kr.nanoit.module.outbound.ThreadOutBound;
 import kr.nanoit.module.sender.ThreadSender;
+import kr.nanoit.thread.Module;
+import kr.nanoit.thread.ModuleManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -37,8 +40,7 @@ public class TcpServerApplicationAfter {
 
         Thread socketManagerThread = new Thread(socketManager);
 
-        ThreadManagerUseAbstract threadManagerUseAbstract = new ThreadManagerUseAbstract();
-        threadManagerUseAbstract.monitor();
+        ThreadManagerUseAbstract threadManagerUseAbstract = ModuleProcess.threadManagerUseAbstract;
 
         socketManagerThread.setDaemon(true);
         socketManagerThread.start();

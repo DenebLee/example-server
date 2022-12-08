@@ -1,5 +1,6 @@
-package kr.nanoit.old;
+package kr.nanoit.thread;
 
+import kr.nanoit.old.Process;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -35,7 +36,6 @@ public class ThreadManager {
     }
 
 
-
     public void monitor() {
 
         for (Map.Entry<String, Process> entry : originalObjects.entrySet()) {
@@ -53,7 +53,6 @@ public class ThreadManager {
 
                 String terminatedThreadUuid = threadEntry.getKey();
 
-                System.out.println(threadEntry.getValue().getState() + "  " + threadEntry.getValue().getName());
                 currentThreads.remove(threadEntry.getKey(), threadEntry.getValue());
 
                 Thread restorationThread = new Thread(originalObjects.get(terminatedThreadUuid));

@@ -31,7 +31,7 @@ public abstract class ModuleProcess implements Runnable {
     public ModuleProcess(Broker broker, String uuid) {
         this.broker = broker;
         this.uuid = uuid;
-        threadManagerUseAbstract.register(uuid, this);
+        threadManagerUseAbstract.register(this);
         this.status = Status.INIT;
         this.lastRunningTime = System.currentTimeMillis();
     }
