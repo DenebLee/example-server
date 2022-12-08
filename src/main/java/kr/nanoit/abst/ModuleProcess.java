@@ -1,18 +1,14 @@
 package kr.nanoit.abst;
 
-import jdk.nashorn.internal.objects.annotations.Getter;
-import jdk.nashorn.internal.objects.annotations.Setter;
 import kr.nanoit.module.broker.Broker;
-
-import java.net.Socket;
 
 
 public abstract class ModuleProcess implements Runnable {
 
-    public static ThreadManagerUseAbstract threadManagerUseAbstract;
+    public static ModuleProcessManagerImpl moduleProcessManagerImpl;
 
     static {
-        threadManagerUseAbstract = new ThreadManagerUseAbstract();
+        moduleProcessManagerImpl = new ModuleProcessManagerImpl();
     }
 
     protected final String uuid;
@@ -31,7 +27,7 @@ public abstract class ModuleProcess implements Runnable {
     public ModuleProcess(Broker broker, String uuid) {
         this.broker = broker;
         this.uuid = uuid;
-        threadManagerUseAbstract.register(this);
+        moduleProcessManagerImpl.register(this);
         this.status = Status.INIT;
         this.lastRunningTime = System.currentTimeMillis();
     }

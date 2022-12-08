@@ -1,5 +1,6 @@
 package kr.nanoit.thread;
 
+import kr.nanoit.abst.ModuleProcess;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -18,7 +19,6 @@ class ModuleManagerTest {
     void t1() {
         // given
         ModuleManager moduleManager = ModuleManager.moduleManager();
-
         // when, then
         assertThat(moduleManager.register(null)).isFalse();
     }

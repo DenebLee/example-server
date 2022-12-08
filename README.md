@@ -22,7 +22,7 @@
 # TODO
 
 - DB 연결
-- 통신사 모듈에 대응하는 Carrier에 대한 세부적인 기능 구현( 접속 및 에러 정책 )
+- 통신사 모듈에 대응하는 Carrie r에 대한 세부적인 기능 구현( 접속 및 에러 정책 )
 - Carrier 테스트 코드 작성
 - Carrier Socket 에 대한 에러 핸들링
 - 통신사 모듈에 대한 연결은 불필요하지만 이왕 구현된거 구현완료 시키기 (통신사 Socket 은 미리 연결 되어야 함, 모듈 새로 추가해야됨)
@@ -38,3 +38,5 @@
 | [2022-11-26] | ThreadManager 기능 구현 완료                                                                                         |                                                                                                            |                                                                                                     |
 | [2022-11-05] | Carrier 기능 추가 (가상 통신사 모듈)                                                                                      |                                                                                                            |                                                                                                     |
 | [2022-12-06] | Sender -> Carrier -> OutBound 통신 테스트 완료 , Carrier 와 통신하는 Socket 에러 구현중, 기능에 따른 프로젝트 리팩토링 , Error Handling 시도 중 |                                                                                                            |                                                                                                     |
+| [2022-12-07] | 캡슐화 지키지 않은 class들 정리 및 수정 , UnitTest 전부 수정 , ModuleProcessManagerImpl 기능 추가                                    |                                                                                                            |                                                                                                     |
+| [2022-12-08] | ModuleProcessManagerImpl UnitTest 구현 완료 , SocketManager UnitTest 재수정                                           |                                                                                                            |                                                                                                     |

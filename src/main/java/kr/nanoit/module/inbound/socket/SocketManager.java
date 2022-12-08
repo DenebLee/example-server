@@ -1,7 +1,5 @@
 package kr.nanoit.module.inbound.socket;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -13,13 +11,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SocketManager implements Runnable {
     private final Map<String, SocketResource> socketResources;
 
-    @Getter
-    @Setter
-    public boolean testResult;
     private boolean flag;
 
     public SocketManager() {
         this.socketResources = new ConcurrentHashMap<>();
+        this.flag = true;
     }
 
     public void register(SocketResource socketResource) {
@@ -50,7 +46,6 @@ public class SocketManager implements Runnable {
     @Override
     public void run() {
         try {
-            flag = true;
             while (flag) {
                 for (Map.Entry<String, SocketResource> entry : socketResources.entrySet()) {
                     if (entry.getValue().getSocket().isConnected() && entry.getValue().getConnectCarrier().isClosed()) {
@@ -58,11 +53,12 @@ public class SocketManager implements Runnable {
                         entry.getValue().getConnectCarrier().connect(new InetSocketAddress("localhost", 54321));
                         log.warn("[@SOCKET-{}:MANAGER@] RETRY TO CONNECT CARRIER ", entry.getKey());
                     }
+
                     if (entry.getValue().isTerminated()) {
                         log.info("[@SOCKET:MANAGER@] key = {} isTerminated = {}", entry.getKey(), entry.getValue().isTerminated());
                         if (entry.getValue().isSocketInputStreamClose() && entry.getValue().isSocketOutputStreamClose()) {
-                            setTestResult(true);
                             entry.getValue().connectClose();
+
                             if (entry.getValue().getSocket().isClosed() && entry.getValue().getConnectCarrier().isClosed()) {
                                 socketResources.remove(entry.getKey());
                                 log.info("[@SOCKET-{}:MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
@@ -76,7 +72,6 @@ public class SocketManager implements Runnable {
             e.printStackTrace();
         } catch (InterruptedException e) {
             flag = false;
-            setTestResult(false);
             log.error("[SOCKET-MANAGER] ERROR => ", e);
             throw new RuntimeException(e);
         }
