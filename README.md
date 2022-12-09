@@ -16,16 +16,10 @@
 5. Filter
 6. Branch
 7. Sender
-8. Carrier
-    - 기본적인 기능 구현
 
 # TODO
 
 - DB 연결
-- 통신사 모듈에 대응하는 Carrie r에 대한 세부적인 기능 구현( 접속 및 에러 정책 )
-- Carrier 테스트 코드 작성
-- Carrier Socket 에 대한 에러 핸들링
-- 통신사 모듈에 대한 연결은 불필요하지만 이왕 구현된거 구현완료 시키기 (통신사 Socket 은 미리 연결 되어야 함, 모듈 새로 추가해야됨)
 - 작성 했던 테스트코드 전체 리팩토링 및 캡슐화가 안된 클래스들 싹다 수정
 
 ## COMMIT
@@ -40,3 +34,4 @@
 | [2022-12-06] | Sender -> Carrier -> OutBound 통신 테스트 완료 , Carrier 와 통신하는 Socket 에러 구현중, 기능에 따른 프로젝트 리팩토링 , Error Handling 시도 중 |                                                                                                            |                                                                                                     |
 | [2022-12-07] | 캡슐화 지키지 않은 class들 정리 및 수정 , UnitTest 전부 수정 , ModuleProcessManagerImpl 기능 추가                                    |                                                                                                            |                                                                                                     |
 | [2022-12-08] | ModuleProcessManagerImpl UnitTest 구현 완료 , SocketManager UnitTest 재수정                                           |                                                                                                            |                                                                                                     |
+| [2022-12-09] | SocketManagerTest 구현 완료 , 각 모듈별 테스트코드 전면적으로 수정중                                                                |                                                                                                            |                                                                                                     |

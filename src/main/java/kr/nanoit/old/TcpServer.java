@@ -33,10 +33,9 @@ public class TcpServer implements Process {
     public void run() {
         try {
             flag = true;
-
             while (flag) {
                 Socket socket = serverSocket.accept();
-                SocketResource socketResource = new SocketResource(socket, new Socket(), broker);
+                SocketResource socketResource = new SocketResource(socket, broker);
                 log.info("[TCPSERVER : SOCKET : {}] ACCEPT => ADDRESS = {}", socketResource.getUuid().substring(0, 7), socket.getRemoteSocketAddress().toString());
                 socketManager.register(socketResource);
                 socketResource.serve();

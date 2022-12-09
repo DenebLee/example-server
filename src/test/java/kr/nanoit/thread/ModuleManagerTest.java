@@ -1,6 +1,5 @@
 package kr.nanoit.thread;
 
-import kr.nanoit.abst.ModuleProcess;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;

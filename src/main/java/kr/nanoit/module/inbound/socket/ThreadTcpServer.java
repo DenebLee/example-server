@@ -30,18 +30,11 @@ public class ThreadTcpServer extends ModuleProcess {
 
             while (flag) {
                 Socket socket = serverSocket.accept();
-                Socket connectCarrier = new Socket();
-
-                // Client 와 Socket connect 이 되면 통신사와 Socket 연결 할 수 있도록 Socket 생성
-                if (socket.isConnected()) {
-                    connectCarrier.connect(new InetSocketAddress("localhost", 54321));
-                    System.out.println("소켓 연결 ");
-                }
-
-                SocketResource socketResource = new SocketResource(socket, connectCarrier, broker);
+                SocketResource socketResource = new SocketResource(socket, broker);
                 log.info("[TCPSERVER : SOCKET : {}] ACCEPT => ADDRESS = {}", socketResource.getUuid(), socket.getRemoteSocketAddress().toString());
-                socketManager.register(socketResource);
-                socketResource.serve();
+                if (socketManager.register(socketResource)) {
+                    socketResource.serve();
+                }
             }
         } catch (ConnectException e) {
             log.error("[TCPSERVER : SOCKET : {}]  ERROR WHILE CONNECT = {}  ", uuid, e.getMessage());

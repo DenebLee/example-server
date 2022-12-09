@@ -87,7 +87,7 @@ public class BrokerImpl implements Broker {
 
     @Override
     public void outBound(String uuid, String payload) {
-        SocketResource socketResource = socketManager.getSocketUuid(uuid);
+        SocketResource socketResource = socketManager.getSocketResource(uuid);
         socketResource.write(payload);
     }
 
