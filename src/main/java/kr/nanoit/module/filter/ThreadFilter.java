@@ -1,10 +1,14 @@
 package kr.nanoit.module.filter;
 
 import kr.nanoit.abst.ModuleProcess;
-import kr.nanoit.domain.broker.*;
+import kr.nanoit.domain.broker.InternalDataBranch;
+import kr.nanoit.domain.broker.InternalDataFilter;
+import kr.nanoit.domain.broker.InternalDataOutBound;
+import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.payload.ErrorDto;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.extension.Validation;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,9 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ThreadFilter extends ModuleProcess {
 
+    private final Validation validation;
 
     public ThreadFilter(Broker broker, String uuid) {
         super(broker, uuid);
+        validation = new Validation();
     }
 
     @Override
@@ -23,27 +29,50 @@ public class ThreadFilter extends ModuleProcess {
             this.flag = true;
             while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.FILTER);
-                if (object != null && object instanceof InternalDataFilter) {
+                if (object instanceof InternalDataFilter) {
 //                    log.info("[FILTER]   DATA INPUT => [{}]", object);
                     InternalDataFilter internalDataFilter = (InternalDataFilter) object;
+                    if (internalDataFilter.getMetaData() == null || internalDataFilter.getPayload().getMessageUuid() == null || internalDataFilter.getPayload().getType() == null
+                            || internalDataFilter.getPayload().getData() == null) {
+                        publishBadRequest(internalDataFilter, "Data is null");
+                    }
 
+                    switch (internalDataFilter.getPayload().getType()) {
+                        case SEND:
+                            if (!validation.verificationSendData(internalDataFilter)) {
+                                publishBadRequest(internalDataFilter, "Invalid Send value");
+                            }
+                            break;
 
-                    if (internalDataFilter.getMetaData() != null && internalDataFilter.getPayload().getData() != null) {
-                        if (broker.publish(new InternalDataBranch(internalDataFilter.getMetaData(), internalDataFilter.getPayload()))) ;
-                        {
-//                            log.info("[FILTER]   TO BRANCH => [TYPE : {} DATA : {}]", internalDataFilter.getMetaData(), internalDataFilter.getPayload().getData());
-                        }
-                    } else {
-                        // 메타 데이터는 그대로 get 하며 Payload 만 수정 및 추가
-                        if (broker.publish(new InternalDataOutBound(internalDataFilter.getMetaData(), new Payload(PayloadType.BAD_SEND, internalDataFilter.getPayload().getMessageUuid(), new ErrorDto("Data null"))))) {
-                            log.error("[FILTER]   There is null data ");
-                        }
+                        case REPORT_ACK:
+                            if (!validation.verificationReport_ackData(internalDataFilter)) {
+                                publishBadRequest(internalDataFilter, "Invalid Report_ack value");
+                            }
+                            break;
+                            /*
+                            여기에서 Authentication 유효성 검사를 해야 하나?
+                             */
+
+                        case ALIVE:
+                            if (!validation.verificationAliveData(internalDataFilter)) {
+                                publishBadRequest(internalDataFilter, "Invalid Alive value");
+                            }
+                            break;
+                    }
+                    if (broker.publish(new InternalDataBranch(internalDataFilter.getMetaData(), internalDataFilter.getPayload()))) {
+                        // log.info("[FILTER]   TO BRANCH => [TYPE : {} DATA : {}]", internalDataFilter.getMetaData(), internalDataFilter.getPayload().getData());
                     }
                 }
             }
         } catch (InterruptedException e) {
             shoutDown();
             e.printStackTrace();
+        }
+    }
+
+    private void publishBadRequest(InternalDataFilter internalDataFilter, String str) {
+        if (broker.publish(new InternalDataOutBound(internalDataFilter.getMetaData(), new Payload(PayloadType.BAD_SEND, internalDataFilter.getPayload().getMessageUuid(), new ErrorDto(str))))) {
+            log.error("[FILTER]   There is null data ");
         }
     }
 

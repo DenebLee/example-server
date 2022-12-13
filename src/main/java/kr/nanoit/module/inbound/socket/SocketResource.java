@@ -2,8 +2,6 @@ package kr.nanoit.module.inbound.socket;
 
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.thread.gateway.ReadStreamThread;
-import kr.nanoit.module.inbound.thread.carrier.ReceiveFromCarrierThread;
-import kr.nanoit.module.inbound.thread.carrier.SendToCarrierThread;
 import kr.nanoit.module.inbound.thread.gateway.WriteStreamThread;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +25,6 @@ public class SocketResource {
     private final Thread writeStreamThread;
     private boolean readThreadStatus = true;
     private boolean writeThreadStatus = true;
-    private boolean receiveFromCarrierThreadStatus = true;
-    private boolean sendToCarrierThreadStatus = true;
 
     public SocketResource(Socket socket, Broker broker) throws IOException {
         this.uuid = UUID.randomUUID().toString().substring(0, 7);
@@ -91,4 +87,9 @@ public class SocketResource {
     public boolean isSocketOutputStreamClose() {
         return socket.isOutputShutdown();
     }
+
+    public int getWriteBufferQueueSize() {
+        return writeBuffer.size();
+    }
+
 }

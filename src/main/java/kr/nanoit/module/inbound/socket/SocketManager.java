@@ -26,7 +26,6 @@ public class SocketManager implements Runnable {
                         log.info("[@SOCKET:MANAGER@] key = {} isTerminated = {}", entry.getKey(), entry.getValue().isTerminated());
                         if (entry.getValue().isSocketInputStreamClose() && entry.getValue().isSocketOutputStreamClose()) {
                             entry.getValue().connectClose();
-
                             if (entry.getValue().getSocket().isClosed()) {
                                 socketResources.remove(entry.getKey());
                                 log.info("[@SOCKET-{}:MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());

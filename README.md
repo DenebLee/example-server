@@ -21,6 +21,8 @@
 
 - DB 연결
 - 작성 했던 테스트코드 전체 리팩토링 및 캡슐화가 안된 클래스들 싹다 수정
+- 테스트 코드 구현중 (SocketResource, SocketManager, BrokerImpl,ModuleProcessManagerImpl => 완료)
+- 모듈들 테스트 코드 구현중(Mapper, Branch => 완료)
 
 ## COMMIT
 
@@ -35,3 +37,4 @@
 | [2022-12-07] | 캡슐화 지키지 않은 class들 정리 및 수정 , UnitTest 전부 수정 , ModuleProcessManagerImpl 기능 추가                                    |                                                                                                            |                                                                                                     |
 | [2022-12-08] | ModuleProcessManagerImpl UnitTest 구현 완료 , SocketManager UnitTest 재수정                                           |                                                                                                            |                                                                                                     |
 | [2022-12-09] | SocketManagerTest 구현 완료 , 각 모듈별 테스트코드 전면적으로 수정중                                                                |                                                                                                            |                                                                                                     |
+| [2022-12-13] | Mapper, Branch 테스트 코드 작성 완료 , Filter 리팩토링중(유효성 검사 로직 추가)                                                       |                                                                                                            |                                                                                                     |

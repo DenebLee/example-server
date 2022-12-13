@@ -86,14 +86,27 @@ public class BrokerImpl implements Broker {
     }
 
     @Override
-    public void outBound(String uuid, String payload) {
+    public boolean outBound(String uuid, String payload) {
+        if (uuid == null || uuid == "" || uuid.contains(" ")) {
+            return false;
+        }
+        if (payload == null || payload.contains(" ") || payload == "") {
+            return false;
+        }
+
         SocketResource socketResource = socketManager.getSocketResource(uuid);
         socketResource.write(payload);
+        return true;
     }
-
 
     @Override
-    public int getSize() {
+    public int getBrokerMapSize() {
         return brokerQueue.size();
     }
+
+    @Override
+    public int getInternalDataInBrokerMap(InternalDataType internalDataType) {
+        return brokerQueue.get(internalDataType).size();
+    }
+
 }

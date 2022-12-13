@@ -39,13 +39,7 @@ public class Auth {
         }
     }
 
-    public void verificationSendData(InternalDataBranch internalDataBranch, Broker broker){
-        Payload payload = internalDataBranch.getPayload();
-        Send send = objectMapper.convertValue(payload.getData(), Send.class);
-        if (isPhoneNum(send.getPhone()) && isCallBack(send.getCallback())) {
 
-        }
-    }
 
 
     private boolean isAccount(String identify, String password) {
@@ -55,13 +49,6 @@ public class Auth {
         return false;
     }
 
-    private boolean isPhoneNum(String num) {
-        return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", num);
-    }
-
-    private boolean isCallBack(String str) {
-        return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", str);
-    }
 
 //    private boolean isContent(String str){
 //        if(str != null && str != "" && str)

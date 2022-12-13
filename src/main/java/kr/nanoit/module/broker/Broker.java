@@ -7,9 +7,11 @@ public interface Broker {
 
     Object subscribe(InternalDataType type) throws InterruptedException;
 
-    void outBound(String uuid, String payload);
+    boolean outBound(String uuid, String payload);
 
-    int getSize();
-    
+    int getBrokerMapSize();
+
+    int getInternalDataInBrokerMap(InternalDataType internalDataType);
+
 
 }

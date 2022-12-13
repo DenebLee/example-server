@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 
 class ModuleProcessManagerImplTest {
@@ -267,72 +268,6 @@ class ModuleProcessManagerImplTest {
         // then
         assertThat(actual).isEqualTo(1);
         assertThat(expected).isEqualTo(0);
-    }
-
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t16() {
-
-
-    }
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t17() {
-
-
-    }
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t18() {
-
-
-    }
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t19() {
-
-
-    }
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t20() {
-
-
-    }
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t21() {
-
-
-    }
-
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t22() {
-
-
-    }
-
-    @DisplayName("")
-    @Timeout(value = 2)
-    @Test
-    void t23() {
-
-
     }
 
 

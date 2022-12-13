@@ -32,24 +32,24 @@ public class ThreadBranch extends ModuleProcess {
                     InternalDataBranch internalDataBranch = (InternalDataBranch) object;
                     PayloadType payloadType = internalDataBranch.getPayload().getType();
 
-                    if (payloadType.equals(PayloadType.AUTHENTICATION)) {
-                        auth.verificationAccount(internalDataBranch, broker);
-
-                    } else if (payloadType.equals(PayloadType.SEND)) {
-//                        auth.verificationSendData(internalDataBranch, broker);
-                        if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
-//                            log.info("[BRANCH]   SEND DATA TO SENDER => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
-                        }
-
-                    } else if (payloadType.equals(PayloadType.REPORT_ACK)) {
-                        if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
-                            log.info("[BRANCH]   REPORT_ACK DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
-                        }
-
-                    } else if (payloadType.equals(PayloadType.ALIVE)) {
-                        if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
-                            log.info("[BRANCH]   ALIVE DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
-                        }
+                    switch (payloadType) {
+                        case AUTHENTICATION:
+                            auth.verificationAccount(internalDataBranch, broker);
+                            break;
+                        case SEND:
+                            if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
+                            }
+                            break;
+                        case REPORT_ACK:
+                            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
+                                log.info("[BRANCH]   REPORT_ACK DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
+                            }
+                            break;
+                        case ALIVE:
+                            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
+                                log.info("[BRANCH]   ALIVE DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
+                            }
+                            break;
                     }
                 }
             }

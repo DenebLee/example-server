@@ -10,7 +10,7 @@ public final class Jackson {
     private final ObjectMapper objectMapper;
 
     private Jackson() {
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = Jackson.getInstance().getObjectMapper();
 //        objectMapper.registerModule(new JavaTimeModule());
     }
 
