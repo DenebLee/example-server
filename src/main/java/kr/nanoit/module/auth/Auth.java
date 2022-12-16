@@ -24,7 +24,7 @@ public class Auth {
     private final ObjectMapper objectMapper;
 
     public Auth() {
-        this.objectMapper = Jackson.getInstance().getObjectMapper();
+        this.objectMapper = new ObjectMapper();
     }
 
 

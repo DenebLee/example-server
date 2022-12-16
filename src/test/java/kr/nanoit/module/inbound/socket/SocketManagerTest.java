@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.security.SecureRandom;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

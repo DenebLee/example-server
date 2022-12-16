@@ -1,24 +1,19 @@
 package kr.nanoit.module.inbound.socket;
 
-import com.github.dockerjava.api.model.Ulimit;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.thread.gateway.ReadStreamThread;
 import kr.nanoit.module.inbound.thread.gateway.WriteStreamThread;
 import org.junit.Before;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.IOException;
 import java.net.Socket;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
 
 @RunWith(MockitoJUnitRunner.class)
 class SocketResourceTest {

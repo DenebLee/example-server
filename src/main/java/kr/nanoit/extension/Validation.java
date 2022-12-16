@@ -10,18 +10,18 @@ public class Validation {
     private final ObjectMapper objectMapper;
 
     public Validation() {
-        this.objectMapper = Jackson.getInstance().getObjectMapper();
+        this.objectMapper = new ObjectMapper();
     }
 
     public boolean verificationSendData(InternalDataFilter internalDataFilter) {
         Send send = objectMapper.convertValue(internalDataFilter.getPayload().getData(), Send.class);
-        if (send.getId() == 0) {
+        if (send.getId() == 0 || send.getId() < 0) {
             return false;
         }
         if (!isPhoneNum(send.getPhone()) || send.getPhone() == null || send.getPhone().contains(" ") || send.getPhone().equals("")) {
             return false;
         }
-        if (!isCallBack(send.getCallback()) || send.getCallback() == null || send.getCallback().contains(" ") || send.getCallback().equals("")) {
+        if (!isCallBackByPhone(send.getCallback()) && isCallBackByRegularTelephoneNum(send.getCallback()) || send.getCallback() == null || send.getCallback().contains(" ") || send.getCallback().equals("")) {
             return false;
         }
         if (send.getContent() == null || send.getContent().equals("")) {
@@ -29,7 +29,7 @@ public class Validation {
         }
         return true;
     }
-
+    
     // 기능 구현전
 
     public boolean verificationAliveData(InternalDataFilter internalDataFilter) {
@@ -44,7 +44,11 @@ public class Validation {
         return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", num);
     }
 
-    private boolean isCallBack(String str) {
+    private boolean isCallBackByPhone(String str) {
         return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", str);
+    }
+
+    private boolean isCallBackByRegularTelephoneNum(String str) {
+        return Pattern.matches("^\\d{2,3} - \\d{3,4} - \\d{4}$", str);
     }
 }

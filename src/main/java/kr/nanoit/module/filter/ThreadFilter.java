@@ -32,9 +32,17 @@ public class ThreadFilter extends ModuleProcess {
                 if (object instanceof InternalDataFilter) {
 //                    log.info("[FILTER]   DATA INPUT => [{}]", object);
                     InternalDataFilter internalDataFilter = (InternalDataFilter) object;
-                    if (internalDataFilter.getMetaData() == null || internalDataFilter.getPayload().getMessageUuid() == null || internalDataFilter.getPayload().getType() == null
-                            || internalDataFilter.getPayload().getData() == null) {
-                        publishBadRequest(internalDataFilter, "Data is null");
+                    if (internalDataFilter.getMetaData() == null) {
+                        publishBadRequest(internalDataFilter, "MetaData is null");
+                    }
+                    if (internalDataFilter.getPayload().getMessageUuid() == null) {
+                        publishBadRequest(internalDataFilter, "MessageUuid is null");
+                    }
+                    if (internalDataFilter.getPayload().getType() == null) {
+                        publishBadRequest(internalDataFilter, "Payload.Type is null");
+                    }
+                    if (internalDataFilter.getPayload().getData() == null) {
+                        publishBadRequest(internalDataFilter, "Payload.Data is null");
                     }
 
                     switch (internalDataFilter.getPayload().getType()) {

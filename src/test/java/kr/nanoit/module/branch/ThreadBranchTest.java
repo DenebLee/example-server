@@ -100,7 +100,7 @@ class ThreadBranchTest {
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
-    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료S")
+    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료")
     @Test
     void t4() throws InterruptedException {
         // given
@@ -115,7 +115,6 @@ class ThreadBranchTest {
         // then
         assertThat(actual).isEqualTo(Thread.State.RUNNABLE);
         assertThat(expected).isEqualTo(Thread.State.TERMINATED);
-
     }
 
     public String randomString(int targetLength) {

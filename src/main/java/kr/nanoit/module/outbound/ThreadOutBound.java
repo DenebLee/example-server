@@ -5,18 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.extension.Jackson;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ThreadOutBound extends ModuleProcess {
+public class
+ThreadOutBound extends ModuleProcess {
 
     private final ObjectMapper objectMapper;
 
     public ThreadOutBound(Broker broker, String uuid) {
         super(broker, uuid);
-        this.objectMapper = Jackson.getInstance().getObjectMapper();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override

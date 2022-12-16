@@ -19,6 +19,7 @@ public class BrokerImpl implements Broker {
     public BrokerImpl(SocketManager socketManager) {
         this.brokerQueue = new HashMap<>();
         this.socketManager = socketManager;
+
         for (InternalDataType value : InternalDataType.values()) {
             brokerQueue.put(value, new LinkedBlockingQueue<>());
         }
@@ -109,4 +110,9 @@ public class BrokerImpl implements Broker {
         return brokerQueue.get(internalDataType).size();
     }
 
+    @Override
+    public int getOutBoundQueueSize(String uuid) {
+        SocketResource socketResource = socketManager.getSocketResource(uuid);
+        return socketResource.getWriteBuffer().size();
+    }
 }

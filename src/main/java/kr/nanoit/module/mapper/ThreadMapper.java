@@ -1,13 +1,13 @@
 package kr.nanoit.module.mapper;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
-import kr.nanoit.domain.broker.*;
-import kr.nanoit.domain.payload.ErrorDto;
+import kr.nanoit.domain.broker.InternalDataFilter;
+import kr.nanoit.domain.broker.InternalDataMapper;
+import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.payload.Payload;
-import kr.nanoit.domain.payload.PayloadType;
-import kr.nanoit.extension.Jackson;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,7 @@ public class ThreadMapper extends ModuleProcess {
 
     public ThreadMapper(Broker broker, String uuid) {
         super(broker, uuid);
-        this.objectMapper = Jackson.getInstance().getObjectMapper();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override

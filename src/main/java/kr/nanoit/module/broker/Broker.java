@@ -13,5 +13,5 @@ public interface Broker {
 
     int getInternalDataInBrokerMap(InternalDataType internalDataType);
 
-
+    int getOutBoundQueueSize(String uuid);
 }

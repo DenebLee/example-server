@@ -191,7 +191,7 @@ class BrokerImplTest {
         assertThat(expected).isFalse();
     }
 
-    @DisplayName("outBound : parameter uuid 에 공백이 있을 경우  false 여야 함")
+    @DisplayName("outBound : parameter uuid 에 공백이 있을 경우 false 여야 함")
     @Test
     void t12() {
         // given
@@ -228,6 +228,7 @@ class BrokerImplTest {
 
         // then
         assertThat(expected).isFalse();
+
     }
 
     @DisplayName("outBound : parameter payload 에 공백이 있을 경우 false 여야 함")

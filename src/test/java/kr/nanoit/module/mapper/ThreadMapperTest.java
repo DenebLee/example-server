@@ -4,7 +4,6 @@ import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.broker.MetaData;
-import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
@@ -13,16 +12,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Random;
 import java.util.UUID;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.spy;
 
 
 class ThreadMapperTest {
@@ -30,15 +27,16 @@ class ThreadMapperTest {
     private SocketManager socketManager;
     private ThreadMapper threadMapper;
     private String uuid;
-    private ObjectMapper objectMapper;
     private Broker broker;
     private Thread mapperThread;
+    private ObjectMapper objectMapper;
+
 
     @BeforeEach
     void setUp() {
         broker = spy(new BrokerImpl(socketManager));
-        objectMapper = new ObjectMapper();
         uuid = UUID.randomUUID().toString().substring(0, 7);
+        this.objectMapper = new ObjectMapper();
         threadMapper = spy(new ThreadMapper(broker, uuid));
         mapperThread = new Thread(threadMapper);
         mapperThread.start();
@@ -75,7 +73,7 @@ class ThreadMapperTest {
         threadMapper.shoutDown();
 
         // when
-        Thread.sleep(2000);
+        Thread.sleep(1500L);
         Thread.State expected = mapperThread.getState();
 
         // then
