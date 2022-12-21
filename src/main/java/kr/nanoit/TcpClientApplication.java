@@ -57,9 +57,10 @@ public class TcpClientApplication {
         Thread readThread = new Thread(() -> {
             for (int i = 0; i < TOTAL_COUNT; i++) {
                 try {
+                    Thread.sleep(1000);
                     String readPayload = bufferedReader.readLine();
                     readCounter.incrementAndGet();
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }

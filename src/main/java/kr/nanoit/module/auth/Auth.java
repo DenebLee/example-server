@@ -19,8 +19,6 @@ import java.util.regex.Pattern;
 
 @Slf4j
 public class Auth {
-    private final String id = "test01";
-    private final String pw = "q1w2e3";
     private final ObjectMapper objectMapper;
 
     public Auth() {
@@ -33,19 +31,13 @@ public class Auth {
         Authentication authentication = objectMapper.convertValue(payload, Authentication.class);
         String identify = authentication.getUsername();
         String password = authentication.getPassword();
-        if (isAccount(identify, password)) {
-            // ACK 제작 후 OutBound
-            broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), authentication)));
-        }
+//        if (isAccount(identify, password)) {
+//            broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), authentication)));
+//        }
     }
 
 
-
-
-    private boolean isAccount(String identify, String password) {
-        if (identify.equals(id) && password.equals(pw)) {
-            return true;
-        }
+    private boolean isAccount() {
         return false;
     }
 

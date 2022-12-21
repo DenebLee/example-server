@@ -16,7 +16,8 @@ import static org.mockito.Mockito.*;
      Mock -> 가짜를 의미한다. 실제와 동일한 기능을 하지는 않지만 대충 이런 기능이 이렇게 동작할 것이다 라고 알려주는 용도
      Stub -> 전체 중 일부 , 모든 기능 대신 일부 기능에 집중하여 임의로 구현한다
      Spy ->
-     */
+*/
+
 class SocketManagerTest {
 
     @DisplayName("register 호출: socket not bound")

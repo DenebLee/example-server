@@ -37,7 +37,6 @@ ThreadOutBound extends ModuleProcess {
         } catch (InterruptedException | JsonProcessingException ex) {
             throw new RuntimeException(ex);
         }
-
     }
 
     @Override

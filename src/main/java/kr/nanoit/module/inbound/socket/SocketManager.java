@@ -75,7 +75,6 @@ public class SocketManager implements Runnable {
         }
         if (!socketResources.containsKey(uuid)) {
             return null;
-
         }
         return socketResources.get(uuid);
     }

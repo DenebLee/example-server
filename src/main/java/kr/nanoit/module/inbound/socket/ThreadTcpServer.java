@@ -14,13 +14,13 @@ import java.net.SocketTimeoutException;
 public class ThreadTcpServer extends ModuleProcess {
 
     private final SocketManager socketManager;
-    private final ServerSocket serverSocket;
     private boolean flag;
+    private final int port;
 
     public ThreadTcpServer(SocketManager socketManager, Broker broker, int port, String uuid) throws IOException {
         super(broker, uuid);
         this.socketManager = socketManager;
-        this.serverSocket = new ServerSocket(port);
+        this.port = port;
     }
 
 
@@ -28,7 +28,7 @@ public class ThreadTcpServer extends ModuleProcess {
     public void run() {
         try {
             flag = true;
-
+            ServerSocket serverSocket = new ServerSocket(this.port);
             while (flag) {
                 Socket socket = serverSocket.accept();
                 SocketResource socketResource = new SocketResource(socket, broker);
@@ -50,10 +50,6 @@ public class ThreadTcpServer extends ModuleProcess {
 
     private void tryToReconnect() {
         System.out.println("retry !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    }
-
-    public void connectClose() throws IOException {
-        serverSocket.close();
     }
 
     @Override

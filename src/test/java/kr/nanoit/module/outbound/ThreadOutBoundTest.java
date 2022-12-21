@@ -34,7 +34,7 @@ class ThreadOutBoundTest {
     private Thread outBoundThread;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         this.uuid = UUID.randomUUID().toString().substring(0, 7);
         this.broker = spy(new BrokerImpl(socketManager));
         this.threadOutBound = spy(new ThreadOutBound(broker, uuid));

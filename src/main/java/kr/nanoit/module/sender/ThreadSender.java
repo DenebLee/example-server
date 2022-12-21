@@ -36,7 +36,7 @@ public class ThreadSender extends ModuleProcess {
                     Payload payload = ((InternalDataSender) object).getPayload();
                     if (internalDataSender != null && payload != null) {
                         if (payload.getType().equals(PayloadType.SEND)) {
-                            if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), payload))) ;
+                            if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), payload))) ;
                         }
                     }
                 }

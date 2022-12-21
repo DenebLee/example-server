@@ -21,7 +21,6 @@ public class ModuleProcessManagerImpl {
     public ModuleProcessManagerImpl() {
         this.objectMap = new HashMap<>();
         this.threadMap = new ConcurrentHashMap<>();
-
         this.scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleAtFixedRate(this::monitor, 1000, 1000, TimeUnit.MILLISECONDS);
         monitor();
