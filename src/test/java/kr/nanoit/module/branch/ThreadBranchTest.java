@@ -1,5 +1,8 @@
 package kr.nanoit.module.branch;
 
+import kr.nanoit.db.PostgreSqlDbcp;
+import kr.nanoit.db.auth.MessageService;
+import kr.nanoit.db.auth.MessageServiceImpl;
 import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
@@ -18,6 +21,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 class ThreadBranchTest {
@@ -31,12 +35,16 @@ class ThreadBranchTest {
     @Mock
     private String uuid;
     private ObjectMapper objectMapper;
+    private MessageService authService;
+    private PostgreSqlDbcp dbcp;
 
     @BeforeEach
     void setUp() {
+        dbcp = mock(PostgreSqlDbcp.class);
         broker = spy(new BrokerImpl(socketManager));
         objectMapper = new ObjectMapper();
-        threadBranch = spy(new ThreadBranch(broker, uuid));
+        authService = mock(MessageServiceImpl.class);
+        threadBranch = spy(new ThreadBranch(broker, uuid, authService));
         branchThread = new Thread(threadBranch);
         branchThread.start();
     }

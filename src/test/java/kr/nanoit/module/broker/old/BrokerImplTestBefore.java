@@ -32,7 +32,7 @@ class BrokerImplTestBefore {
         socketManager = mock(SocketManager.class);
         broker = new BrokerImpl(socketManager);
         objectMapper = new ObjectMapper();
-        payload = objectMapper.writeValueAsString(new Payload(PayloadType.AUTHENTICATION, randomString(10), objectMapper.writeValueAsString(new Authentication(randomString(10), randomString(10)))));
+        payload = objectMapper.writeValueAsString(new Payload(PayloadType.AUTHENTICATION, randomString(10), objectMapper.writeValueAsString(new Authentication(randomString(10), randomString(10), randomString(10)))));
     }
 
     @AfterEach

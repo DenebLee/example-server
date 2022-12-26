@@ -5,7 +5,7 @@ import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.domain.payload.ErrorDto;
+import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.extension.Validation;
@@ -79,7 +79,7 @@ public class ThreadFilter extends ModuleProcess {
     }
 
     private void publishBadRequest(InternalDataFilter internalDataFilter, String str) {
-        if (broker.publish(new InternalDataOutBound(internalDataFilter.getMetaData(), new Payload(PayloadType.BAD_SEND, internalDataFilter.getPayload().getMessageUuid(), new ErrorDto(str))))) {
+        if (broker.publish(new InternalDataOutBound(internalDataFilter.getMetaData(), new Payload(PayloadType.BAD_SEND, internalDataFilter.getPayload().getMessageUuid(), new ErrorPayload(str))))) {
             log.error("[FILTER]   There is null data ");
         }
     }

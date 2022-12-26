@@ -28,7 +28,6 @@ ThreadOutBound extends ModuleProcess {
                 if (object != null && object instanceof InternalDataOutBound) {
                     String payload = toJSON(object);
                     // ACK 들은 각 모듈에서 생성되서 아웃바운드로 넘어오기 때문에 Outbound 에선 그냥 넘겨주는 역활만
-
                     if (broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload)) {
                         log.info("OUTBOUND   TO WRITE THREAD ");
                     }

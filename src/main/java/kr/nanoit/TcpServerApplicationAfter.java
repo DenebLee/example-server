@@ -3,6 +3,9 @@ package kr.nanoit;
 
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.abst.ModuleProcessManagerImpl;
+import kr.nanoit.db.DataBaseConfig;
+import kr.nanoit.db.PostgreSqlDbcp;
+import kr.nanoit.db.auth.MessageService;
 import kr.nanoit.module.branch.ThreadBranch;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
@@ -21,14 +24,22 @@ import java.util.UUID;
 public class TcpServerApplicationAfter {
     public static int port = 12323;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
 
         SocketManager socketManager = new SocketManager();
         Broker broker = new BrokerImpl(socketManager);
+        DataBaseConfig dataBaseConfig = new DataBaseConfig()
+                .setIp("192.168.0.64")
+                .setPort(5432)
+                .setDatabaseName("lee")
+                .setUsername("lee")
+                .setPassword("lee");
+        PostgreSqlDbcp dbcp = new PostgreSqlDbcp(dataBaseConfig);
+        MessageService authService = MessageService.createPostgreSqL(dbcp);
 
         new ThreadMapper(broker, getRandomUuid());
         new ThreadFilter(broker, getRandomUuid());
-        new ThreadBranch(broker, getRandomUuid());
+        new ThreadBranch(broker, getRandomUuid(), authService);
         new ThreadSender(broker, getRandomUuid());
         new ThreadOutBound(broker, getRandomUuid());
         new ThreadTcpServer(socketManager, broker, port, getRandomUuid());

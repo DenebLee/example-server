@@ -5,6 +5,7 @@ import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.broker.MetaData;
 import kr.nanoit.domain.payload.*;
+import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
@@ -50,7 +51,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(null);
-        expected.setPayload(new Payload(PayloadType.AUTHENTICATION, "123123", new Authentication("test", "test")));
+        expected.setPayload(new Payload(PayloadType.AUTHENTICATION, "123123", new Authentication("test", "test", "test")));
 
         // when
         broker.publish(expected);
@@ -58,7 +59,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -72,7 +73,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.AUTHENTICATION, null, new Authentication("test", "test")));
+        expected.setPayload(new Payload(PayloadType.AUTHENTICATION, null, new Authentication("test", "test", "test")));
 
         // when
         broker.publish(expected);
@@ -80,7 +81,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -93,7 +94,7 @@ class ThreadFilterTest {
     void t3() throws InterruptedException {
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(null, "123123", new Authentication("test", "test")));
+        expected.setPayload(new Payload(null, "123123", new Authentication("test", "test", "test")));
 
         // when
         broker.publish(expected);
@@ -101,7 +102,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -122,7 +123,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -144,7 +145,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -166,7 +167,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -188,7 +189,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -210,7 +211,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -232,7 +233,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -254,7 +255,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -276,7 +277,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -298,7 +299,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -320,7 +321,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);
@@ -342,7 +343,7 @@ class ThreadFilterTest {
         Object actual = broker.subscribe(InternalDataType.OUTBOUND);
         InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
         Object object = actualAfter.getPayload().getData();
-        ErrorDto errorDto = (ErrorDto) object;
+        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
         assertThat(actual).isInstanceOf(InternalDataOutBound.class);

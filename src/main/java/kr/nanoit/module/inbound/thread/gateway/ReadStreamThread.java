@@ -2,6 +2,7 @@ package kr.nanoit.module.inbound.thread.gateway;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.xml.internal.bind.v2.TODO;
 import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.MetaData;
 import kr.nanoit.domain.payload.Payload;
@@ -18,15 +19,14 @@ public class ReadStreamThread implements Runnable {
     private final Consumer<String> cleaner;
     private final Broker broker;
     private final BufferedReader bufferedReader;
-    private final ObjectMapper objectMapper;
     private final String uuid;
+
 
     public ReadStreamThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid) {
         this.cleaner = cleaner;
         this.broker = broker;
         this.bufferedReader = bufferedReader;
         this.uuid = uuid;
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -35,26 +35,40 @@ public class ReadStreamThread implements Runnable {
         try {
             int count = 0;
             boolean getAuth = false;
+            long start = System.currentTimeMillis();
+
+            /*
+            타임아웃 변수 만들어서 if 조건에 추가하기 -> ex) 60초 동안 메시지가 전달되지 않으면 바로 cleaner 호출
+            */
+
             while (true) {
+                String payload = bufferedReader.readLine();
+                // inputStream 은 데이터를 받기 전까지 blocking 상태
+
+
+                //TODO 해당 로직 대폭 수정해야함
+
                 if (count == 0) {
-                    Payload payload = objectMapper.readValue(bufferedReader.readLine(), Payload.class);
-                    if (payload.getType() == PayloadType.AUTHENTICATION) {
-                        String readData = bufferedReader.readLine();
+                    if (payload.contains(PayloadType.AUTHENTICATION.toString())) {
                         //  log.info("[SERVER : SOCKET : {}] READ DATA => [LENGTH = {} PAYLOAD = {}]", uuid.substring(0, 7), readData.length(), readData);
-                        broker.publish(new InternalDataMapper(new MetaData(uuid), readData));
+                        broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
                         getAuth = true;
                     } else if (getAuth == false) {
-                        log.warn("NOT AUTHENTICATION SEND");
+                        log.warn("[@SOCKET:READ:{}@] NOT AUTHENTICATION SEND", uuid);
                         throw new Throwable();
                     }
+                } else {
+                    log.warn("[@SOCKET:READ:{}@] Timeout to get Authentication", uuid);
+                    throw new Throwable();
                 }
-                String readData = bufferedReader.readLine();
                 //  log.info("[SERVER : SOCKET : {}] READ DATA => [LENGTH = {} PAYLOAD = {}]", uuid.substring(0, 7), readData.length(), readData);
-                broker.publish(new InternalDataMapper(new MetaData(uuid), readData));
+                broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
                 //  log.info("[SERVER : SOCKET : {}] TO MAPPER => {}", uuid.substring(0, 7), readData);
                 count++;
             }
-        } catch (Throwable e) {
+
+        } catch (
+                Throwable e) {
             log.info("[@SOCKET:READ:{}@] terminating...", uuid);
             cleaner.accept(this.getClass().getName());
         }

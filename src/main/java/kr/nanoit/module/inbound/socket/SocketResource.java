@@ -14,7 +14,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Slf4j
 @Data
 
-// 접속된 클라이언트어ㅣ 1:1 생성
 public class SocketResource {
     private final String uuid;
     private final Socket socket;
@@ -31,11 +30,12 @@ public class SocketResource {
         this.socket = socket;
         this.broker = broker;
         this.writeBuffer = new LinkedBlockingQueue<>();
-
         this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, new BufferedReader(new InputStreamReader(socket.getInputStream())), uuid));
         readStreamThread.setName(uuid + "-read");
         this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer));
         writeStreamThread.setName(uuid + "-write");
+
+        socket.setSoTimeout(60000);
     }
 
     public void serve() {

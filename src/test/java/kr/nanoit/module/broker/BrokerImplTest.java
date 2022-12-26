@@ -231,22 +231,9 @@ class BrokerImplTest {
 
     }
 
-    @DisplayName("outBound : parameter payload 에 공백이 있을 경우 false 여야 함")
-    @Test
-    void t15() {
-        // given
-        Broker broker = spy(new BrokerImpl(socketManager));
-
-        // when
-        boolean expected = broker.outBound(UUID.randomUUID().toString(), " dd");
-
-        // then
-        assertThat(expected).isFalse();
-    }
-
     @DisplayName("getInternalDataInBrokerMap : 임의의 InternalDataType 클래스를 넣은 횟수와 brokerQueue 의 사이즈가 같아야 함")
     @Test
-    void t16() {
+    void t15() {
         // given
         Broker broker = spy(new BrokerImpl(socketManager));
         InternalDataSender internalDataSender = mock(InternalDataSender.class);

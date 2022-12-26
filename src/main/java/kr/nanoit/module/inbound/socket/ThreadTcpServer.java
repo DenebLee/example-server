@@ -39,17 +39,11 @@ public class ThreadTcpServer extends ModuleProcess {
             }
         } catch (ConnectException e) {
             log.error("[TCPSERVER : SOCKET : {}]  ERROR WHILE CONNECT = {}  ", uuid, e.getMessage());
-            this.tryToReconnect();
         } catch (SocketTimeoutException e) {
             log.error("[TCPSERVER : SOCKET : {}]  CONNECTION = {} ", uuid, e.getMessage());
-            this.tryToReconnect();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void tryToReconnect() {
-        System.out.println("retry !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
     @Override

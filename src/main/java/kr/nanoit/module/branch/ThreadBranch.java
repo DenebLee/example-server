@@ -1,6 +1,7 @@
 package kr.nanoit.module.branch;
 
 import kr.nanoit.abst.ModuleProcess;
+import kr.nanoit.db.auth.MessageService;
 import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataSender;
@@ -14,10 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ThreadBranch extends ModuleProcess {
 
     private final Auth auth;
+    private final MessageService authService;
 
-    public ThreadBranch(Broker broker, String uuid) {
+    public ThreadBranch(Broker broker, String uuid, MessageService authService) {
         super(broker, uuid);
-        this.auth = new Auth();
+        this.auth = new Auth(broker);
+        this.authService = authService;
     }
 
     @Override
@@ -34,7 +37,8 @@ public class ThreadBranch extends ModuleProcess {
 
                     switch (payloadType) {
                         case AUTHENTICATION:
-                            auth.verificationAccount(internalDataBranch, broker);
+                            auth.verificationAccount(internalDataBranch, authService);
+                            log.info("[BRANCH]   AUTHENTICATION DATA TO AUTH => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
                             break;
                         case SEND:
                             if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {

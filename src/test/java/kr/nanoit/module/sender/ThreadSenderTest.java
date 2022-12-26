@@ -55,21 +55,10 @@ class ThreadSenderTest {
     @Test
     void t1() throws InterruptedException {
         // given
-        InternalDataSender expected = new InternalDataSender();
-        expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "053-333-5555", "테스트중")));
 
         // when
-        broker.publish(expected);
-        Thread.sleep(1000L);
-        Object actual = broker.subscribe(InternalDataType.CARRIER);
 
         // then
-        assertThat(actual).isInstanceOf(InternalDataCarrier.class);
-        assertThat(((InternalDataCarrier) actual).getMetaData()).isEqualTo(expected.getMetaData());
-        assertThat(((InternalDataCarrier) actual).getPayload().getType()).isEqualTo(expected.getPayload().getType());
-        assertThat(((InternalDataCarrier) actual).getPayload().getMessageUuid()).isEqualTo(expected.getPayload().getMessageUuid());
-        assertThat(((InternalDataCarrier) actual).getPayload().getData()).isEqualTo(expected.getPayload().getData());
     }
 
     @DisplayName("")

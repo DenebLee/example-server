@@ -9,11 +9,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 
 class ReadStreamThreadTest {
     private SocketResource socketResource;
@@ -22,7 +23,7 @@ class ReadStreamThreadTest {
     private final int port;
     private final TestClient client;
 
-    ReadStreamThreadTest() throws IOException {
+    ReadStreamThreadTest() {
         this.broker = mock(Broker.class);
         this.port = 55335;
         this.client = new TestClient();
@@ -33,9 +34,7 @@ class ReadStreamThreadTest {
     void setUp() throws IOException {
         this.socket = spy(new Socket());
         client.connect(this.port);
-
         this.socketResource = new SocketResource(this.socket, broker);
-
     }
 
     @AfterEach
@@ -52,9 +51,11 @@ class ReadStreamThreadTest {
 
         // when
         client.write(data, 1);
+        // authentication 아닌 다른것 한번 전송
 
         // then
         socketResource.isTerminated();
+
     }
 
     @DisplayName("")

@@ -36,7 +36,8 @@ class ThreadOutBoundTest {
     @BeforeEach
     void setUp() {
         this.uuid = UUID.randomUUID().toString().substring(0, 7);
-        this.broker = spy(new BrokerImpl(socketManager));
+        this.socketManager = spy(new SocketManager());
+        this.broker = spy(new BrokerImpl(this.socketManager));
         this.threadOutBound = spy(new ThreadOutBound(broker, uuid));
         this.outBoundThread = spy(new Thread(threadOutBound));
         this.outBoundThread.start();
@@ -60,10 +61,7 @@ class ThreadOutBoundTest {
         Thread.sleep(1000L);
 
         // then
-        // Outbound Thread run 메소드 broker.subscribe 를 통해 outbound InternalData 를 가져온 다음 broker.outbound 를 통해 다시 socketResource
-        // 에서 관리하는 writeThread 로 보냄
 
-        System.out.println(broker.getOutBoundQueueSize(uuid));
     }
 
     @DisplayName("")
