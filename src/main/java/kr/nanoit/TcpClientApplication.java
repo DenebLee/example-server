@@ -1,7 +1,5 @@
 package kr.nanoit;
 
-import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;

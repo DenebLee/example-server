@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Accessors(chain = true)
+
 public class Send {
     private long agent_id;
     private Timestamp send_time;

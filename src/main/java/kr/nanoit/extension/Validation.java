@@ -15,13 +15,13 @@ public class Validation {
 
     public boolean verificationSendData(InternalDataFilter internalDataFilter) {
         Send send = objectMapper.convertValue(internalDataFilter.getPayload().getData(), Send.class);
-        if (send.getId() == 0 || send.getId() < 0) {
+        if (send.getAgent_id() == 0 || send.getAgent_id() < 0) {
             return false;
         }
-        if (!isPhoneNum(send.getPhone()) || send.getPhone() == null || send.getPhone().contains(" ") || send.getPhone().equals("")) {
+        if (!isPhoneNum(send.getSender_num()) || send.getSender_num() == null || send.getSender_num().contains(" ") || send.getSender_num().equals("")) {
             return false;
         }
-        if (!isCallBackByPhone(send.getCallback()) && isCallBackByRegularTelephoneNum(send.getCallback()) || send.getCallback() == null || send.getCallback().contains(" ") || send.getCallback().equals("")) {
+        if (!isCallBackByPhone(send.getSender_callback()) && isCallBackByRegularTelephoneNum(send.getSender_callback()) || send.getSender_callback() == null || send.getSender_callback().contains(" ") || send.getSender_callback().equals("")) {
             return false;
         }
         if (send.getContent() == null || send.getContent().equals("")) {

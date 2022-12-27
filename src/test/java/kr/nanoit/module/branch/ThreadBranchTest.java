@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.sql.Timestamp;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,7 +61,7 @@ class ThreadBranchTest {
         // given
         InternalDataBranch expected = new InternalDataBranch();
         expected.setMetaData(new MetaData(randomString(5)));
-        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, randomString(10), randomString(10), randomString(10)))));
+        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-335-5353", "이정섭", "테스트"))));
 
         // when
         broker.publish(expected);
@@ -78,7 +79,7 @@ class ThreadBranchTest {
         // given
         InternalDataBranch expected = new InternalDataBranch();
         expected.setMetaData(new MetaData(randomString(5)));
-        expected.setPayload(new Payload(PayloadType.REPORT_ACK, randomString(4), objectMapper.writeValueAsString(new Send(1, randomString(10), randomString(10), randomString(10)))));
+        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-335-5353", "이정섭", "테스트"))));
 
         // when
         broker.publish(expected);
@@ -96,7 +97,7 @@ class ThreadBranchTest {
         // given
         InternalDataBranch expected = new InternalDataBranch();
         expected.setMetaData(new MetaData(randomString(5)));
-        expected.setPayload(new Payload(PayloadType.ALIVE, randomString(4), objectMapper.writeValueAsString(new Send(1, randomString(10), randomString(10), randomString(10)))));
+        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-335-5353", "이정섭", "테스트"))));
 
         // when
         broker.publish(expected);

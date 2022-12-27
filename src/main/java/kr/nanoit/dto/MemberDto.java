@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @ToString
 @Accessors(chain = true)
 
-public class UserDto {
+public class MemberDto {
     private long id;
     private String username;
     private String password;

@@ -1,6 +1,7 @@
 package kr.nanoit.domain.entity;
 
 
+import kr.nanoit.dto.AgentDto;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -13,10 +14,14 @@ import java.sql.Timestamp;
 
 
 public class AgentEntity {
-    private long agent_id;
-    private long memeber_id;
+    private long id;
+    private long member_id;
     private long access_list_id;
     private String status;
     private Timestamp created_at;
     private Timestamp last_modified_at;
+
+    public AgentDto toDto() {
+        return new AgentDto(id, member_id, access_list_id, status, created_at, last_modified_at);
+    }
 }

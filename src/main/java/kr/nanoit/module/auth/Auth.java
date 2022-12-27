@@ -7,7 +7,7 @@ import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.payload.*;
-import kr.nanoit.dto.UserDto;
+import kr.nanoit.dto.MemberDto;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
@@ -30,7 +30,7 @@ public class Auth {
             Payload payload = internalDataBranch.getPayload();
             Authentication authentication = objectMapper.convertValue(payload.getData(), Authentication.class);
 
-            UserDto userinfo = messageService.findUser(authentication.getUsername()).toDto();
+            MemberDto userinfo = messageService.findUser(authentication.getUsername()).toDto();
             if (userinfo == null) {
                 BadSend("Failed to Authentication", internalDataBranch);
             }
@@ -40,7 +40,7 @@ public class Auth {
 
                     if (messageService.isValidAccess(agentEntity.getAccess_list_id()) != false) {
 
-                        if (messageService.updateAgentStatus(agentEntity.getAgent_id(), "CONNECTED") != false) {
+                        if (messageService.updateAgentStatus(agentEntity.getId(), agentEntity.getMember_id(), "CONNECTED") != false) {
                             broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(authentication.getAgent_id(), "Connect Success"))));
                         } else {
                             BadSend("Server Error", internalDataBranch);
@@ -60,9 +60,6 @@ public class Auth {
         }
     }
 
-    private String bcryptPassword(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt());
-    }
 
     private boolean isMatchedPw(String providedPassword, String comparePassword) {
         return BCrypt.checkpw(providedPassword, comparePassword);
@@ -72,5 +69,9 @@ public class Auth {
         if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
             log.warn("[AUTH] key={} {}}", internalDataBranch.getMetaData().getSocketUuid(), reason);
         }
+    }
+
+    private String bcryptPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 }

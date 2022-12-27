@@ -4,9 +4,13 @@ import kr.nanoit.db.PostgreSqlDbcp;
 import kr.nanoit.db.query.MessageServicePostgreSqlQuerys;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
-import kr.nanoit.dto.UserDto;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+
 
 public class MessageServiceImpl implements MessageService {
     private final PostgreSqlDbcp dbcp;
@@ -27,7 +31,7 @@ public class MessageServiceImpl implements MessageService {
                     user.setUsername(resultSet.getString("username"));
                     user.setPassword(resultSet.getString("password"));
                     user.setEamil(resultSet.getString("email"));
-                    user.setCreated_at(resultSet.getTimestamp("create_at"));
+                    user.setCreated_at(resultSet.getTimestamp("created_at"));
                     user.setLast_modified_at(resultSet.getTimestamp("last_modified_at"));
                     return user;
                 }
@@ -40,9 +44,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean saveUser(UserDto userDto) throws SQLException {
+    public boolean insertUser(MemberEntity memberEntity) throws SQLException {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertUser(userDto));
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertUser(memberEntity));
             int result = preparedStatement.executeUpdate();
             if (result == 1) {
                 return true;
@@ -59,15 +63,15 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public AgentEntity findAgent(long agentId) {
+    public AgentEntity findAgent(long id) {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findAgent(agentId));
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findAgent(id));
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet != null) {
                 while (resultSet.next()) {
                     AgentEntity agentEntity = new AgentEntity();
-                    agentEntity.setAgent_id(resultSet.getLong("id"));
-                    agentEntity.setMemeber_id(resultSet.getLong("member_id"));
+                    agentEntity.setId(resultSet.getLong("id"));
+                    agentEntity.setMember_id(resultSet.getLong("member_id"));
                     agentEntity.setAccess_list_id(resultSet.getLong("access_list_id"));
                     agentEntity.setStatus(resultSet.getString("status"));
                     agentEntity.setCreated_at(resultSet.getTimestamp("created_at"));
@@ -83,9 +87,25 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean updateAgentStatus(long memeberId, String status) {
+    public boolean insertAgent(AgentEntity agentEntity) {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateAgentStatus(memeberId, status));
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertAgent(agentEntity));
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            } else if (result == 0) {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateAgentStatus(long id, long memeberId, String status) {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateAgentStatus(id, memeberId, status));
             if (preparedStatement.executeUpdate() == 1) {
                 return true;
             }

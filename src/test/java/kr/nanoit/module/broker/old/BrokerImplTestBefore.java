@@ -15,6 +15,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingExcept
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +33,7 @@ class BrokerImplTestBefore {
         socketManager = mock(SocketManager.class);
         broker = new BrokerImpl(socketManager);
         objectMapper = new ObjectMapper();
-        payload = objectMapper.writeValueAsString(new Payload(PayloadType.AUTHENTICATION, randomString(10), objectMapper.writeValueAsString(new Authentication(randomString(10), randomString(10), randomString(10)))));
+        payload = objectMapper.writeValueAsString(new Payload(PayloadType.AUTHENTICATION, randomString(10), objectMapper.writeValueAsString(new Authentication(1, randomString(10), randomString(10), randomString(10)))));
     }
 
     @AfterEach
@@ -114,7 +115,7 @@ class BrokerImplTestBefore {
         // given
         InternalDataSender expected = new InternalDataSender();
         expected.setMetaData(new MetaData(randomString(4)));
-        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, randomString(10), randomString(10), randomString(10)))));
+        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, new Timestamp(System.currentTimeMillis()), "919-4242-4444", "042-555-4444", "이정섭", randomString(10)))));
 
         // when
         broker.publish(expected);
