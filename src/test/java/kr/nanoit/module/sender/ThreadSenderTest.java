@@ -61,31 +61,31 @@ class ThreadSenderTest {
         // then
     }
 
-    @DisplayName("")
-    @Test
-    void t2() throws InterruptedException {
-        // given , when , then
-        doThrow(InterruptedException.class).when(threadSender).run();
-        Thread.sleep(1000L);
-        verify(threadSender, atLeastOnce()).shoutDown();
-    }
+//    @DisplayName("")
+//    @Test
+//    void t2() throws InterruptedException {
+//        // given , when , then
+//        doThrow(InterruptedException.class).when(threadSender).run();
+//        Thread.sleep(1000L);
+//        verify(threadSender, atLeastOnce()).shoutDown();
+//    }
 
-    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료 되어야 함")
-    @Test
-    void t3() throws InterruptedException {
-        // given
-        Thread.State actual = senderThread.getState();
-
-        threadSender.shoutDown();
-
-        // when
-        Thread.sleep(2000);
-        Thread.State expected = senderThread.getState();
-
-        // then
-        assertThat(actual).isEqualTo(Thread.State.RUNNABLE);
-        assertThat(expected).isEqualTo(Thread.State.TERMINATED);
-    }
+//    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료 되어야 함")
+//    @Test
+//    void t3() throws InterruptedException {
+//        // given
+//        Thread.State actual = senderThread.getState();
+//
+//        threadSender.shoutDown();
+//
+//        // when
+//        Thread.sleep(2000);
+//        Thread.State expected = senderThread.getState();
+//
+//        // then
+//        assertThat(actual).isEqualTo(Thread.State.RUNNABLE);
+//        assertThat(expected).isEqualTo(Thread.State.TERMINATED);
+//    }
 
 //    @DisplayName("")
 //    @Test

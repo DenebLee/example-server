@@ -8,6 +8,7 @@ import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.domain.payload.Send;
 import kr.nanoit.extension.Validation;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
@@ -57,9 +58,6 @@ public class ThreadFilter extends ModuleProcess {
                                 publishBadRequest(internalDataFilter, "Invalid Report_ack value");
                             }
                             break;
-                            /*
-                            여기에서 Authentication 유효성 검사를 해야 하나?
-                             */
 
                         case ALIVE:
                             if (!validation.verificationAliveData(internalDataFilter)) {

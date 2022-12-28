@@ -21,7 +21,10 @@ public class Validation {
         if (!isPhoneNum(send.getSender_num()) || send.getSender_num() == null || send.getSender_num().contains(" ") || send.getSender_num().equals("")) {
             return false;
         }
-        if (!isCallBackByPhone(send.getSender_callback()) && isCallBackByRegularTelephoneNum(send.getSender_callback()) || send.getSender_callback() == null || send.getSender_callback().contains(" ") || send.getSender_callback().equals("")) {
+        if (!isCallBackByPhone(send.getSender_callback()) || send.getSender_callback() == null || send.getSender_callback().contains(" ") || send.getSender_callback().equals("")) {
+            return false;
+        }
+        if (send.getSender_name() == null || send.getSender_name().contains("") || send.getSender_num().contains(" ") || send.getSender_num().length() > 8) {
             return false;
         }
         if (send.getContent() == null || send.getContent().equals("")) {
@@ -29,7 +32,7 @@ public class Validation {
         }
         return true;
     }
-    
+
     // 기능 구현전
 
     public boolean verificationAliveData(InternalDataFilter internalDataFilter) {
@@ -41,14 +44,10 @@ public class Validation {
     }
 
     private boolean isPhoneNum(String num) {
-        return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", num);
+        return Pattern.matches("^\\d{3} - \\d{4} - \\d{4}$", num) || Pattern.matches("^\\d{3}\\d{4}\\d{4}$", num);
     }
 
     private boolean isCallBackByPhone(String str) {
-        return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", str);
-    }
-
-    private boolean isCallBackByRegularTelephoneNum(String str) {
-        return Pattern.matches("^\\d{2,3} - \\d{3,4} - \\d{4}$", str);
+        return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", str) || Pattern.matches("^\\d{2,3} - \\d{3,4} - \\d{4}$", str);
     }
 }

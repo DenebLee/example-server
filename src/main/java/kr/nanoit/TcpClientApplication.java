@@ -12,18 +12,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClientApplication {
 
-    public static final int TOTAL_COUNT = 6000;
+    public static final int TOTAL_COUNT = 300;
     private static final AtomicInteger readCounter = new AtomicInteger(0);
     private static final AtomicInteger writeCounter = new AtomicInteger(0);
 
     public static void main(String[] args) {
-        try {
-            String data = "{\"type\": \"SEND\",\"messageUuid\": \"test01\",\"data\": " +
-                    "{\"id\": 123123, \"phone\": \"01044445555\", \"callback\": \"053555444\", " +
-                    "\"content\": \" 안녕하세요\"}}" + "\r\n";
 
-            String authData = "{\"type\": \"AUTHENTICATION\",\"messageUuid\": \"1\",\"data\": {\"username\":\"이\", \"password\": \"123123\", \"email\": \"test@test.com\"}}" + "\r\n";
+        try {
+            String data = "{\"type\": \"SEND\",\"messageUuid\": \"1\",\"data\": " +
+                    "{\"agent_id\": 1, \"sender_num\": \"01044445555\", \"sender_callback\": \"053555444\", \"sender_name\": \"이정섭\"," +
+                    "\"content\": \" 테스트중\"}}" + "\r\n";
+
+            String authData = "{\"type\": \"AUTHENTICATION\",\"messageUuid\": \"1\",\"data\": {\"agent_id\":\"2\",\"username\":\"이정섭\", \"password\": \"이정섭\", \"email\": \"test@test.com\"}}" + "\r\n";
             byte[] payload = authData.getBytes(StandardCharsets.UTF_8);
+            byte[] payload1 = data.getBytes(StandardCharsets.UTF_8);
+
             Socket socket = new Socket();
             socket.connect(new InetSocketAddress("localhost", 12323));
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -47,10 +50,14 @@ public class TcpClientApplication {
             Thread writeThread = new Thread(() -> {
                 for (int i = 0; i < TOTAL_COUNT; i++) {
                     try {
-                        dataOutputStream.write(payload);
-                        writeCounter.incrementAndGet();
-                        Thread.sleep(100000);
-                    } catch (IOException | InterruptedException e) {
+                        if (i == 0) {
+                            dataOutputStream.write(payload);
+                            writeCounter.incrementAndGet();
+                        } else if (i > 0) {
+                            dataOutputStream.write(payload1);
+                            writeCounter.incrementAndGet();
+                        }
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -62,7 +69,6 @@ public class TcpClientApplication {
             Thread readThread = new Thread(() -> {
                 for (int i = 0; i < TOTAL_COUNT; i++) {
                     try {
-                        Thread.sleep(1000);
                         String readPayload = bufferedReader.readLine();
                         System.out.println(readPayload);
                         if (readPayload == null) {
@@ -70,7 +76,7 @@ public class TcpClientApplication {
                         } else {
                             readCounter.incrementAndGet();
                         }
-                    } catch (IOException | InterruptedException e) {
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }

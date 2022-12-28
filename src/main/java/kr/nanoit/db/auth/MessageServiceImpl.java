@@ -3,13 +3,12 @@ package kr.nanoit.db.auth;
 import kr.nanoit.db.PostgreSqlDbcp;
 import kr.nanoit.db.query.MessageServicePostgreSqlQuerys;
 import kr.nanoit.domain.entity.AgentEntity;
+import kr.nanoit.domain.entity.ClientMessageEntity;
+import kr.nanoit.domain.entity.CompanyMessageEntity;
 import kr.nanoit.domain.entity.MemberEntity;
+import kr.nanoit.domain.payload.PayloadType;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import java.sql.*;
 
 
 public class MessageServiceImpl implements MessageService {
@@ -103,9 +102,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean updateAgentStatus(long id, long memeberId, String status) {
+    public boolean updateAgentStatus(long id, long memeberId, String status, Timestamp updateTime) {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateAgentStatus(id, memeberId, status));
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateAgentStatus(id, memeberId, status, updateTime));
             if (preparedStatement.executeUpdate() == 1) {
                 return true;
             }
@@ -123,5 +122,116 @@ public class MessageServiceImpl implements MessageService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public ClientMessageEntity findClientMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findCompanyMessage());
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet != null) {
+                while (resultSet.next()) {
+                    ClientMessageEntity clientMessageEntity = new ClientMessageEntity();
+                    clientMessageEntity.setId(resultSet.getLong("id"));
+                    clientMessageEntity.setAgent_id(resultSet.getLong("agent_id"));
+                    clientMessageEntity.setType(PayloadType.valueOf(resultSet.getString("type")));
+                    clientMessageEntity.setSend_time(resultSet.getTimestamp("send_time"));
+                    clientMessageEntity.setSender_num(resultSet.getString("sender_name"));
+                    clientMessageEntity.setSender_name(resultSet.getString("sender_name"));
+                    clientMessageEntity.setSender_callback(resultSet.getString("sender_callback"));
+                    clientMessageEntity.setReceive_time(resultSet.getTimestamp("receive_time"));
+                    clientMessageEntity.setContent(resultSet.getString("content"));
+                    clientMessageEntity.setCreated_at(resultSet.getTimestamp("created_at"));
+                    clientMessageEntity.setLast_modified_at(resultSet.getTimestamp("last_modified_at"));
+                    return clientMessageEntity;
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean deleteClientMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteClientMessage());
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean updateClientMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteClientMessage());
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean insertClientMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteClientMessage());
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public CompanyMessageEntity findCompanyMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findClientMessage());
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean deleteCompanyMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateCompanyMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean insertCompanyMessage() {
+        try (Connection connection = dbcp.getConnection()) {
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 }

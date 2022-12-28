@@ -36,6 +36,13 @@ class MessageServiceImplTest {
     @BeforeEach
     void setUp() throws ClassNotFoundException {
         dbcp = new PostgreSqlDbcp(getDataBaseConfig());
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("DROP TABLE IF EXISTS member,agent, message_type,message_status,access_list,agent_status");
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @DisplayName("memebr 테이블이 만들어져야 한다")
@@ -241,7 +248,7 @@ class MessageServiceImplTest {
         boolean insertData = messageService.insertAgent(expected);
 
         // when
-        messageService.updateAgentStatus(2, 1, "UNCONNECTED");
+        messageService.updateAgentStatus(2, 1, "UNCONNECTED", new Timestamp(System.currentTimeMillis()));
         String actual = messageService.findAgent(2).getStatus();
 
         // then
@@ -263,7 +270,7 @@ class MessageServiceImplTest {
         // when
         boolean insertDataResult = messageService.insertAgent(expected);
 
-        // then
+        // then2
         assertThat(insertDataResult).isTrue();
         assertThat(messageService.findAgent(expected.getId())).usingRecursiveComparison().isEqualTo(expected);
     }
@@ -279,7 +286,7 @@ class MessageServiceImplTest {
             MessageService messageService = new MessageServiceImpl(dbcp);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-            MemberEntity memberData = new MemberEntity(23, "이정섭", "123123", "test@test.com", timestamp, timestamp);
+            MemberEntity memberData = new MemberEntity(23, "양선호", "123123", "test@test.com", timestamp, timestamp);
             AgentEntity agentData = new AgentEntity(11, 3, 1, "CONNECTED", timestamp, timestamp);
 
             messageService.insertUser(memberData);
@@ -304,13 +311,13 @@ class MessageServiceImplTest {
                 MessageService messageService = new MessageServiceImpl(dbcp);
 
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                AgentEntity expected = new AgentEntity(10, 1, 2, "CONNECTED", timestamp, timestamp);
+                AgentEntity expected = new AgentEntity(10, 1, 5, "CONNECTED", timestamp, timestamp);
 
                 preparedStatement.executeUpdate();
                 messageService.insertAgent(expected);
             }).isInstanceOf(RuntimeException.class)
                     .hasMessage("org.postgresql.util.PSQLException: ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_access_list_id_fkey\"\n" +
-                            "  Detail: Key (access_list_id)=(2) is not present in table \"access_list\".");
+                            "  Detail: Key (access_list_id)=(5) is not present in table \"access_list\".");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -318,7 +325,7 @@ class MessageServiceImplTest {
 
     @DisplayName("agent => agent_status에 등록되어 있는 상태 외 상태값을 넣었을 경우 RuntimeException이 발생")
     @Test
-    void t14() throws SQLException {
+    void t14() {
         assertThatThrownBy(() -> {
             createTable(CreateTable.createAgentStatusTable);
             createTable(CreateTable.createAgentTable);
@@ -364,7 +371,7 @@ class MessageServiceImplTest {
         }
     }
 
-    @DisplayName("")
+    @DisplayName("client_message => id값으로 select된 ClientMessae가 있을 경우 ClientMessage")
     @Test
     void t16() {
 

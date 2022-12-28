@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 
 
 public class ClientMessageEntity {
+    private long id;
     private long agent_id;
     private PayloadType type;
     private MessageStatus status;

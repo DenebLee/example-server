@@ -55,7 +55,7 @@ class ThreadBranchTest {
         branchThread.interrupt();
     }
 
-    @DisplayName("payloadType -> SEND : sender 로 변환 후 publish 해야 한다")
+    @DisplayName("payloadType -> SEND : Send_ACK 로 변환 후 publish 해야 한다")
     @Test
     void t1() throws JsonProcessingException, InterruptedException {
         // given
@@ -75,55 +75,18 @@ class ThreadBranchTest {
 
     @DisplayName("payloadType -> REPORT_ACK : outbound 로 변환 후 publish 해야 한다")
     @Test
-    void t2() throws JsonProcessingException, InterruptedException {
+    void t2() {
         // given
-        InternalDataBranch expected = new InternalDataBranch();
-        expected.setMetaData(new MetaData(randomString(5)));
-        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-335-5353", "이정섭", "테스트"))));
-
         // when
-        broker.publish(expected);
-        Thread.sleep(1000);
-        Object actual = broker.subscribe(InternalDataType.OUTBOUND);
-
         // then
-        assertThat(actual).isExactlyInstanceOf(InternalDataOutBound.class);
-        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @DisplayName("payloadType -> ALIVE : outbound 로 변환 후 publish 해야 한다")
     @Test
-    void t3() throws InterruptedException, JsonProcessingException {
+    void t3() {
         // given
-        InternalDataBranch expected = new InternalDataBranch();
-        expected.setMetaData(new MetaData(randomString(5)));
-        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-335-5353", "이정섭", "테스트"))));
-
         // when
-        broker.publish(expected);
-        Thread.sleep(1000);
-        Object actual = broker.subscribe(InternalDataType.OUTBOUND);
-
         // then
-        assertThat(actual).isExactlyInstanceOf(InternalDataOutBound.class);
-        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
-    }
-
-    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료")
-    @Test
-    void t4() throws InterruptedException {
-        // given
-        Thread.State actual = branchThread.getState();
-
-        threadBranch.shoutDown();
-
-        // when
-        Thread.sleep(2000);
-        Thread.State expected = branchThread.getState();
-
-        // then
-        assertThat(actual).isEqualTo(Thread.State.RUNNABLE);
-        assertThat(expected).isEqualTo(Thread.State.TERMINATED);
     }
 
     public String randomString(int targetLength) {

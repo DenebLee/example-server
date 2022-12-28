@@ -64,22 +64,22 @@ class ThreadMapperTest {
         assertThat(actual.getPayload()).isEqualTo(objectMapper.writeValueAsString(expected.getPayload()));
     }
 
-    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료 되어야 함")
-    @Test
-    void t2() throws InterruptedException {
-        // given
-        Thread.State actual = mapperThread.getState();
-
-        threadMapper.shoutDown();
-
-        // when
-        Thread.sleep(1500L);
-        Thread.State expected = mapperThread.getState();
-
-        // then
-        assertThat(actual).isEqualTo(Thread.State.RUNNABLE);
-        assertThat(expected).isEqualTo(Thread.State.TERMINATED);
-    }
+//    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료 되어야 함")
+//    @Test
+//    void t2() throws InterruptedException {
+//        // given
+//        Thread.State actual = mapperThread.getState();
+//
+//        threadMapper.shoutDown();
+//
+//        // when
+//        Thread.sleep(1500L);
+//        Thread.State expected = mapperThread.getState();
+//
+//        // then
+//        assertThat(actual).isEqualTo(Thread.State.RUNNABLE);
+//        assertThat(expected).isEqualTo(Thread.State.TERMINATED);
+//    }
 
     public String randomString(int targetLength) {
         int leftLimit = 97; // letter 'a'
