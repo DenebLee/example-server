@@ -70,4 +70,32 @@ public final class MessageServicePostgreSqlQuerys {
     public static String insertCompanyMessage() {
         return null;
     }
+
+
+    // Access_list
+    public static String insertAccessList(long id, String address) {
+        return "INSERT INTO access_list(id,address) VALUES ('" + id + "', '" + address + "') ";
+    }
+
+    public static String updateAccessList(long id, long replaceId) {
+        return "UPDATE access_list SET id = '" + replaceId + "'  WHERE id = '" + id + "' ";
+    }
+
+
+    // Agent_status
+    public static String insertAgentStatus(String status1, String status2) {
+        return "INSERT INTO agent_status (status) VALUES ('" + status1 + "'),('" + status2 + "') ";
+    }
+
+
+    // Message_type
+    public static String insertMessageType(String type) {
+        return "INSERT INTO message_type (type) VALUES ('" + type + "') ";
+    }
+
+
+    // Message_status
+    public static String insertMessageStatus(String status1, String status2) {
+        return "INSERT INTO message_status (status) VALUES ('" + status1 + "'),('" + status2 + "')";
+    }
 }

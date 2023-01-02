@@ -6,6 +6,11 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -30,5 +35,16 @@ public class PostgreSqlDbcp {
         ObjectPool<PoolableConnection> connectionObjectPool = new GenericObjectPool<>(poolableConnectionFactory);
         poolableConnectionFactory.setPool(connectionObjectPool);
         return new PoolingDataSource<>(connectionObjectPool);
+    }
+
+    public void initSchema() throws URISyntaxException, IOException {
+        byte[] bytes = Files.readAllBytes(Paths.get(this.getClass().getResource("/schema.sql").toURI()));
+        String schema = new String(bytes);
+
+        try (Connection connection = getConnection()) {
+            connection.createStatement().execute(schema);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -12,6 +12,7 @@ import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.filter.ThreadFilter;
 import kr.nanoit.module.inbound.socket.SocketManager;
 import kr.nanoit.module.inbound.socket.ThreadTcpServer;
+import kr.nanoit.module.inbound.socket.UserManager;
 import kr.nanoit.module.mapper.ThreadMapper;
 import kr.nanoit.module.outbound.ThreadOutBound;
 import kr.nanoit.module.sender.ThreadSender;
@@ -24,32 +25,37 @@ import java.util.UUID;
 public class TcpServerApplicationAfter {
     public static int port = 12323;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException {
 
         SocketManager socketManager = new SocketManager();
+        UserManager userManager = new UserManager(socketManager);
         Broker broker = new BrokerImpl(socketManager);
         DataBaseConfig dataBaseConfig = new DataBaseConfig()
-                .setIp("192.168.0.64")
+                .setIp("localhost")
                 .setPort(5432)
-                .setDatabaseName("lee")
-                .setUsername("lee")
+                .setDatabaseName("test")
+                .setUsername("test")
                 .setPassword("lee");
         PostgreSqlDbcp dbcp = new PostgreSqlDbcp(dataBaseConfig);
-        MessageService authService = MessageService.createPostgreSqL(dbcp);
+        MessageService messageService = MessageService.createPostgreSqL(dbcp);
+
 
         new ThreadMapper(broker, getRandomUuid());
         new ThreadFilter(broker, getRandomUuid());
-        new ThreadBranch(broker, getRandomUuid(), authService);
+        new ThreadBranch(broker, getRandomUuid(), messageService, userManager);
         new ThreadSender(broker, getRandomUuid());
         new ThreadOutBound(broker, getRandomUuid());
-        new ThreadTcpServer(socketManager, broker, port, getRandomUuid());
+        new ThreadTcpServer(socketManager, broker, port, getRandomUuid(), userManager);
 
         Thread socketManagerThread = new Thread(socketManager);
+        Thread userManagerThread = new Thread(userManager);
 
         ModuleProcessManagerImpl moduleProcessManagerImpl = ModuleProcess.moduleProcessManagerImpl;
 
         socketManagerThread.setDaemon(true);
+        userManagerThread.setDaemon(true);
         socketManagerThread.start();
+        userManagerThread.start();
 
         System.out.println("");
         System.out.println("==========================================================================================================================================");

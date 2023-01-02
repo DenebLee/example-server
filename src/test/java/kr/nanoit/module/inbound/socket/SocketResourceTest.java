@@ -33,12 +33,14 @@ class SocketResourceTest {
     private Broker broker;
     @Mock
     private Socket socket;
+    @Mock
+    private UserManager userManager;
     @Spy
     private SocketResource socketResource;
 
     @Before
     public void setUp() throws Exception {
-        socketResource = spy(new SocketResource(socket, broker));
+        socketResource = spy(new SocketResource(socket, broker, userManager));
     }
 
     @DisplayName("serve : Read, Write 스레드가 interrupt 되었을 때 Cleaner 가 처리 해야함")

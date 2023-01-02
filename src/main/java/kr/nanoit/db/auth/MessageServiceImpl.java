@@ -7,10 +7,12 @@ import kr.nanoit.domain.entity.ClientMessageEntity;
 import kr.nanoit.domain.entity.CompanyMessageEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.exception.FindFailedException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
 
-
+@Slf4j
 public class MessageServiceImpl implements MessageService {
     private final PostgreSqlDbcp dbcp;
 
@@ -19,7 +21,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public MemberEntity findUser(String username) throws SQLException {
+    public MemberEntity findUser(String username) throws FindFailedException {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findUser(username));
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -37,8 +39,8 @@ public class MessageServiceImpl implements MessageService {
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new SQLException(e.getMessage());
+            log.error("failed to find user", e);
+            throw new FindFailedException("failed to find User");
         }
     }
 
@@ -52,6 +54,9 @@ public class MessageServiceImpl implements MessageService {
             } else if (result == 0) {
                 return false;
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return false;
     }
@@ -62,7 +67,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public AgentEntity findAgent(long id) {
+    public AgentEntity findAgent(long id) throws FindFailedException {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findAgent(id));
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -81,7 +86,7 @@ public class MessageServiceImpl implements MessageService {
             return null;
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new FindFailedException("failed to find Agent");
         }
     }
 
@@ -233,5 +238,80 @@ public class MessageServiceImpl implements MessageService {
             throw new RuntimeException(e);
         }
         return false;
+    }
+
+    @Override
+    public boolean insertAccessList(long id, String address) {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertAccessList(id, address));
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean updateAccessList(long id, long replaceId) {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateAccessList(id, replaceId));
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean insertAgentStatus(String status1, String status2) {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertAgentStatus(status1, status2));
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean insertMessageType(String type) {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertMessageType(type));
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean insertMessageStatus(String status1, String status2) {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertMessageStatus(status1, status2));
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }

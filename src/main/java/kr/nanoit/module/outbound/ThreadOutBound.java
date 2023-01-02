@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.payload.Authentication;
+import kr.nanoit.domain.payload.AuthenticationAck;
+import kr.nanoit.domain.payload.ErrorPayload;
+import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +31,6 @@ ThreadOutBound extends ModuleProcess {
                 Object object = broker.subscribe(InternalDataType.OUTBOUND);
                 if (object != null && object instanceof InternalDataOutBound) {
                     String payload = toJSON(object);
-                    // ACK 들은 각 모듈에서 생성되서 아웃바운드로 넘어오기 때문에 Outbound 에선 그냥 넘겨주는 역활만
                     if (broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload)) {
                     }
                 }

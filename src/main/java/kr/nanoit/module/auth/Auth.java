@@ -1,72 +1,72 @@
 package kr.nanoit.module.auth;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.db.auth.MessageService;
-import kr.nanoit.domain.VO.UserVO;
 import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.entity.AgentEntity;
+import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.MemberDto;
+import kr.nanoit.exception.FindFailedException;
 import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Timestamp;
 
-
 @Slf4j
 public class Auth {
     private final ObjectMapper objectMapper;
     private final Broker broker;
+    private final UserManager userManager;
 
-    public Auth(Broker broker) {
+    public Auth(Broker broker, UserManager userManager) {
         this.broker = broker;
+        this.userManager = userManager;
         this.objectMapper = new ObjectMapper();
     }
-
 
     public void verificationAccount(InternalDataBranch internalDataBranch, MessageService messageService) {
         try {
             Payload payload = internalDataBranch.getPayload();
             Authentication authentication = objectMapper.convertValue(payload.getData(), Authentication.class);
 
-            MemberDto userinfo = messageService.findUser(authentication.getUsername()).toDto();
-            if (userinfo == null) {
-                BadSend("Threre're no Memeber data for authentication", internalDataBranch);
-            }
-            if (isMatchedPw(authentication.getPassword(), userinfo.getPassword()) == true) {
+            MemberEntity user = messageService.findUser(authentication.getUsername());
+            if (user == null) throw new FindFailedException("not found username=" + authentication.getUsername());
+            MemberDto userInfo = user.toDto();
+
+            if (isMatchedPw(authentication.getPassword(), userInfo.getPassword()) == true) {
                 AgentEntity agentEntity = messageService.findAgent(authentication.getAgent_id());
                 if (agentEntity != null) {
                     if (messageService.isValidAccess(agentEntity.getAccess_list_id()) != false) {
-                        if (agentEntity.getStatus() != "DISCONNECTED") {
+                        if (agentEntity.getStatus() != "CONNECTED") {
                             if (messageService.updateAgentStatus(agentEntity.getId(), agentEntity.getMember_id(), "CONNECTED", new Timestamp(System.currentTimeMillis())) != false) {
-                                UserVO userVO = new UserVO(userinfo.getUsername(), agentEntity.getId(), AuthenticaionStatus.COMPLETE);
-
+                                userManager.replaceStatus(internalDataBranch.UUID(), AuthenticaionStatus.COMPLETE);
                                 broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(authentication.getAgent_id(), "Connect Success"))));
                             } else {
-                                BadSend("Server Error", internalDataBranch);
+                                BadSend("Server Error", internalDataBranch, null);
                             }
                         } else {
-                            BadSend("This Agent already connected", internalDataBranch);
+                            BadSend("This Agent already connected", internalDataBranch, null);
                         }
                     } else {
-                        BadSend("Requested agent is not allowed agent", internalDataBranch);
+                        BadSend("Requested agent is not allowed agent", internalDataBranch, null);
                     }
                 } else {
-                    BadSend("Agent does not exist", internalDataBranch);
+                    BadSend("Agent does not exist", internalDataBranch, null);
                 }
             } else {
-                BadSend("Failed to Authentication", internalDataBranch);
+                BadSend("Failed to Authentication", internalDataBranch, null);
             }
+        } catch (FindFailedException e) {
+            BadSend("Authentication failure Account information verification required", internalDataBranch, e);
         } catch (Exception e) {
-            BadSend("Server Error", internalDataBranch);
-            e.printStackTrace();
+            BadSend("unknown error", internalDataBranch, e);
         }
     }
-
 
     private boolean isMatchedPw(String providedPassword, String comparePassword) {
         if (BCrypt.checkpw(providedPassword, comparePassword) == true) {
@@ -75,9 +75,10 @@ public class Auth {
         return false;
     }
 
-    private void BadSend(String reason, InternalDataBranch internalDataBranch) {
+    private void BadSend(String reason, InternalDataBranch internalDataBranch, Exception exception) {
+        userManager.replaceStatus(internalDataBranch.UUID(), AuthenticaionStatus.FAILED);
         if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
-            log.warn("[AUTH] key={} {}}", internalDataBranch.getMetaData().getSocketUuid(), reason);
+            log.warn("[AUTH] key={} {}", internalDataBranch.getMetaData().getSocketUuid(), reason, exception);
         }
     }
 

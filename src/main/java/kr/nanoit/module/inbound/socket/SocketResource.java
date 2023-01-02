@@ -5,11 +5,13 @@ import kr.nanoit.module.inbound.thread.gateway.ReadStreamThread;
 import kr.nanoit.module.inbound.thread.gateway.WriteStreamThread;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Data
@@ -24,17 +26,17 @@ public class SocketResource {
     private final Thread writeStreamThread;
     private boolean readThreadStatus = true;
     private boolean writeThreadStatus = true;
+    public AtomicBoolean isAuthComplete = new AtomicBoolean(false);
 
-    public SocketResource(Socket socket, Broker broker) throws IOException {
+    public SocketResource(Socket socket, Broker broker, UserManager userManager) throws IOException {
         this.uuid = UUID.randomUUID().toString().substring(0, 7);
         this.socket = socket;
         this.broker = broker;
         this.writeBuffer = new LinkedBlockingQueue<>();
-        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, new BufferedReader(new InputStreamReader(socket.getInputStream())), uuid));
+        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, new BufferedReader(new InputStreamReader(socket.getInputStream())), uuid, isAuthComplete, userManager));
         readStreamThread.setName(uuid + "-read");
-        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer));
+        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer,isAuthComplete));
         writeStreamThread.setName(uuid + "-write");
-
         socket.setSoTimeout(60000);
     }
 
@@ -75,7 +77,6 @@ public class SocketResource {
     }
 
     public void connectClose() throws IOException {
-        log.warn("[@SOCKET:RESOURCE@] key={} SOCKET CLOSE", uuid);
         socket.close();
     }
 

@@ -10,6 +10,7 @@ import kr.nanoit.domain.payload.Send;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
+import kr.nanoit.module.inbound.socket.UserManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +38,7 @@ class ThreadBranchTest {
     private String uuid;
     private ObjectMapper objectMapper;
     private MessageService authService;
+    private UserManager userManager;
     private PostgreSqlDbcp dbcp;
 
     @BeforeEach
@@ -45,7 +47,7 @@ class ThreadBranchTest {
         broker = spy(new BrokerImpl(socketManager));
         objectMapper = new ObjectMapper();
         authService = mock(MessageServiceImpl.class);
-        threadBranch = spy(new ThreadBranch(broker, uuid, authService));
+        threadBranch = spy(new ThreadBranch(broker, uuid, authService, userManager));
         branchThread = new Thread(threadBranch);
         branchThread.start();
     }

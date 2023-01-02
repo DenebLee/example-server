@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClientApplication {
 
-    public static final int TOTAL_COUNT = 300;
+    public static final int TOTAL_COUNT = 1000;
     private static final AtomicInteger readCounter = new AtomicInteger(0);
     private static final AtomicInteger writeCounter = new AtomicInteger(0);
 
@@ -38,7 +38,7 @@ public class TcpClientApplication {
                 while (true) {
                     System.out.println("WRITE: " + writeCounter.get() + " READ: " + readCounter.get());
                     try {
-                        Thread.sleep(1000L);
+                        Thread.sleep(600L);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -50,16 +50,26 @@ public class TcpClientApplication {
             Thread writeThread = new Thread(() -> {
                 for (int i = 0; i < TOTAL_COUNT; i++) {
                     try {
-                        if (i == 0) {
+//
+                        dataOutputStream.write(payload1);
+                        writeCounter.incrementAndGet();
+                        Thread.sleep(500);
+                        if (i == 2) {
+                            System.out.println("인증 메시지 전송 완료");
                             dataOutputStream.write(payload);
                             writeCounter.incrementAndGet();
-                        } else if (i > 0) {
-                            dataOutputStream.write(payload1);
-                            writeCounter.incrementAndGet();
+
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+//                        if (i == 0) {
+//                            dataOutputStream.write(payload);
+//                            writeCounter.incrementAndGet();
+//                        } else if (i > 0) {
+//                            dataOutputStream.write(payload1);
+//                            writeCounter.incrementAndGet();
+//                        }
                 }
                 countDownLatch.countDown();
             });
@@ -71,16 +81,15 @@ public class TcpClientApplication {
                     try {
                         String readPayload = bufferedReader.readLine();
                         System.out.println(readPayload);
+                        readCounter.incrementAndGet();
                         if (readPayload == null) {
                             socket.close();
-                        } else {
-                            readCounter.incrementAndGet();
                         }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                    countDownLatch.countDown();
                 }
-                countDownLatch.countDown();
             });
             readThread.setDaemon(true);
             readThread.start();

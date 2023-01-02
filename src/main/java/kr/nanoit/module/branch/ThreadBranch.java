@@ -9,18 +9,20 @@ import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
 
 @Slf4j
 public class ThreadBranch extends ModuleProcess {
 
     private final Auth auth;
-    private final MessageService authService;
+    private final MessageService messageService;
 
-    public ThreadBranch(Broker broker, String uuid, MessageService authService) {
+    public ThreadBranch(Broker broker, String uuid, MessageService messageService, UserManager userManager) {
         super(broker, uuid);
-        this.auth = new Auth(broker);
-        this.authService = authService;
+        this.auth = new Auth(broker, userManager);
+        this.messageService = messageService;
     }
 
     @Override
@@ -37,8 +39,7 @@ public class ThreadBranch extends ModuleProcess {
 
                     switch (payloadType) {
                         case AUTHENTICATION:
-                            auth.verificationAccount(internalDataBranch, authService);
-                            log.info("[BRANCH]   AUTHENTICATION DATA TO AUTH => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
+                            auth.verificationAccount(internalDataBranch, messageService);
                             break;
                         case SEND:
                             if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {

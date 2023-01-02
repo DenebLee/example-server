@@ -89,9 +89,11 @@ public class BrokerImpl implements Broker {
     @Override
     public boolean outBound(String uuid, String payload) {
         if (uuid == null || uuid == "" || uuid.contains(" ")) {
+            System.out.println("uuid 오류");
             return false;
         }
         if (payload == null || payload == "") {
+            System.out.println("payload 오류");
             return false;
         }
 
