@@ -1,78 +1,83 @@
-//package kr.nanoit.module.inbound.thread.gateway;
-//
-//import kr.nanoit.TestClient;
-//import kr.nanoit.module.broker.Broker;
-//import kr.nanoit.module.inbound.socket.SocketResource;
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//
-//import java.io.IOException;
-//import java.net.Socket;
-//
-//import static org.mockito.Mockito.mock;
-//import static org.mockito.Mockito.spy;
-//import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-//
-//
-//class ReadStreamThreadTest {
-//    private SocketResource socketResource;
-//    private Socket socket;
-//    private final Broker broker;
-//    private final int port;
-//    private final TestClient client;
-//
-//    ReadStreamThreadTest() {
-//        this.broker = mock(Broker.class);
-//        this.port = 55335;
-//        this.client = new TestClient();
-//    }
-//
-//
-//    @BeforeEach
-//    void setUp() throws IOException {
-//        this.socket = spy(new Socket());
-//        client.connect(this.port);
-//        this.socketResource = new SocketResource(this.socket, broker);
-//    }
-//
-//    @AfterEach
-//    void tearDown() throws IOException {
-//        this.socket.close();
-//    }
-//
-//    @DisplayName("")
-//    @Test
-//    void t1() throws IOException, InterruptedException {
-//        // given
-//        this.socketResource.serve();
-//        String data = "{\"type\": \"SEND\",\"messageUuid\": \"test01\",\"data\": {\"id\": 123123, \"phone\": \"01044445555\", \"callback\": \"053555444\", \"content\": \" 안녕하세요\"}}" + "\r\n";
-//
-//        // when
-//        client.write(data, 1);
-//        // authentication 아닌 다른것 한번 전송
-//
-//        // then
-//        socketResource.isTerminated();
-//
-//    }
-//
-//    @DisplayName("")
-//    @Test
-//    void t2() {
-//
-//    }
-//
-//    @DisplayName("")
-//    @Test
-//    void t3() {
-//
-//    }
-//
-//    @DisplayName("")
-//    @Test
-//    void t4() {
-//
-//    }
-//}
+package kr.nanoit.module.inbound.thread.gateway;
+
+import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.socket.SocketResource;
+import kr.nanoit.module.inbound.socket.UserManager;
+import org.junit.jupiter.api.*;
+import org.mockito.Mock;
+import org.mockito.Spy;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.Mockito.*;
+
+
+class ReadStreamThreadTest {
+    @Mock
+    private ServerSocket serverSocket;
+    @Spy
+    private ReadStreamThread readStreamThread;
+    @Mock
+    private Consumer<String> cleaner;
+    @Mock
+    private Thread thread;
+    @Mock
+    private Broker broker;
+    @Mock
+    private UserManager userManager;
+    private AtomicBoolean resultAuth;
+    private BufferedReader bufferedReader;
+    @Spy
+    private SocketResource socketResource;
+    @Mock
+    private Socket socket;
+
+
+    @BeforeEach
+    void setUp() {
+        bufferedReader = mock(BufferedReader.class);
+        String uuid = UUID.randomUUID().toString();
+        readStreamThread = new ReadStreamThread(cleaner, broker, bufferedReader, uuid, resultAuth, userManager);
+        thread = new Thread(readStreamThread);
+        thread.start();
+    }
+
+    @AfterEach
+    void tearDown() {
+        thread.interrupt();
+    }
+
+    @DisplayName("인증 메시지를 5초동안 전달 받지 못하면  Exception이 발생 하여야 한다")
+    @Test
+    void t1() {
+        // given
+
+        // when
+        assertThatThrownBy(() -> {
+            when(bufferedReader.readLine()).thenReturn("123");
+            Thread.sleep(5000);
+        }).isInstanceOf(Exception.class).hasMessage("Authentication Timeout");
+    }
+
+    @DisplayName("클라이언트가 접속 하여 인증 메시지를 5초동안 보내지 않으면 TimeOut이 발생 해야 된다")
+    @Test
+    void t2() {
+        // given
+
+
+        // when
+
+
+        // then
+
+    }
+
+}

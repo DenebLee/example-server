@@ -6,6 +6,7 @@ import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.ClientMessageEntity;
 import kr.nanoit.domain.entity.CompanyMessageEntity;
 import kr.nanoit.domain.entity.MemberEntity;
+import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.exception.FindFailedException;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +78,7 @@ public class MessageServiceImpl implements MessageService {
                     agentEntity.setId(resultSet.getLong("id"));
                     agentEntity.setMember_id(resultSet.getLong("member_id"));
                     agentEntity.setAccess_list_id(resultSet.getLong("access_list_id"));
-                    agentEntity.setStatus(resultSet.getString("status"));
+                    agentEntity.setStatus(AgentStatus.valueOf(resultSet.getString("status")));
                     agentEntity.setCreated_at(resultSet.getTimestamp("created_at"));
                     agentEntity.setLast_modified_at(resultSet.getTimestamp("last_modified_at"));
                     return agentEntity;
@@ -107,7 +108,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean updateAgentStatus(long id, long memeberId, String status, Timestamp updateTime) {
+    public boolean updateAgentStatus(long id, long memeberId, AgentStatus status, Timestamp updateTime) {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateAgentStatus(id, memeberId, status, updateTime));
             if (preparedStatement.executeUpdate() == 1) {
@@ -120,7 +121,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean isValidAccess(long accessListId) {
+    public boolean isValidAccess(long accessListId) throws RuntimeException {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findAccessList(accessListId));
             return preparedStatement.execute();

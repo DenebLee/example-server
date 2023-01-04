@@ -5,6 +5,7 @@ import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.ClientMessageEntity;
 import kr.nanoit.domain.entity.CompanyMessageEntity;
 import kr.nanoit.domain.entity.MemberEntity;
+import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.exception.FindFailedException;
 
 import java.sql.SQLException;
@@ -29,7 +30,7 @@ public interface MessageService {
 
     boolean insertAgent(AgentEntity agentEntity);
 
-    boolean updateAgentStatus(long id, long memberId, String status, Timestamp updateTime);
+    boolean updateAgentStatus(long id, long memberId, AgentStatus status, Timestamp updateTime);
 
 
     // Access_List

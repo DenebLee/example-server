@@ -6,6 +6,7 @@ import kr.nanoit.db.query.CreateTable;
 import kr.nanoit.db.query.MessageServicePostgreSqlQuerys;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
+import kr.nanoit.domain.message.AgentStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -219,7 +220,7 @@ class MessageServiceImplTest {
             // given
             createTable(CreateTable.createAgentTable);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            AgentEntity expected = new AgentEntity(1, 1, 1, "CONNECTED", timestamp, timestamp);
+            AgentEntity expected = new AgentEntity(1, 1, 1, AgentStatus.CONNECTED, timestamp, timestamp);
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertAgent(expected));
             int insertData = preparedStatement.executeUpdate();
 
@@ -244,17 +245,17 @@ class MessageServiceImplTest {
 
         MessageService messageService = new MessageServiceImpl(dbcp);
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        AgentEntity expected = new AgentEntity(2, 1, 1, "CONNECTED", timestamp, timestamp);
+        AgentEntity expected = new AgentEntity(2, 1, 1, AgentStatus.CONNECTED, timestamp, timestamp);
         boolean insertData = messageService.insertAgent(expected);
 
         // when
-        messageService.updateAgentStatus(2, 1, "UNCONNECTED", new Timestamp(System.currentTimeMillis()));
-        String actual = messageService.findAgent(2).getStatus();
+        messageService.updateAgentStatus(2, 1, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()));
+        AgentStatus actual = messageService.findAgent(2).getStatus();
 
         // then
         assertThat(insertData).isTrue();
         assertThat(actual).isNotEqualTo(expected.getStatus());
-        assertThat(actual).isEqualTo("UNCONNECTED");
+        assertThat(actual).isEqualTo(AgentStatus.DISCONNECTED);
     }
 
     @DisplayName("agent => insertAgent Method를 실행 하였을 때 DB에 저장되어야 한다")
@@ -265,7 +266,7 @@ class MessageServiceImplTest {
 
         MessageService messageService = new MessageServiceImpl(dbcp);
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        AgentEntity expected = new AgentEntity(3, 1, 1, "CONNECTED", timestamp, timestamp);
+        AgentEntity expected = new AgentEntity(3, 1, 1, AgentStatus.CONNECTED, timestamp, timestamp);
 
         // when
         boolean insertDataResult = messageService.insertAgent(expected);
@@ -287,7 +288,7 @@ class MessageServiceImplTest {
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
             MemberEntity memberData = new MemberEntity(23, "양선호", "123123", "test@test.com", timestamp, timestamp);
-            AgentEntity agentData = new AgentEntity(11, 3, 1, "CONNECTED", timestamp, timestamp);
+            AgentEntity agentData = new AgentEntity(11, 3, 1, AgentStatus.CONNECTED, timestamp, timestamp);
 
             messageService.insertUser(memberData);
             messageService.insertAgent(agentData);
@@ -311,7 +312,7 @@ class MessageServiceImplTest {
                 MessageService messageService = new MessageServiceImpl(dbcp);
 
                 PreparedStatement preparedStatement = connection.prepareStatement(query);
-                AgentEntity expected = new AgentEntity(10, 1, 5, "CONNECTED", timestamp, timestamp);
+                AgentEntity expected = new AgentEntity(10, 1, 5, AgentStatus.CONNECTED, timestamp, timestamp);
 
                 preparedStatement.executeUpdate();
                 messageService.insertAgent(expected);
@@ -339,12 +340,12 @@ class MessageServiceImplTest {
             MessageService messageService = new MessageServiceImpl(dbcp);
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
-            AgentEntity agentData = new AgentEntity(11, 3, 1, "난 멋져", timestamp, timestamp);
+            AgentEntity agentData = new AgentEntity(11, 3, 1, null, timestamp, timestamp);
 
             messageService.insertAgent(agentData);
         }).isInstanceOf(RuntimeException.class)
                 .hasMessage("org.postgresql.util.PSQLException: ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_status_fkey\"\n" +
-                        "  Detail: Key (status)=(난 멋져) is not present in table \"agent_status\".");
+                        "  Detail: Key (status)=(null) is not present in table \"agent_status\".");
     }
 
     @DisplayName("access_list => access_list_id를 제공하였을 때 데이터가 있을 경우 true가 되어야 함")
@@ -377,35 +378,6 @@ class MessageServiceImplTest {
 
     }
 
-    @DisplayName("")
-    @Test
-    void t17() {
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t18() {
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t19() {
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t20() {
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t21() {
-
-    }
 
     private void createTable(String query) {
         try (Connection connection = dbcp.getConnection()) {

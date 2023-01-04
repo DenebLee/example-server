@@ -34,7 +34,7 @@ public class ThreadTcpServer extends ModuleProcess {
             while (flag) {
                 Socket socket = serverSocket.accept();
                 SocketResource socketResource = new SocketResource(socket, broker, userManager);
-                log.info("[TCPSERVER : SOCKET : {}] ACCEPT => ADDRESS = {}", socketResource.getUuid(), socket.getRemoteSocketAddress().toString());
+                log.info("[TCPSERVER : SOCKET : {}] ACCEPT => ADDRESS = {}", uuid, socket.getRemoteSocketAddress().toString());
                 if (socketManager.register(socketResource)) {
                     socketResource.serve();
                 }

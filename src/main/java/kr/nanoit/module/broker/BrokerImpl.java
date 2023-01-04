@@ -115,6 +115,6 @@ public class BrokerImpl implements Broker {
     @Override
     public int getOutBoundQueueSize(String uuid) {
         SocketResource socketResource = socketManager.getSocketResource(uuid);
-        return socketResource.getWriteBuffer().size();
+        return socketResource.getWriteBufferQueueSize();
     }
 }

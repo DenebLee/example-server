@@ -25,7 +25,7 @@ public class SocketManager implements Runnable {
                     if (entry.getValue().isTerminated()) {
                         if (entry.getValue().isSocketInputStreamClose() && entry.getValue().isSocketOutputStreamClose()) {
                             entry.getValue().connectClose();
-                            if (entry.getValue().getSocket().isClosed()) {
+                            if (entry.getValue().isSocketClose()) {
                                 socketResources.remove(entry.getKey());
                                 log.info("[@SOCKET-{}:MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
                             }
@@ -62,10 +62,10 @@ public class SocketManager implements Runnable {
         if (socketResource.getSocket().isClosed()) {
             return false;
         }
-        if (socketResource.getUuid() == null) {
+        if (socketResource.uuid == null) {
             return false;
         }
-        return socketResources.put(socketResource.getUuid(), socketResource) == null;
+        return socketResources.put(socketResource.uuid, socketResource) == null;
     }
 
     public SocketResource getSocketResource(String uuid) {

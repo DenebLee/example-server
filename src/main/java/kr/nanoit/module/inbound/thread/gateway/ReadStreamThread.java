@@ -24,12 +24,12 @@ public class ReadStreamThread implements Runnable {
     private final UserManager userManager;
 
 
-    public ReadStreamThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid, AtomicBoolean test, UserManager userManager) {
+    public ReadStreamThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid, AtomicBoolean resultAuth, UserManager userManager) {
         this.cleaner = cleaner;
         this.broker = broker;
         this.bufferedReader = bufferedReader;
         this.uuid = uuid;
-        this.test = test;
+        this.test = resultAuth;
         this.userManager = userManager;
     }
 
@@ -42,7 +42,7 @@ public class ReadStreamThread implements Runnable {
             isAuth = false;
 
             while (true) {
-                if (isAuth == false && (System.currentTimeMillis() - startTime) / 1000 == 10) { // 10초
+                if (isAuth == false && (System.currentTimeMillis() - startTime) / 1000 == 5) { // 5초
                     throw new Exception("Authentication Timeout");
                 }
                 String payload = bufferedReader.readLine();
@@ -52,7 +52,7 @@ public class ReadStreamThread implements Runnable {
                         broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
                         isAuth = true;
                         if (userManager.registUser(uuid, AuthenticaionStatus.BEFORE)) {
-                            System.out.println("Usermanger에 등록완료");
+                            log.info("[@SOCKET:READ:{}@] Usermanager register Success", uuid);
                         }
                     }
                     if (isAuth == true && count > 0) {
@@ -70,19 +70,3 @@ public class ReadStreamThread implements Runnable {
         }
     }
 }
-
-
-// timertask를 재 사용할 수 없다. 새 인스턴스를 만들던지 객체를 새로 생성해야됨
-//                    Timer timer = new Timer();
-//
-//                    TimerTask timerTask = new TimerTask() {
-//                        @Override
-//                        public void run() {
-//                            if (isAuth == false) {
-//                                log.warn("[@SOCKET:READ:{}@] Authentication timeOut", uuid);
-//                                cleaner.accept(this.getClass().getName());
-//                                cancel();
-//                            }
-//                        }
-//                    };
-//                    timer.schedule(timerTask, 5000);

@@ -7,6 +7,7 @@ import kr.nanoit.domain.broker.InternalDataBranch;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
+import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.MemberDto;
 import kr.nanoit.exception.FindFailedException;
@@ -33,27 +34,22 @@ public class Auth {
         try {
             Payload payload = internalDataBranch.getPayload();
             Authentication authentication = objectMapper.convertValue(payload.getData(), Authentication.class);
-
             MemberEntity user = messageService.findUser(authentication.getUsername());
             if (user == null) throw new FindFailedException("not found username=" + authentication.getUsername());
             MemberDto userInfo = user.toDto();
-
             if (isMatchedPw(authentication.getPassword(), userInfo.getPassword()) == true) {
                 AgentEntity agentEntity = messageService.findAgent(authentication.getAgent_id());
                 if (agentEntity != null) {
-                    if (messageService.isValidAccess(agentEntity.getAccess_list_id()) != false) {
-                        if (agentEntity.getStatus() != "CONNECTED") {
-                            if (messageService.updateAgentStatus(agentEntity.getId(), agentEntity.getMember_id(), "CONNECTED", new Timestamp(System.currentTimeMillis())) != false) {
-                                userManager.replaceStatus(internalDataBranch.UUID(), AuthenticaionStatus.COMPLETE);
-                                broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(authentication.getAgent_id(), "Connect Success"))));
-                            } else {
-                                BadSend("Server Error", internalDataBranch, null);
+                    if (agentEntity.getStatus() == AgentStatus.DISCONNECTED) {
+                        if (messageService.updateAgentStatus(agentEntity.getId(), agentEntity.getMember_id(), AgentStatus.CONNECTED, new Timestamp(System.currentTimeMillis())) != false) {
+                            userManager.replaceStatus(internalDataBranch.UUID(), AuthenticaionStatus.COMPLETE);
+                            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Connect Success"))))) {
                             }
                         } else {
-                            BadSend("This Agent already connected", internalDataBranch, null);
+                            BadSend("Server Error", internalDataBranch, null);
                         }
                     } else {
-                        BadSend("Requested agent is not allowed agent", internalDataBranch, null);
+                        BadSend("This Agent already connected", internalDataBranch, null);
                     }
                 } else {
                     BadSend("Agent does not exist", internalDataBranch, null);

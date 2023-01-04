@@ -2,6 +2,7 @@ package kr.nanoit.db.query;
 
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
+import kr.nanoit.domain.message.AgentStatus;
 
 import java.sql.Timestamp;
 
@@ -26,7 +27,7 @@ public final class MessageServicePostgreSqlQuerys {
         return "INSERT INTO agent (id, member_id, access_list_id, status, created_at, last_modified_at) VALUES ('" + agentEntity.getId() + "', '" + agentEntity.getMember_id() + "', '" + agentEntity.getAccess_list_id() + "', '" + agentEntity.getStatus() + "', '" + agentEntity.getCreated_at() + "' , '" + agentEntity.getLast_modified_at() + "') ";
     }
 
-    public static String updateAgentStatus(long id, long memberId, String status, Timestamp updateTime) {
+    public static String updateAgentStatus(long id, long memberId, AgentStatus status, Timestamp updateTime) {
         return "UPDATE agent SET status = '" + status + "', last_modified_at = '" + updateTime + "'  WHERE id = '" + id + "' AND member_id = '" + memberId + "' ";
     }
 

@@ -62,4 +62,8 @@ public class UserManager implements Runnable {
         userResourceMap.replace(uuid, status);
     }
 
+    public AuthenticaionStatus getAuthenticationStatus(String uuid) {
+        return userResourceMap.get(uuid);
+    }
+
 }

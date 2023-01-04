@@ -1,6 +1,7 @@
 package kr.nanoit.domain.entity;
 
 
+import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.dto.AgentDto;
 import lombok.*;
 
@@ -17,7 +18,7 @@ public class AgentEntity {
     private long id;
     private long member_id;
     private long access_list_id;
-    private String status;
+    private AgentStatus status;
     private Timestamp created_at;
     private Timestamp last_modified_at;
 
