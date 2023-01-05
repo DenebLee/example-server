@@ -41,10 +41,11 @@ public class TcpServerApplicationAfter {
 
 
         new ThreadMapper(broker, getRandomUuid());
-        new ThreadFilter(broker, getRandomUuid());
+        new ThreadFilter(broker, getRandomUuid(), userManager);
         new ThreadBranch(broker, getRandomUuid(), messageService, userManager);
-        new ThreadSender(broker, getRandomUuid());
+        new ThreadSender(broker, getRandomUuid(), messageService);
         new ThreadOutBound(broker, getRandomUuid());
+
         new ThreadTcpServer(socketManager, broker, port, getRandomUuid(), userManager);
 
         Thread socketManagerThread = new Thread(socketManager);

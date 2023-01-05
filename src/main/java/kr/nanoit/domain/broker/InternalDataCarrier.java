@@ -11,11 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class InternalDataCarrier implements InternalData {
-
-    private PayloadType payloadType;
-    private String test;
     private MetaData metaData;
     private Payload payload;
+
 
     @Override
     public String UUID() {

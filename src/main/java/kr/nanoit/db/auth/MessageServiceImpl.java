@@ -1,5 +1,6 @@
 package kr.nanoit.db.auth;
 
+import com.google.inject.spi.Message;
 import kr.nanoit.db.PostgreSqlDbcp;
 import kr.nanoit.db.query.MessageServicePostgreSqlQuerys;
 import kr.nanoit.domain.entity.AgentEntity;
@@ -7,8 +8,12 @@ import kr.nanoit.domain.entity.ClientMessageEntity;
 import kr.nanoit.domain.entity.CompanyMessageEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
+import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.exception.DeleteFailedException;
 import kr.nanoit.exception.FindFailedException;
+import kr.nanoit.exception.InsertFailedException;
+import kr.nanoit.exception.UpdateFailedException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
@@ -46,7 +51,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean insertUser(MemberEntity memberEntity) throws SQLException {
+    public boolean insertUser(MemberEntity memberEntity) throws InsertFailedException {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertUser(memberEntity));
             int result = preparedStatement.executeUpdate();
@@ -56,8 +61,8 @@ public class MessageServiceImpl implements MessageService {
                 return false;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            log.error("failed to insert Member Info");
+            throw new InsertFailedException("failed to insert Member Info");
         }
         return false;
     }
@@ -86,13 +91,13 @@ public class MessageServiceImpl implements MessageService {
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("failed to find Agent", e);
             throw new FindFailedException("failed to find Agent");
         }
     }
 
     @Override
-    public boolean insertAgent(AgentEntity agentEntity) {
+    public boolean insertAgent(AgentEntity agentEntity) throws InsertFailedException {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertAgent(agentEntity));
             int result = preparedStatement.executeUpdate();
@@ -102,20 +107,22 @@ public class MessageServiceImpl implements MessageService {
                 return false;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("failed to insert Agent", e);
+            throw new InsertFailedException("failed to insert Agent");
         }
         return false;
     }
 
     @Override
-    public boolean updateAgentStatus(long id, long memeberId, AgentStatus status, Timestamp updateTime) {
+    public boolean updateAgentStatus(long id, long memeberId, AgentStatus status, Timestamp updateTime) throws UpdateFailedException {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateAgentStatus(id, memeberId, status, updateTime));
             if (preparedStatement.executeUpdate() == 1) {
                 return true;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("failed to update Agent Status", e);
+            throw new UpdateFailedException("failed to update Agent Status");
         }
         return false;
     }
@@ -131,9 +138,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public ClientMessageEntity findClientMessage() {
+    public ClientMessageEntity findClientMessage(long id) throws FindFailedException {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findCompanyMessage());
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findClientMessage(id));
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet != null) {
                 while (resultSet.next()) {
@@ -145,7 +152,6 @@ public class MessageServiceImpl implements MessageService {
                     clientMessageEntity.setSender_num(resultSet.getString("sender_name"));
                     clientMessageEntity.setSender_name(resultSet.getString("sender_name"));
                     clientMessageEntity.setSender_callback(resultSet.getString("sender_callback"));
-                    clientMessageEntity.setReceive_time(resultSet.getTimestamp("receive_time"));
                     clientMessageEntity.setContent(resultSet.getString("content"));
                     clientMessageEntity.setCreated_at(resultSet.getTimestamp("created_at"));
                     clientMessageEntity.setLast_modified_at(resultSet.getTimestamp("last_modified_at"));
@@ -154,12 +160,13 @@ public class MessageServiceImpl implements MessageService {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("failed to find message", e);
+            throw new FindFailedException("failed to find message");
         }
     }
 
     @Override
-    public boolean deleteClientMessage() {
+    public boolean deleteClientMessage(long id) throws DeleteFailedException {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteClientMessage());
             int result = preparedStatement.executeUpdate();
@@ -168,42 +175,45 @@ public class MessageServiceImpl implements MessageService {
             }
             return false;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("failed to delete message", e);
+            throw new DeleteFailedException("failed to delete message");
         }
     }
 
     @Override
-    public boolean updateClientMessage() {
+    public Integer insertClientMessage(ClientMessageEntity clientMessageEntity) throws InsertFailedException {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteClientMessage());
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertClientMessage(clientMessageEntity));
             int result = preparedStatement.executeUpdate();
+
             if (result == 1) {
-                return true;
+                ResultSet rs = preparedStatement.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
-            return false;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("failed to insert Client Message");
+            throw new InsertFailedException("failed to insert Client Message");
         }
+        return null;
     }
 
     @Override
-    public boolean insertClientMessage() {
+    public boolean updateMessageStatus(long id, MessageStatus messageStatus) throws UpdateFailedException {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteClientMessage());
-            int result = preparedStatement.executeUpdate();
-            if (result == 1) {
-                return true;
-            }
-            return false;
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateMessageStatus(messageStatus));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("failed to update Client Message");
+            throw new UpdateFailedException("failed to update Client Message");
         }
+        return false;
     }
 
     @Override
     public CompanyMessageEntity findCompanyMessage() {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findClientMessage());
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findCompanyMessage());
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

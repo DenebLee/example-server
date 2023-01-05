@@ -1,9 +1,9 @@
 package kr.nanoit.exception;
 
-public class FindFailedException extends RuntimeException {
+public class InsertFailedException extends RuntimeException {
     private final String reason;
 
-    public FindFailedException(String reason) {
+    public InsertFailedException(String reason) {
         super(reason);
         this.reason = reason;
     }

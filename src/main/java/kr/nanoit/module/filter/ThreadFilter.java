@@ -8,20 +8,21 @@ import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
-import kr.nanoit.domain.payload.Send;
 import kr.nanoit.extension.Validation;
 import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
 // Filter
 @Slf4j
 public class ThreadFilter extends ModuleProcess {
-
+    private final UserManager userManager;
     private final Validation validation;
 
-    public ThreadFilter(Broker broker, String uuid) {
+    public ThreadFilter(Broker broker, String uuid, UserManager userManager) {
         super(broker, uuid);
         validation = new Validation();
+        this.userManager = userManager;
     }
 
     @Override
@@ -45,15 +46,16 @@ public class ThreadFilter extends ModuleProcess {
                     if (internalDataFilter.getPayload().getData() == null) {
                         publishBadRequest(internalDataFilter, "Payload.Data is null");
                     }
-
                     switch (internalDataFilter.getPayload().getType()) {
                         case SEND:
-                            if (!validation.verificationSendData(internalDataFilter)) {
+                            if (!validation.verificationSendData(internalDataFilter,userManager)) {
                                 publishBadRequest(internalDataFilter, "Invalid Send value");
                             }
                             break;
 
                         case REPORT_ACK:
+
+
                             if (!validation.verificationReport_ackData(internalDataFilter)) {
                                 publishBadRequest(internalDataFilter, "Invalid Report_ack value");
                             }

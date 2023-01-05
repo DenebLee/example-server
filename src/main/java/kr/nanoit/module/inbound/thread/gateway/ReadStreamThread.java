@@ -4,6 +4,7 @@ package kr.nanoit.module.inbound.thread.gateway;
 import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.MetaData;
+import kr.nanoit.dto.UserInfo;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +52,12 @@ public class ReadStreamThread implements Runnable {
                         log.info("[@SOCKET:READ:{}@] Authentication message Receive", uuid);
                         broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
                         isAuth = true;
-                        if (userManager.registUser(uuid, AuthenticaionStatus.BEFORE)) {
+
+                        UserInfo userInfo = new UserInfo();
+                        // 우선적으로 AuthenticationStatus에만 값을 넣는다
+                        userInfo.setStatus(AuthenticaionStatus.BEFORE);
+
+                        if (userManager.registUser(uuid, userInfo)) {
                             log.info("[@SOCKET:READ:{}@] Usermanager register Success", uuid);
                         }
                     }

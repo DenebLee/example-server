@@ -5,16 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class SocketManager implements Runnable {
     private final Map<String, SocketResource> socketResources;
+    public final LinkedBlockingQueue<String> forwardUserMap;
 
     private boolean flag;
 
     public SocketManager() {
         this.socketResources = new ConcurrentHashMap<>();
         this.flag = true;
+        this.forwardUserMap = new LinkedBlockingQueue<>();
     }
 
     @Override
@@ -27,7 +31,8 @@ public class SocketManager implements Runnable {
                             entry.getValue().connectClose();
                             if (entry.getValue().isSocketClose()) {
                                 socketResources.remove(entry.getKey());
-                                log.info("[@SOCKET-{}:MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
+                                forwardUserMap.offer(entry.getKey());
+                                log.info("[@SOCKET-{}:SOCKET-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
                             }
                         }
                     }

@@ -6,7 +6,10 @@ import kr.nanoit.domain.entity.ClientMessageEntity;
 import kr.nanoit.domain.entity.CompanyMessageEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
+import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.exception.FindFailedException;
+import kr.nanoit.exception.InsertFailedException;
+import kr.nanoit.exception.UpdateFailedException;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -20,17 +23,17 @@ public interface MessageService {
     // Member
     MemberEntity findUser(String username) throws FindFailedException;
 
-    boolean insertUser(MemberEntity memberDto) throws SQLException;
+    boolean insertUser(MemberEntity memberDto) throws InsertFailedException;
 
     boolean containsById();
 
 
     // Agent
-    AgentEntity findAgent(long agentId);
+    AgentEntity findAgent(long agentId) throws FindFailedException;
 
-    boolean insertAgent(AgentEntity agentEntity);
+    boolean insertAgent(AgentEntity agentEntity) throws InsertFailedException;
 
-    boolean updateAgentStatus(long id, long memberId, AgentStatus status, Timestamp updateTime);
+    boolean updateAgentStatus(long id, long memberId, AgentStatus status, Timestamp updateTime) throws UpdateFailedException;
 
 
     // Access_List
@@ -38,13 +41,13 @@ public interface MessageService {
 
 
     // Client_Message
-    ClientMessageEntity findClientMessage();
+    ClientMessageEntity findClientMessage(long id);
 
-    boolean deleteClientMessage();
+    boolean deleteClientMessage(long id);
 
-    boolean updateClientMessage();
+    Integer insertClientMessage(ClientMessageEntity clientMessageEntity);
 
-    boolean insertClientMessage();
+    boolean updateMessageStatus(long id, MessageStatus messageStatus) throws UpdateFailedException;
 
 
     // Company_Message

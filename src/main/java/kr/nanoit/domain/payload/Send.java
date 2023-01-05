@@ -15,7 +15,6 @@ import java.sql.Timestamp;
 
 public class Send {
     private long agent_id;
-    private Timestamp send_time;
     private String sender_num;
     private String sender_callback;
     private String sender_name;

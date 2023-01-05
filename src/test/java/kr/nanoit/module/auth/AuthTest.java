@@ -13,6 +13,7 @@ import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.domain.payload.*;
+import kr.nanoit.dto.UserInfo;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
@@ -54,7 +55,7 @@ class AuthTest {
             .withPassword("test");
 
     @BeforeAll
-    static void beforeAll() throws ClassNotFoundException, URISyntaxException, IOException, SQLException {
+    static void beforeAll() throws ClassNotFoundException, URISyntaxException, IOException {
         socketManager = mock(SocketManager.class);
         dataBaseConfig = new DataBaseConfig();
         dataBaseConfig.setIp(postgreSQLContainer.getHost())
@@ -63,7 +64,7 @@ class AuthTest {
                 .setUsername(postgreSQLContainer.getUsername())
                 .setPassword(postgreSQLContainer.getPassword());
         postgreSqlDbcp = new PostgreSqlDbcp(dataBaseConfig);
-        messageService = new MessageServiceImpl(new PostgreSqlDbcp(dataBaseConfig));
+        messageService = new MessageServiceImpl(postgreSqlDbcp);
         userManager = spy(new UserManager(socketManager));
         broker = spy(new BrokerImpl(socketManager));
 
@@ -88,7 +89,9 @@ class AuthTest {
     void setUp() {
         uuid = UUID.randomUUID().toString();
         System.out.println("시작할때 uuid = " + uuid);
-        userManager.registUser(uuid, AuthenticaionStatus.BEFORE);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setStatus(AuthenticaionStatus.BEFORE);
+        userManager.registUser(uuid, userInfo);
     }
 
     @AfterEach

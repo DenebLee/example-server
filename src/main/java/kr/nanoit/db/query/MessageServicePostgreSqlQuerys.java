@@ -1,8 +1,10 @@
 package kr.nanoit.db.query;
 
 import kr.nanoit.domain.entity.AgentEntity;
+import kr.nanoit.domain.entity.ClientMessageEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
+import kr.nanoit.domain.message.MessageStatus;
 
 import java.sql.Timestamp;
 
@@ -38,20 +40,22 @@ public final class MessageServicePostgreSqlQuerys {
 
 
     // Client_message
-    public static String findClientMessage() {
-        return null;
+    public static String findClientMessage(long id) {
+        return "SELECT * FROM client_message WHERE id = '" + id + "' ";
     }
 
     public static String deleteClientMessage() {
         return null;
     }
 
-    public static String updateClientMessage() {
-        return null;
+    public static String insertClientMessage(ClientMessageEntity clientMessageEntity) {
+        return "INSERT INTO client_message (agent_id,type,status,send_time,sender_num,sender_callback,sender_name,content,created_at, last_modified_at) VALUES ('" + clientMessageEntity.getAgent_id() +
+                "', '" + clientMessageEntity.getType() + "', '" + clientMessageEntity.getStatus() + "', '" + clientMessageEntity.getSend_time() + "', '" + clientMessageEntity.getSender_num() + "', '" + clientMessageEntity.getSender_callback() + "', '" +
+                "" + clientMessageEntity.getSender_name() + "', '" + clientMessageEntity.getContent() + "', '" + clientMessageEntity.getCreated_at() + "', '" + clientMessageEntity.getLast_modified_at() + "')";
     }
 
-    public static String insertClientMessage() {
-        return null;
+    public static String updateMessageStatus(MessageStatus messageStatus) {
+        return "UPDATE client_message SET status = '" + messageStatus + "' ";
     }
 
 

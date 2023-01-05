@@ -11,7 +11,6 @@ import kr.nanoit.module.auth.Auth;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
-import org.postgresql.util.PSQLException;
 
 @Slf4j
 public class ThreadBranch extends ModuleProcess {
@@ -21,7 +20,7 @@ public class ThreadBranch extends ModuleProcess {
 
     public ThreadBranch(Broker broker, String uuid, MessageService messageService, UserManager userManager) {
         super(broker, uuid);
-        this.auth = new Auth(broker, userManager);
+        this.auth = new Auth(broker,userManager);
         this.messageService = messageService;
     }
 

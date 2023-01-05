@@ -1,27 +1,31 @@
 package kr.nanoit.module.sender;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
-import kr.nanoit.domain.broker.*;
-import kr.nanoit.domain.payload.Payload;
-import kr.nanoit.domain.payload.PayloadType;
-import kr.nanoit.domain.payload.Send;
-import kr.nanoit.domain.payload.SendAck;
-import kr.nanoit.extension.Jackson;
+import kr.nanoit.db.auth.MessageService;
+import kr.nanoit.domain.broker.InternalDataCarrier;
+import kr.nanoit.domain.broker.InternalDataOutBound;
+import kr.nanoit.domain.broker.InternalDataSender;
+import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.message.MessageResult;
+import kr.nanoit.domain.message.MessageStatus;
+import kr.nanoit.domain.payload.*;
+import kr.nanoit.dto.ClientMessageDto;
+import kr.nanoit.exception.FindFailedException;
+import kr.nanoit.exception.UpdateFailedException;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 
 @Slf4j
 public class ThreadSender extends ModuleProcess {
 
-    public ThreadSender(Broker broker, String uuid) {
+    private final MessageService messageService;
+    private InternalDataSender internalDataSender;
+
+    public ThreadSender(Broker broker, String uuid, MessageService messageService) {
         super(broker, uuid);
+        this.messageService = messageService;
     }
 
     @Override
@@ -31,19 +35,45 @@ public class ThreadSender extends ModuleProcess {
             while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.SENDER);
                 if (object != null && object instanceof InternalDataSender) {
-//                    log.info("[SENDER]   DATA INPUT => {}", object);
-                    InternalDataSender internalDataSender = (InternalDataSender) object;
-                    Payload payload = ((InternalDataSender) object).getPayload();
-                    if (internalDataSender != null && payload != null) {
-                        if (payload.getType().equals(PayloadType.SEND)) {
-                            if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), payload))) ;
+                    internalDataSender = (InternalDataSender) object;
+                    Send send = (Send) internalDataSender.getPayload().getData();
+
+                    if (send == null) {
+                        broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new ErrorPayload("SendMessage is null"))));
+                        sendResult("SendMessage is null", internalDataSender, new Exception());
+                    }
+                    ClientMessageDto messageDto = makeMessage(send);
+                    if (messageDto != null) {
+                        Integer id = messageService.insertClientMessage(messageDto.toEntity());
+                        if (id != null) {
+                            long messageId = id.longValue();
+                            if (isSuccessToInsert(messageId, messageDto)) {
+                                if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
+                                    // 전송 완료 시 status receive -> sent로 업데이트 후
+                                    if (messageService.updateMessageStatus(id, MessageStatus.SENT)) {
+                                        // 업데이트 성공 완료되면 outBound로 전송
+                                        if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS)))));
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
-        } catch (InterruptedException e) {
+        } catch (FindFailedException e) {
+            sendResult(e.getReason(), internalDataSender, e);
+        } catch (UpdateFailedException e) {
+            sendResult(e.getReason(), internalDataSender, e);
+        } catch (Exception e) {
+            sendResult("unknown Error", internalDataSender, e);
             shoutDown();
-            e.printStackTrace();
+        }
+
+    }
+
+    private void sendResult(String reason, InternalDataSender internalDataSender, Exception exception) {
+        if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
+            log.warn("[AUTH] key={} {}", internalDataSender.getMetaData().getSocketUuid(), reason, exception);
         }
     }
 
@@ -62,4 +92,34 @@ public class ThreadSender extends ModuleProcess {
     public String getUuid() {
         return this.uuid;
     }
+
+    private ClientMessageDto makeMessage(Send send) {
+        ClientMessageDto clientMessageDto = new ClientMessageDto();
+        clientMessageDto.setId(0);
+        clientMessageDto.setAgent_id(send.getAgent_id());
+        clientMessageDto.setType(PayloadType.SEND);
+        clientMessageDto.setStatus(MessageStatus.RECEIVE);
+        clientMessageDto.setSend_time(new Timestamp(System.currentTimeMillis()));
+        clientMessageDto.setSender_num(send.getSender_num());
+        clientMessageDto.setSender_callback(send.getSender_callback());
+        clientMessageDto.setSender_name(send.getSender_name());
+        clientMessageDto.setContent(send.getContent());
+        clientMessageDto.setCreated_at(new Timestamp(System.currentTimeMillis()));
+        clientMessageDto.setLast_modified_at(new Timestamp(System.currentTimeMillis()));
+
+        return clientMessageDto;
+    }
+
+    private boolean isSuccessToInsert(long id, ClientMessageDto targetValue) {
+        ClientMessageDto verificationCheck = messageService.findClientMessage(id).toDto();
+        targetValue.setId(id);
+        if (targetValue.equals(verificationCheck)) {
+            return true;
+        }
+        return false;
+    }
+
 }
+
+//
+//

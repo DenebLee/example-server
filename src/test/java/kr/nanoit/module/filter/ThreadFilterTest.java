@@ -5,17 +5,16 @@ import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.broker.MetaData;
 import kr.nanoit.domain.payload.*;
-import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
+import kr.nanoit.module.inbound.socket.UserManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import java.sql.Timestamp;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,12 +30,14 @@ class ThreadFilterTest {
     private ThreadFilter threadFilter;
     private Broker broker;
     private String uuid;
+    @Mock
+    private UserManager userManager;
 
     @BeforeEach
     void setUp() {
         uuid = UUID.randomUUID().toString().substring(0, 7);
         broker = spy(new BrokerImpl(socketManager));
-        threadFilter = spy(new ThreadFilter(broker, uuid));
+        threadFilter = spy(new ThreadFilter(broker, uuid, userManager));
         filterThread = new Thread(threadFilter);
         filterThread.start();
     }
@@ -138,7 +139,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "14-55-535", "054-745-4242", "이정섭", "테스트중")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "14-55-535", "054-745-4242", "이정섭", "테스트중")));
 
         // when
         broker.publish(expected);
@@ -160,7 +161,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), " ", "054-745-4242", "이정섭", "테스트중")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, " ", "054-745-4242", "이정섭", "테스트중")));
 
         // when
         broker.publish(expected);
@@ -182,7 +183,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "", "054-745-4242", "이정섭", "테스트중")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "", "054-745-4242", "이정섭", "테스트중")));
 
         // when
         broker.publish(expected);
@@ -204,7 +205,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "", "이정섭", "x")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "", "이정섭", "x")));
 
         // when
         broker.publish(expected);
@@ -226,7 +227,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", " ", "이정섭", "x")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", " ", "이정섭", "x")));
 
         // when
         broker.publish(expected);
@@ -248,7 +249,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "", "이정섭", "x")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "", "이정섭", "x")));
 
         // when
         broker.publish(expected);
@@ -270,7 +271,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", "이정섭", null)));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "이정섭", null)));
 
         // when
         broker.publish(expected);
@@ -292,7 +293,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", "이정섭", "")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "이정섭", "")));
 
         // when
         broker.publish(expected);
@@ -314,7 +315,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(0, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", "이정섭", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(0, "010-4444-5555", "054-745-4242", "이정섭", "안녕")));
 
         // when
         broker.publish(expected);
@@ -336,7 +337,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(-123, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", "이정섭", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(-123, "010-4444-5555", "054-745-4242", "이정섭", "안녕")));
 
         // when
         broker.publish(expected);
@@ -358,7 +359,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", null, "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", null, "안녕")));
 
         // when
         broker.publish(expected);
@@ -380,7 +381,7 @@ class ThreadFilterTest {
 // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", "", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "", "안녕")));
 
         // when
         broker.publish(expected);
@@ -402,7 +403,7 @@ class ThreadFilterTest {
 // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", " ", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", " ", "안녕")));
 
         // when
         broker.publish(expected);
@@ -424,7 +425,7 @@ class ThreadFilterTest {
 // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "054-745-4242", "8글자가넘어가면큰일납니다", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "8글자가넘어가면큰일납니다", "안녕")));
 
         // when
         broker.publish(expected);

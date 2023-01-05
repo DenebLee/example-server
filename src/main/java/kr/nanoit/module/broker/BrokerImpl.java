@@ -14,10 +14,12 @@ import java.util.concurrent.TimeUnit;
 public class BrokerImpl implements Broker {
 
     private final Map<InternalDataType, LinkedBlockingQueue<Object>> brokerQueue;
+    private final LinkedBlockingQueue<String> userQueue;
     private final SocketManager socketManager;
 
     public BrokerImpl(SocketManager socketManager) {
         this.brokerQueue = new HashMap<>();
+        this.userQueue = new LinkedBlockingQueue<>();
         this.socketManager = socketManager;
 
         for (InternalDataType value : InternalDataType.values()) {
@@ -102,6 +104,7 @@ public class BrokerImpl implements Broker {
         return true;
     }
 
+
     @Override
     public int getBrokerMapSize() {
         return brokerQueue.size();
@@ -117,4 +120,5 @@ public class BrokerImpl implements Broker {
         SocketResource socketResource = socketManager.getSocketResource(uuid);
         return socketResource.getWriteBufferQueueSize();
     }
+
 }

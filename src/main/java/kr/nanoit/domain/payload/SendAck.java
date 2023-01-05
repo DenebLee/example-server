@@ -1,5 +1,6 @@
 package kr.nanoit.domain.payload;
 
+import kr.nanoit.domain.message.MessageResult;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SendAck {
-    private long id;
-    private String result;
+    private MessageResult result;
 }

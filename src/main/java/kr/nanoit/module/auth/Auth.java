@@ -10,6 +10,7 @@ import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.MemberDto;
+import kr.nanoit.dto.UserInfo;
 import kr.nanoit.exception.FindFailedException;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.UserManager;
@@ -36,13 +37,22 @@ public class Auth {
             Authentication authentication = objectMapper.convertValue(payload.getData(), Authentication.class);
             MemberEntity user = messageService.findUser(authentication.getUsername());
             if (user == null) throw new FindFailedException("not found username=" + authentication.getUsername());
-            MemberDto userInfo = user.toDto();
-            if (isMatchedPw(authentication.getPassword(), userInfo.getPassword()) == true) {
+            MemberDto memberDto = user.toDto();
+            if (isMatchedPw(authentication.getPassword(), memberDto.getPassword()) == true) {
                 AgentEntity agentEntity = messageService.findAgent(authentication.getAgent_id());
                 if (agentEntity != null) {
                     if (agentEntity.getStatus() == AgentStatus.DISCONNECTED) {
                         if (messageService.updateAgentStatus(agentEntity.getId(), agentEntity.getMember_id(), AgentStatus.CONNECTED, new Timestamp(System.currentTimeMillis())) != false) {
-                            userManager.replaceStatus(internalDataBranch.UUID(), AuthenticaionStatus.COMPLETE);
+
+
+                            UserInfo userInfo = userManager.getUserInfo(internalDataBranch.UUID());
+                            userInfo.setAgent_id(agentEntity.getId())
+                                    .setMemberId(agentEntity.getMember_id())
+                                    .setUsername(memberDto.getUsername())
+                                    .setStatus(AuthenticaionStatus.COMPLETE);
+
+                            userManager.replaceStatus(internalDataBranch.UUID(), userInfo);
+
                             if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Connect Success"))))) {
                             }
                         } else {
@@ -72,7 +82,7 @@ public class Auth {
     }
 
     private void BadSend(String reason, InternalDataBranch internalDataBranch, Exception exception) {
-        userManager.replaceStatus(internalDataBranch.UUID(), AuthenticaionStatus.FAILED);
+        userManager.replaceStatus(internalDataBranch.UUID(), new UserInfo().setStatus(AuthenticaionStatus.FAILED));
         if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
             log.warn("[AUTH] key={} {}", internalDataBranch.getMetaData().getSocketUuid(), reason, exception);
         }
