@@ -48,6 +48,9 @@ dependencies {
     // BCRYPT
     implementation group: 'at.favre.lib', name: 'bcrypt', version: '0.9.0'
     implementation group: 'org.mindrot', name: 'jbcrypt', version: '0.4'
+
+    // SCHEDULE
+    implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
 }
 
 test {

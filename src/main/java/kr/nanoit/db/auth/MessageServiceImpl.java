@@ -242,8 +242,9 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean insertCompanyMessage() {
+    public boolean insertCompanyMessage(CompanyMessageEntity companyMessageEntity) {
         try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertCompanyMessage(companyMessageEntity));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

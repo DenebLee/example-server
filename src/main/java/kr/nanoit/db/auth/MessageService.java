@@ -57,7 +57,7 @@ public interface MessageService {
 
     boolean updateCompanyMessage();
 
-    boolean insertCompanyMessage();
+    boolean insertCompanyMessage(CompanyMessageEntity companyMessageEntity);
 
 
     // Access_list

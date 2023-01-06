@@ -1,9 +1,8 @@
-package kr.nanoit.domain.entity;
+package kr.nanoit.dto;
 
-
+import kr.nanoit.domain.entity.CompanyMessageEntity;
 import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.domain.payload.PayloadType;
-import kr.nanoit.dto.CompanyMessageDto;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -14,11 +13,10 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @ToString
+@Accessors(chain = true)
 
 
-public class CompanyMessageEntity {
-
-    // Foreign key
+public class CompanyMessageDto {
     private long client_message_id;
     private long relay_company_id;
     private PayloadType type;
@@ -32,7 +30,7 @@ public class CompanyMessageEntity {
     private Timestamp created_at;
     private Timestamp last_modified_at;
 
-    public CompanyMessageDto toDto() {
-        return new CompanyMessageDto(client_message_id, relay_company_id, type, status, send_time, sender_num, sender_callback, sender_name, content, created_at, last_modified_at);
+    public CompanyMessageEntity toEntity() {
+        return new CompanyMessageEntity(client_message_id, relay_company_id, type, status, send_time, sender_num, sender_callback, sender_name, content, created_at, last_modified_at);
     }
 }

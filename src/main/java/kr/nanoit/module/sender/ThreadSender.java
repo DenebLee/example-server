@@ -48,6 +48,8 @@ public class ThreadSender extends ModuleProcess {
                         if (id != null) {
                             long messageId = id.longValue();
                             if (isSuccessToInsert(messageId, messageDto)) {
+                                messageDto.setId(messageId);
+                                // Carrier 로 보낼때는 Payload에 ClinetMessageDto 적재
                                 if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
                                     // 전송 완료 시 status receive -> sent로 업데이트 후
                                     if (messageService.updateMessageStatus(id, MessageStatus.SENT)) {
