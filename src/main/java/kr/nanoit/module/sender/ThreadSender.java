@@ -44,22 +44,14 @@ public class ThreadSender extends ModuleProcess {
                     } else {
                         ClientMessageDto messageDto = makeMessage(send);
                         long id = messageService.insertClientMessage(messageDto.toEntity());
-                        System.out.println(id);
-                        if (id != 0) {
-                            System.out.println("통과");
-                            if (isSuccessToInsert(id, messageDto)) {
-                                System.out.println("insert 테스트 통과");
-                                messageDto.setId(id);
-                                // Carrier 로 보낼때는 Payload에 ClinetMessageDto 적재
-                                if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
-                                    System.out.println("통신사 모듈로 전송 완료");
-                                    // 전송 완료 시 status receive -> sent로 업데이트 후
-                                    if (messageService.updateMessageStatus(id, MessageStatus.SENT)) {
-                                        // 업데이트 성공 완료되면 outBound로 전송
-                                        if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS)))))
-                                            ;
-                                    }
-                                }
+                        messageDto.setId(id);
+                        // Carrier 로 보낼때는 Payload에 ClinetMessageDto 적재
+                        if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
+                            // 전송 완료 시 status receive -> sent로 업데이트 후
+                            if (messageService.updateMessageStatus(id, MessageStatus.SENT)) {
+                                // 업데이트 성공 완료되면 outBound로 전송
+                                if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS)))))
+                                    ;
                             }
                         }
                     }
@@ -73,6 +65,7 @@ public class ThreadSender extends ModuleProcess {
         } catch (UpdateFailedException e) {
             sendResult(e.getReason(), internalDataSender, e);
         } catch (Exception e) {
+            e.printStackTrace();
             sendResult("unknown Error", internalDataSender, e);
             shoutDown();
         }
@@ -117,16 +110,6 @@ public class ThreadSender extends ModuleProcess {
 
         return clientMessageDto;
     }
-
-    private boolean isSuccessToInsert(long id, ClientMessageDto targetValue) {
-        ClientMessageDto verificationCheck = messageService.findClientMessage(id).toDto();
-        targetValue.setId(id);
-        if (targetValue.equals(verificationCheck)) {
-            return true;
-        }
-        return false;
-    }
-
 }
 
 //

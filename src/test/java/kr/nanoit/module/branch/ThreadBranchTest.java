@@ -18,10 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -37,18 +33,19 @@ class ThreadBranchTest {
     SocketManager socketManager;
     @Mock
     private String uuid;
-    private ObjectMapper objectMapper;
-    private MessageService authService;
     @Mock
     private UserManager userManager;
+
+    @Mock
+    private MessageService messageService;
+
 
     @BeforeEach
     void setUp() {
         broker = spy(new BrokerImpl(socketManager));
-        objectMapper = new ObjectMapper();
-        authService = mock(MessageServiceImpl.class);
-        threadBranch = spy(new ThreadBranch(broker, uuid, authService, userManager));
-        branchThread = new Thread(threadBranch);
+        messageService = mock(MessageServiceImpl.class);
+        threadBranch = spy(new ThreadBranch(broker, uuid, messageService, userManager));
+        branchThread = spy(new Thread(threadBranch));
         branchThread.start();
     }
 
@@ -57,50 +54,35 @@ class ThreadBranchTest {
         branchThread.interrupt();
     }
 
-    @DisplayName("payloadType -> SEND : Send_ACK 로 변환 후 publish 해야 한다")
+    @DisplayName("PayloadType이 SEND 일 경우 InternalDataSender로 변환후 sender로 전송 되어야 한다")
     @Test
-    void t1() throws JsonProcessingException, InterruptedException {
+    void t1() throws InterruptedException {
         // given
-        InternalDataBranch expected = new InternalDataBranch();
-        expected.setMetaData(new MetaData(randomString(5)));
-        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, "010-4444-5555", "054-335-5353", "이정섭", "테스트"))));
+        Send send = new Send(1, "010-4081-1475", "053-676-5555", "이정섭", "테스트");
+        InternalDataBranch expected = new InternalDataBranch(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
         broker.publish(expected);
-        Thread.sleep(1000);
-        Object actual = broker.subscribe(InternalDataType.SENDER);
 
         // then
-        assertThat(actual).isExactlyInstanceOf(InternalDataSender.class);
-        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
+        Object object = broker.subscribe(InternalDataType.SENDER);
+        assertThat(object).isInstanceOf(InternalDataSender.class);
+        InternalDataSender actual = (InternalDataSender) object;
+        assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(expected.getMetaData().getSocketUuid());
+        assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.SEND);
+        assertThat(actual.getPayload().getMessageUuid()).isEqualTo(expected.getPayload().getMessageUuid());
+        assertThat(actual.getPayload().getData()).isInstanceOf(Send.class);
+        Send afterData = (Send) actual.getPayload().getData();
+        assertThat(afterData.getAgent_id()).isEqualTo(send.getAgent_id());
+        assertThat(afterData.getSender_num()).isEqualTo(send.getSender_num());
+        assertThat(afterData.getSender_callback()).isEqualTo(send.getSender_callback());
+        assertThat(afterData.getSender_name()).isEqualTo(send.getSender_name());
+        assertThat(afterData.getContent()).isEqualTo(send.getContent());
     }
 
-    @DisplayName("payloadType -> REPORT_ACK : outbound 로 변환 후 publish 해야 한다")
+    @DisplayName("PayloadType이 Report_ACK 일 경우 InternalDataSender로 변환후 sender로 전송 되어야 한다")
     @Test
     void t2() {
-        // given
-        // when
-        // then
-    }
 
-    @DisplayName("payloadType -> ALIVE : outbound 로 변환 후 publish 해야 한다")
-    @Test
-    void t3() {
-        // given
-        // when
-        // then
-    }
-
-    public String randomString(int targetLength) {
-        int leftLimit = 97; // letter 'a'
-        int rightLimit = 122; // letter 'z'
-        Random random = new Random();
-        StringBuilder buffer = new StringBuilder(targetLength);
-        for (int i = 0; i < targetLength; i++) {
-            int randomLimitedInt = leftLimit + (int)
-                    (random.nextFloat() * (rightLimit - leftLimit + 1));
-            buffer.append((char) randomLimitedInt);
-        }
-        return buffer.toString();
     }
 }

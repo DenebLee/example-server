@@ -62,6 +62,7 @@ public class MessageServiceImpl implements MessageService {
             }
         } catch (SQLException e) {
             log.error("failed to insert Member Info");
+            e.printStackTrace();
             throw new InsertFailedException("failed to insert Member Info");
         }
         return false;
@@ -108,6 +109,7 @@ public class MessageServiceImpl implements MessageService {
             }
         } catch (SQLException e) {
             log.error("failed to insert Agent", e);
+            e.printStackTrace();
             throw new InsertFailedException("failed to insert Agent");
         }
         return false;
@@ -147,9 +149,10 @@ public class MessageServiceImpl implements MessageService {
                     ClientMessageEntity clientMessageEntity = new ClientMessageEntity();
                     clientMessageEntity.setId(resultSet.getLong("id"));
                     clientMessageEntity.setAgent_id(resultSet.getLong("agent_id"));
+                    clientMessageEntity.setStatus(MessageStatus.valueOf(resultSet.getString("status")));
                     clientMessageEntity.setType(PayloadType.valueOf(resultSet.getString("type")));
                     clientMessageEntity.setSend_time(resultSet.getTimestamp("send_time"));
-                    clientMessageEntity.setSender_num(resultSet.getString("sender_name"));
+                    clientMessageEntity.setSender_num(resultSet.getString("sender_num"));
                     clientMessageEntity.setSender_name(resultSet.getString("sender_name"));
                     clientMessageEntity.setSender_callback(resultSet.getString("sender_callback"));
                     clientMessageEntity.setContent(resultSet.getString("content"));
@@ -206,7 +209,10 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public boolean updateMessageStatus(long id, MessageStatus messageStatus) throws UpdateFailedException {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateMessageStatus(messageStatus));
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.updateMessageStatus(id, messageStatus));
+            if (preparedStatement.executeUpdate() == 1) {
+                return true;
+            }
         } catch (SQLException e) {
             log.error("failed to update Client Message");
             throw new UpdateFailedException("failed to update Client Message");
@@ -249,9 +255,13 @@ public class MessageServiceImpl implements MessageService {
     public boolean insertCompanyMessage(CompanyMessageEntity companyMessageEntity) {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertCompanyMessage(companyMessageEntity));
-
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new InsertFailedException("Companymessage insert failed");
         }
         return false;
     }
@@ -329,5 +339,21 @@ public class MessageServiceImpl implements MessageService {
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean insertRelayCompany() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertRelayCompany(new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis())));
+            int result = preparedStatement.executeUpdate();
+            if (result == 1) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new InsertFailedException("Insert relaycompany data Failed");
+
+        }
+        return false;
     }
 }

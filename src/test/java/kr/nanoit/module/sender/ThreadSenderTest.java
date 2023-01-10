@@ -8,11 +8,9 @@ import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
+import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.message.MessageStatus;
-import kr.nanoit.domain.payload.ErrorPayload;
-import kr.nanoit.domain.payload.Payload;
-import kr.nanoit.domain.payload.PayloadType;
-import kr.nanoit.domain.payload.Send;
+import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.ClientMessageDto;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
@@ -156,12 +154,36 @@ class ThreadSenderTest {
         ClientMessageDto clientMessageDto = (ClientMessageDto) actual.getPayload().getData();
 
 
-        assertThat(clientMessageDto.getId()).isEqualTo(1);
+        assertThat(clientMessageDto.getId()).isEqualTo(2);
         assertThat(clientMessageDto.getAgent_id()).isEqualTo(send.getAgent_id());
         assertThat(clientMessageDto.getSender_name()).isEqualTo(send.getSender_name());
         assertThat(clientMessageDto.getSender_callback()).isEqualTo(send.getSender_callback());
         assertThat(clientMessageDto.getSender_num()).isEqualTo(send.getSender_num());
         assertThat(clientMessageDto.getStatus()).isEqualTo(MessageStatus.RECEIVE);
         assertThat(clientMessageDto.getType()).isEqualTo(PayloadType.SEND);
+    }
+
+    @DisplayName("client_message 테이블에 데이터를 정상적으로 insert 되었으면 clientMessage Status 값이 SENT가 되어야 함")
+    @Test
+    void t4() throws InterruptedException {
+        // given
+        Send send = new Send(4, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
+        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
+
+        // when
+        broker.publish(expected);
+
+        // then
+        Object object = broker.subscribe(InternalDataType.OUTBOUND);
+        assertThat(object).isInstanceOf(InternalDataOutBound.class);
+        InternalDataOutBound actual = (InternalDataOutBound) object;
+        assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(expected.getMetaData().getSocketUuid());
+        assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.SEND_ACK);
+        assertThat(actual.getPayload().getMessageUuid()).isEqualTo(uuid);
+        assertThat(actual.getPayload().getData()).isInstanceOf(SendAck.class);
+        SendAck result = (SendAck) actual.getPayload().getData();
+
+
+        assertThat(result.getResult()).isEqualTo(MessageResult.SUCCESS);
     }
 }

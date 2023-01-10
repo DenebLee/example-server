@@ -7,6 +7,7 @@ import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.domain.message.MessageStatus;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 
 public final class MessageServicePostgreSqlQuerys {
@@ -55,8 +56,8 @@ public final class MessageServicePostgreSqlQuerys {
                 "" + clientMessageEntity.getSender_name() + "', '" + clientMessageEntity.getContent() + "', '" + clientMessageEntity.getCreated_at() + "', '" + clientMessageEntity.getLast_modified_at() + "')";
     }
 
-    public static String updateMessageStatus(MessageStatus messageStatus) {
-        return "UPDATE client_message SET status = '" + messageStatus + "' ";
+    public static String updateMessageStatus(long id, MessageStatus messageStatus) {
+        return "UPDATE client_message SET status = '" + messageStatus + "' WHERE id = '" + id + "' ";
     }
 
 
@@ -106,5 +107,9 @@ public final class MessageServicePostgreSqlQuerys {
     // Message_status
     public static String insertMessageStatus(String status1, String status2) {
         return "INSERT INTO message_status (status) VALUES ('" + status1 + "'),('" + status2 + "')";
+    }
+
+    public static String insertRelayCompany(Timestamp created_at, Timestamp last_modified_at) {
+        return "INSERT INTO relay_company (created_at, last_modified_at) VALUES ('" + created_at + "', '" + last_modified_at + "' )";
     }
 }

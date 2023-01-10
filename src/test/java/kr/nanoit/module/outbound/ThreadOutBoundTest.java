@@ -1,107 +1,98 @@
-//package kr.nanoit.module.outbound;
-//
-//import kr.nanoit.domain.broker.InternalDataOutBound;
-//import kr.nanoit.domain.broker.MetaData;
-//import kr.nanoit.domain.payload.Payload;
-//import kr.nanoit.domain.payload.PayloadType;
-//import kr.nanoit.domain.payload.Send;
-//import kr.nanoit.module.broker.Broker;
-//import kr.nanoit.module.broker.BrokerImpl;
-//import kr.nanoit.module.inbound.socket.SocketManager;
-//import kr.nanoit.module.inbound.socket.SocketResource;
-//import org.junit.jupiter.api.AfterEach;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//import org.mockito.Mock;
-//
-//import java.io.IOException;
-//import java.net.Socket;
-//import java.util.UUID;
-//
-//import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-//import static org.mockito.Mockito.*;
-//
-//class ThreadOutBoundTest {
-//
-//    private ThreadOutBound threadOutBound;
-//
-//    @Mock
-//    private SocketManager socketManager;
-//
-//    private Broker broker;
-//    private String uuid;
-//    private Thread outBoundThread;
-//
-//    @BeforeEach
-//    void setUp() {
-//        this.uuid = UUID.randomUUID().toString().substring(0, 7);
-//        this.socketManager = spy(new SocketManager());
-//        this.broker = spy(new BrokerImpl(this.socketManager));
-//        this.threadOutBound = spy(new ThreadOutBound(broker, uuid));
-//        this.outBoundThread = spy(new Thread(threadOutBound));
-//        this.outBoundThread.start();
-//    }
-//
-//    @AfterEach
-//    void tearDown() {
-//        this.outBoundThread.interrupt();
-//    }
-//
-//    @DisplayName("ThreadOutBound 는 InternalDataOutBound 를 받아 broker.outbound 를 통해 전달해야 한다")
-//    @Test
-//    void t1() throws InterruptedException {
-//        // given
-//        InternalDataOutBound expected = new InternalDataOutBound();
-//        expected.setMetaData(new MetaData(uuid));
-//        expected.setPayload(new Payload(PayloadType.SEND_ACK, "123123", new Send(1, "010-4444-5555", "054-333-5555", "테스트 중")));
-//
-//        // when
-//        broker.publish(expected);
-//        Thread.sleep(1000L);
-//
-//        // then
-//
-//    }
-//
-//    @DisplayName("")
-//    @Test
-//    void t2() {
-//        // given
-//        InternalDataOutBound expected = new InternalDataOutBound();
-//
-//        // when
-//
-//        // then
-//    }
-//
-////    @DisplayName("")
-////    @Test
-////    void t3() {
-////
-////    }
-////
-////    @DisplayName("")
-////    @Test
-////    void t4() {
-////
-////    }
-////
-////    @DisplayName("")
-////    @Test
-////    void t5() {
-////
-////    }
-////
-////    @DisplayName("")
-////    @Test
-////    void t6() {
-////
-////    }
-////
-////    @DisplayName("")
-////    @Test
-////    void t7() {
-////
-////    }
-//}
+package kr.nanoit.module.outbound;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import kr.nanoit.domain.broker.InternalDataOutBound;
+import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.broker.MetaData;
+import kr.nanoit.domain.payload.Payload;
+import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.domain.payload.Send;
+import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.broker.BrokerImpl;
+import kr.nanoit.module.inbound.socket.SocketManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import java.io.IOException;
+import java.util.Random;
+import java.util.UUID;
+
+import static org.mockito.Mockito.*;
+
+class ThreadOutBoundTest {
+
+    private ThreadOutBound threadOutBound;
+
+    @Mock
+    private SocketManager socketManager;
+
+    private Broker broker;
+    private String uuid;
+    private Thread outBoundThread;
+    private ObjectMapper objectMapper;
+    private Random random;
+
+
+    @BeforeEach
+    void setUp() throws IOException {
+        this.objectMapper = new ObjectMapper();
+        this.random = new Random();
+        this.uuid = UUID.randomUUID().toString().substring(0, 7);
+        this.socketManager = spy(new SocketManager());
+        this.broker = spy(new BrokerImpl(this.socketManager));
+        this.threadOutBound = spy(new ThreadOutBound(broker, uuid));
+        this.outBoundThread = spy(new Thread(threadOutBound));
+        this.outBoundThread.start();
+    }
+
+    @AfterEach
+    void tearDown() {
+        this.outBoundThread.interrupt();
+    }
+
+    @DisplayName("ThreadOutbound는 전달 받은 데이터를 inbound WriteStream 으로 broker를 이용하여 전달 하여야 한다")
+    @Test
+    void t1() throws JsonProcessingException {
+
+        // given
+        Send send = new Send(1, "010-4987-5552", "056-555-6666", "이정섭", "테스트");
+        InternalDataOutBound expected = new InternalDataOutBound(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
+
+        // when
+        broker.publish(expected);
+        String payload = toJSON(expected);
+
+        // then
+        verify(broker).outBound(uuid, payload);
+    }
+
+    @DisplayName("ThreadOutbound는 전달 받은 데이터들을 inbound WriteStream 으로 broker를 이용하여 전달 하여야 한다")
+    @Test
+    void t2() throws JsonProcessingException, InterruptedException {
+        // given
+        Send send = new Send(1, "010-4987-5552", "056-555-6666", "이정섭", "테스트");
+        InternalDataOutBound expected = new InternalDataOutBound(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
+        int randomInt = random.nextInt(10);
+
+        // when
+        for (int i = 0; i < randomInt; i++) {
+            System.out.println(i);
+            broker.publish(expected);
+        }
+
+        // then
+        Thread.sleep(4000);
+        String payload = toJSON(expected);
+        verify(broker, times(randomInt)).subscribe(InternalDataType.OUTBOUND);
+        verify(broker, times(randomInt)).outBound(uuid, payload);
+    }
+
+    private String toJSON(Object object) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(((InternalDataOutBound) object).getPayload());
+    }
+
+}

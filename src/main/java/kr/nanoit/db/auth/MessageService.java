@@ -11,7 +11,6 @@ import kr.nanoit.exception.FindFailedException;
 import kr.nanoit.exception.InsertFailedException;
 import kr.nanoit.exception.UpdateFailedException;
 
-import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public interface MessageService {
@@ -57,7 +56,7 @@ public interface MessageService {
 
     boolean updateCompanyMessage();
 
-    boolean insertCompanyMessage(CompanyMessageEntity companyMessageEntity);
+    boolean insertCompanyMessage(CompanyMessageEntity companyMessageEntity) throws InsertFailedException;
 
 
     // Access_list
@@ -73,6 +72,8 @@ public interface MessageService {
 
     // Message_status
     boolean insertMessageStatus(String status1, String status2);
+
+    boolean insertRelayCompany() throws InsertFailedException;
 
 }
 

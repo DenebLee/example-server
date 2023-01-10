@@ -3,6 +3,7 @@ package kr.nanoit.module.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jdk.jfr.events.ExceptionStatisticsEvent;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataMapper;
@@ -30,17 +31,17 @@ public class ThreadMapper extends ModuleProcess {
             try {
                 object = broker.subscribe(InternalDataType.MAPPER);
                 if (object != null && object instanceof InternalDataMapper) {
-//                    log.info("[MAPPER]   READ-THREAD DATA INPUT => [{}]", object);
                     InternalDataMapper internalDataMapper = (InternalDataMapper) object;
                     Payload payload = objectMapper.readValue(internalDataMapper.getPayload(), Payload.class);
 
                     if (broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), payload))) {
-//                        log.info("[MAPPER]   TO FILTER => [TYPE : {} DATA : {}]", payload.getType(), payload.getData());/
                     }
                 }
             } catch (InterruptedException | JsonProcessingException e) {
-                shoutDown();
                 throw new RuntimeException(e);
+            } catch (Exception e) {
+                e.printStackTrace();
+                shoutDown();
             }
         }
     }

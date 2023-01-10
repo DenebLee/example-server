@@ -47,7 +47,7 @@ class ThreadMapperTest {
         mapperThread.interrupt();
     }
 
-    @DisplayName("Payload : String 값으로 넘겼을 때 Mapping 되어 InternalDataFilter 가 되어야 함 ")
+    @DisplayName("Payload : String 값으로 넘겼을 때 Mapping 되어 InternalDataFilter 형태로 Filter로 전송되어야 함ㄴ")
     @Test
     void t1() throws InterruptedException, JsonProcessingException {
         // given
@@ -63,23 +63,7 @@ class ThreadMapperTest {
         // then
         assertThat(actual.getPayload()).isEqualTo(objectMapper.writeValueAsString(expected.getPayload()));
     }
-
-//    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료 되어야 함")
-//    @Test
-//    void t2() throws InterruptedException {
-//        // given
-//        Thread.State actual = mapperThread.getState();
-//
-//        threadMapper.shoutDown();
-//
-//        // when
-//        Thread.sleep(1500L);
-//        Thread.State expected = mapperThread.getState();
-//
-//        // then
-//        assertThat(actual).isEqualTo(Thread.State.RUNNABLE);
-//        assertThat(expected).isEqualTo(Thread.State.TERMINATED);
-//    }
+    
 
     public String randomString(int targetLength) {
         int leftLimit = 97; // letter 'a'

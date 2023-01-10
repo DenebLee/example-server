@@ -38,7 +38,7 @@ class ThreadFilterTest {
         uuid = UUID.randomUUID().toString();
         broker = spy(new BrokerImpl(socketManager));
         threadFilter = spy(new ThreadFilter(broker, uuid, userManager));
-        filterThread = new Thread(threadFilter);
+        filterThread = spy(new Thread(threadFilter));
         filterThread.start();
     }
 

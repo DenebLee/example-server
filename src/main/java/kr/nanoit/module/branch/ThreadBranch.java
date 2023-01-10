@@ -20,19 +20,17 @@ public class ThreadBranch extends ModuleProcess {
 
     public ThreadBranch(Broker broker, String uuid, MessageService messageService, UserManager userManager) {
         super(broker, uuid);
-        this.auth = new Auth(broker,userManager);
+        this.auth = new Auth(broker, userManager);
         this.messageService = messageService;
     }
 
     @Override
     public void run() {
         try {
-            Object object;
             flag = true;
             while (flag) {
-                object = broker.subscribe(InternalDataType.BRANCH);
+                Object object = broker.subscribe(InternalDataType.BRANCH);
                 if (object != null && object instanceof InternalDataBranch) {
-//                    log.info("[BRANCH]   DATA INPUT => {}", object);
                     InternalDataBranch internalDataBranch = (InternalDataBranch) object;
                     PayloadType payloadType = internalDataBranch.getPayload().getType();
 

@@ -36,6 +36,7 @@ ThreadOutBound extends ModuleProcess {
                 }
             }
         } catch (InterruptedException | JsonProcessingException ex) {
+            ex.printStackTrace();
             throw new RuntimeException(ex);
         }
     }

@@ -13,7 +13,6 @@ import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
-// Filter
 @Slf4j
 public class ThreadFilter extends ModuleProcess {
     private final UserManager userManager;
@@ -32,7 +31,6 @@ public class ThreadFilter extends ModuleProcess {
             while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.FILTER);
                 if (object instanceof InternalDataFilter) {
-//                    log.info("[FILTER]   DATA INPUT => [{}]", object);
                     InternalDataFilter internalDataFilter = (InternalDataFilter) object;
                     if (internalDataFilter.getMetaData() == null) {
                         publishBadRequest(internalDataFilter, "MetaData is null");
@@ -48,14 +46,12 @@ public class ThreadFilter extends ModuleProcess {
                     }
                     switch (internalDataFilter.getPayload().getType()) {
                         case SEND:
-                            if (!validation.verificationSendData(internalDataFilter,userManager)) {
+                            if (!validation.verificationSendData(internalDataFilter, userManager)) {
                                 publishBadRequest(internalDataFilter, "Invalid Send value");
                             }
                             break;
 
                         case REPORT_ACK:
-
-
                             if (!validation.verificationReport_ackData(internalDataFilter)) {
                                 publishBadRequest(internalDataFilter, "Invalid Report_ack value");
                             }
@@ -68,7 +64,6 @@ public class ThreadFilter extends ModuleProcess {
                             break;
                     }
                     if (broker.publish(new InternalDataBranch(internalDataFilter.getMetaData(), internalDataFilter.getPayload()))) {
-                        // log.info("[FILTER]   TO BRANCH => [TYPE : {} DATA : {}]", internalDataFilter.getMetaData(), internalDataFilter.getPayload().getData());
                     }
                 }
             }

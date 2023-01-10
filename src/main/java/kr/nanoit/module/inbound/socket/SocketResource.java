@@ -35,7 +35,7 @@ public class SocketResource {
         readStreamThread.setName(uuid + "-read");
         this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer, isAuthComplete));
         writeStreamThread.setName(uuid + "-write");
-        socket.setSoTimeout(60000);
+        socket.setSoTimeout(100000);
     }
 
     public void serve() {
