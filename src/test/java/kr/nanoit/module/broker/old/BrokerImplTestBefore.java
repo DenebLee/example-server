@@ -115,7 +115,7 @@ class BrokerImplTestBefore {
         // given
         InternalDataSender expected = new InternalDataSender();
         expected.setMetaData(new MetaData(randomString(4)));
-        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, new Timestamp(System.currentTimeMillis()), "919-4242-4444", "042-555-4444", "이정섭", randomString(10)))));
+        expected.setPayload(new Payload(PayloadType.SEND, randomString(4), objectMapper.writeValueAsString(new Send(1, "919-4242-4444", "042-555-4444", "이정섭", randomString(10)))));
 
         // when
         broker.publish(expected);

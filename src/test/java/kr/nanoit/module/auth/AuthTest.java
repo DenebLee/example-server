@@ -26,7 +26,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -88,7 +87,6 @@ class AuthTest {
     @BeforeEach
     void setUp() {
         uuid = UUID.randomUUID().toString();
-        System.out.println("시작할때 uuid = " + uuid);
         UserInfo userInfo = new UserInfo();
         userInfo.setStatus(AuthenticaionStatus.BEFORE);
         userManager.registUser(uuid, userInfo);
@@ -97,7 +95,6 @@ class AuthTest {
     @AfterEach
     void tearDown() {
         userManager.unregisUser(uuid);
-        System.out.println("테스트 끝나고 uuid = " + uuid);
         messageService.updateAgentStatus(14, 1, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()));
     }
 

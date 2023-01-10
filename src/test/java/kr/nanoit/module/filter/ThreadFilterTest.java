@@ -23,7 +23,7 @@ import static org.mockito.Mockito.spy;
 class ThreadFilterTest {
 
     @Mock
-    SocketManager socketManager;
+    private SocketManager socketManager;
 
     private Thread filterThread;
 
@@ -35,7 +35,7 @@ class ThreadFilterTest {
 
     @BeforeEach
     void setUp() {
-        uuid = UUID.randomUUID().toString().substring(0, 7);
+        uuid = UUID.randomUUID().toString();
         broker = spy(new BrokerImpl(socketManager));
         threadFilter = spy(new ThreadFilter(broker, uuid, userManager));
         filterThread = new Thread(threadFilter);

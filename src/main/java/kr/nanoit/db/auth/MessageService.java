@@ -41,11 +41,11 @@ public interface MessageService {
 
 
     // Client_Message
-    ClientMessageEntity findClientMessage(long id);
+    ClientMessageEntity findClientMessage(long id) throws FindFailedException;
 
     boolean deleteClientMessage(long id);
 
-    Integer insertClientMessage(ClientMessageEntity clientMessageEntity);
+    long insertClientMessage(ClientMessageEntity clientMessageEntity) throws InsertFailedException;
 
     boolean updateMessageStatus(long id, MessageStatus messageStatus) throws UpdateFailedException;
 

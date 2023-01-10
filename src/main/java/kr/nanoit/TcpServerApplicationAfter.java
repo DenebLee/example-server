@@ -17,6 +17,8 @@ import kr.nanoit.module.inbound.socket.UserManager;
 import kr.nanoit.module.mapper.ThreadMapper;
 import kr.nanoit.module.outbound.ThreadOutBound;
 import kr.nanoit.module.sender.ThreadSender;
+import kr.nanoit.scheduler.Executor;
+import kr.nanoit.scheduler.Task;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
@@ -38,6 +40,9 @@ public class TcpServerApplicationAfter {
                 .setPassword("lee");
         PostgreSqlDbcp dbcp = new PostgreSqlDbcp(dataBaseConfig);
         MessageService messageService = MessageService.createPostgreSqL(dbcp);
+
+        Executor executor = new Executor();
+        executor.startExecutor();
 
 
         new ThreadMapper(broker, getRandomUuid());

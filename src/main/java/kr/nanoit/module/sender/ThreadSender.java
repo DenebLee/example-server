@@ -11,6 +11,7 @@ import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.ClientMessageDto;
 import kr.nanoit.exception.FindFailedException;
+import kr.nanoit.exception.InsertFailedException;
 import kr.nanoit.exception.UpdateFailedException;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
@@ -38,30 +39,35 @@ public class ThreadSender extends ModuleProcess {
                     internalDataSender = (InternalDataSender) object;
                     Send send = (Send) internalDataSender.getPayload().getData();
 
-                    if (send == null) {
-                        broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new ErrorPayload("SendMessage is null"))));
+                    if (send == null || send.getContent().isEmpty() || send.getSender_num().isEmpty() || send.getSender_name().isEmpty() || send.getSender_callback().isEmpty() || send.getAgent_id() == 0) {
                         sendResult("SendMessage is null", internalDataSender, new Exception());
-                    }
-                    ClientMessageDto messageDto = makeMessage(send);
-                    if (messageDto != null) {
-                        Integer id = messageService.insertClientMessage(messageDto.toEntity());
-                        if (id != null) {
-                            long messageId = id.longValue();
-                            if (isSuccessToInsert(messageId, messageDto)) {
-                                messageDto.setId(messageId);
+                    } else {
+                        ClientMessageDto messageDto = makeMessage(send);
+                        long id = messageService.insertClientMessage(messageDto.toEntity());
+                        System.out.println(id);
+                        if (id != 0) {
+                            System.out.println("통과");
+                            if (isSuccessToInsert(id, messageDto)) {
+                                System.out.println("insert 테스트 통과");
+                                messageDto.setId(id);
                                 // Carrier 로 보낼때는 Payload에 ClinetMessageDto 적재
-                                if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
+                                if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
+                                    System.out.println("통신사 모듈로 전송 완료");
                                     // 전송 완료 시 status receive -> sent로 업데이트 후
                                     if (messageService.updateMessageStatus(id, MessageStatus.SENT)) {
                                         // 업데이트 성공 완료되면 outBound로 전송
-                                        if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS)))));
+                                        if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS)))))
+                                            ;
                                     }
                                 }
                             }
                         }
                     }
+
                 }
             }
+        } catch (InsertFailedException e) {
+            sendResult(e.getReason(), internalDataSender, e);
         } catch (FindFailedException e) {
             sendResult(e.getReason(), internalDataSender, e);
         } catch (UpdateFailedException e) {
@@ -75,14 +81,14 @@ public class ThreadSender extends ModuleProcess {
 
     private void sendResult(String reason, InternalDataSender internalDataSender, Exception exception) {
         if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
-            log.warn("[AUTH] key={} {}", internalDataSender.getMetaData().getSocketUuid(), reason, exception);
+            log.warn("[SENDER]   key = {} reason = {}", internalDataSender.getMetaData().getSocketUuid(), reason, exception);
         }
     }
 
     @Override
     public void shoutDown() {
         this.flag = false;
-        log.warn("[SENDER   THIS THREAD SHUTDOWN]");
+        log.warn("[SENDER]   THIS THREAD SHUTDOWN");
     }
 
     @Override

@@ -4,8 +4,13 @@ package kr.nanoit.module.carrier;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.db.auth.MessageService;
 import kr.nanoit.domain.broker.InternalDataCarrier;
+import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.message.MessageStatus;
+import kr.nanoit.domain.payload.Payload;
+import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.domain.payload.Report;
 import kr.nanoit.dto.ClientMessageDto;
 import kr.nanoit.dto.CompanyMessageDto;
 import kr.nanoit.module.broker.Broker;
@@ -34,7 +39,7 @@ public class ThreadCarrier extends ModuleProcess {
     public void run() {
         try {
             flag = true;
-            while (true) {
+            while (flag) {
                 Object object = broker.subscribe(InternalDataType.CARRIER);
                 if (object instanceof InternalDataCarrier) {
                     InternalDataCarrier internalDataCarrier = (InternalDataCarrier) object;
@@ -43,17 +48,18 @@ public class ThreadCarrier extends ModuleProcess {
                         if (clientMessageDto != null) {
                             CompanyMessageDto companyMessageDto = makeCompanyMessageDto(clientMessageDto);
                             if (messageService.insertCompanyMessage(companyMessageDto.toEntity())) {
-
-
-                                // 7초에 한번씩 레포트 전송해줘야 함
+                                Thread.sleep(500);
+                                broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.UUID(), new Report(clientMessageDto.getAgent_id(), MessageResult.SUCCESS))));
                             }
                         }
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             e.printStackTrace();
         }
+
     }
 
     private CompanyMessageDto makeCompanyMessageDto(ClientMessageDto clientMessageDto) {

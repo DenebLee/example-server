@@ -181,22 +181,26 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public Integer insertClientMessage(ClientMessageEntity clientMessageEntity) throws InsertFailedException {
+    public long insertClientMessage(ClientMessageEntity clientMessageEntity) throws InsertFailedException {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertClientMessage(clientMessageEntity));
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertClientMessage(clientMessageEntity), Statement.RETURN_GENERATED_KEYS);
             int result = preparedStatement.executeUpdate();
 
             if (result == 1) {
                 ResultSet rs = preparedStatement.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getInt(1);
+                while (rs.next()) {
+                    return rs.getLong(1);
                 }
+                rs.close();
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             log.error("failed to insert Client Message");
             throw new InsertFailedException("failed to insert Client Message");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return null;
+        return 0;
     }
 
     @Override

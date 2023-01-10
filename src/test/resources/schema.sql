@@ -49,7 +49,6 @@ CREATE TABLE "client_message"
     "sender_num"       varchar(32)                                         NOT NULL,
     "sender_callback"  varchar(32)                                         NOT NULL,
     "sender_name"      varchar(64)                                         NOT NULL,
-    "receive_time"     timestamptz                                         NOT NULL,
     "content"          varchar(255)                                        NOT NULL,
     "created_at"       timestamptz                                         NOT NULL,
     "last_modified_at" timestamptz                                         NOT NULL
@@ -66,7 +65,6 @@ CREATE TABLE "company_message"
     "sender_num"        varchar(32)                                         NOT NULL,
     "sender_callback"   varchar(32)                                         NOT NULL,
     "sender_name"       varchar(64)                                         NOT NULL,
-    "receive_time"      timestamptz                                         NOT NULL,
     "content"           varchar(255)                                        NOT NULL,
     "created_at"        timestamptz                                         NOT NULL,
     "last_modified_at"  timestamptz                                         NOT NULL
