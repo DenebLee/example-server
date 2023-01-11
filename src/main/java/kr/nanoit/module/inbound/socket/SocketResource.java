@@ -3,6 +3,7 @@ package kr.nanoit.module.inbound.socket;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.thread.gateway.ReadStreamThread;
 import kr.nanoit.module.inbound.thread.gateway.WriteStreamThread;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,20 +23,31 @@ public class SocketResource {
 
     private final Thread readStreamThread;
     private final Thread writeStreamThread;
+    private final BufferedReader bufferedReader;
+    private final BufferedWriter bufferedWriter;
+    private final InputStreamReader inputStreamReader;
+    private final OutputStreamWriter outputStreamWriter;
     private boolean readThreadStatus = true;
     private boolean writeThreadStatus = true;
     @Setter
     public AtomicBoolean isAuthComplete = new AtomicBoolean(false);
 
     public SocketResource(Socket socket, Broker broker, UserManager userManager) throws IOException {
-        this.uuid = UUID.randomUUID().toString().substring(0, 7);
+        this.uuid = UUID.randomUUID().toString();
         this.socket = socket;
         this.writeBuffer = new LinkedBlockingQueue<>();
-        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, new BufferedReader(new InputStreamReader(socket.getInputStream())), uuid, isAuthComplete, userManager));
+
+        this.inputStreamReader = new InputStreamReader(socket.getInputStream());
+        this.outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+        this.bufferedReader = new BufferedReader(this.inputStreamReader);
+        this.bufferedWriter = new BufferedWriter(this.outputStreamWriter);
+
+        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, bufferedReader, uuid, isAuthComplete, userManager));
         readStreamThread.setName(uuid + "-read");
-        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), uuid, writeBuffer, isAuthComplete));
+        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, bufferedWriter, uuid, writeBuffer, isAuthComplete));
         writeStreamThread.setName(uuid + "-write");
         socket.setSoTimeout(100000);
+
     }
 
     public void serve() {
@@ -51,6 +63,7 @@ public class SocketResource {
 
     public void readThreadCleaner(String calledClassName) {
         try {
+            writeThreadStatus = false;
             writeStreamThread.interrupt();
             this.socket.shutdownInput();
             readThreadStatus = false;
@@ -61,6 +74,7 @@ public class SocketResource {
 
     public void writeThreadCleaner(String calledClassName) {
         try {
+            readThreadStatus = false;
             readStreamThread.interrupt();
             this.socket.shutdownOutput();
             writeThreadStatus = false;
@@ -75,7 +89,7 @@ public class SocketResource {
     }
 
     public void connectClose() throws IOException {
-        socket.close();
+        this.socket.close();
     }
 
     public boolean isSocketInputStreamClose() {
@@ -92,7 +106,7 @@ public class SocketResource {
     }
 
     public boolean isSocketClose() {
-        return socket.isClosed();
+        return this.socket.isClosed();
     }
 
 }

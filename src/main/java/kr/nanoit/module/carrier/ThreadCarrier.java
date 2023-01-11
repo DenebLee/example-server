@@ -20,10 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Timestamp;
 
-/*
-    무조건 받으면 성공
-    5초마다 Report
-*/
 @Slf4j
 public class ThreadCarrier extends ModuleProcess {
     private final Broker broker;
@@ -50,9 +46,7 @@ public class ThreadCarrier extends ModuleProcess {
 
                         ClientMessageDto clientMessageDto = (ClientMessageDto) internalDataCarrier.getPayload().getData();
                         if (clientMessageDto != null) {
-
                             CompanyMessageDto companyMessageDto = makeCompanyMessageDto(clientMessageDto);
-
                             if (messageService.insertCompanyMessage(companyMessageDto.toEntity())) {
                                 Thread.sleep(100);
                                 broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.UUID(), new Report(clientMessageDto.getAgent_id(), MessageResult.SUCCESS))));

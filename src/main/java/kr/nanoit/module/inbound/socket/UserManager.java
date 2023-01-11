@@ -26,24 +26,18 @@ public class UserManager implements Runnable {
             while (true) {
                 for (Map.Entry<String, UserInfo> entry : userResourceMap.entrySet()) {
                     SocketResource socketResource = socketManager.getSocketResource(entry.getKey());
-                    // 인증 실패시 boolean == false;
                     if (entry.getValue().getStatus().equals(AuthenticaionStatus.FAILED)) {
                         socketResource.setIsAuthComplete(new AtomicBoolean(false));
                     }
-                    // 인증 성공시 boolean == true;
                     if (entry.getValue().getStatus().equals(AuthenticaionStatus.COMPLETE)) {
                         socketResource.setIsAuthComplete(new AtomicBoolean(true));
                     }
 
-                    // 해당 클라이언트의 접속이 끊겼을 경우 의존성 삭제
                     String uuid = socketManager.forwardUserMap.poll(1, TimeUnit.SECONDS);
                     if (uuid != null) {
-                        if (unregisUser(uuid)) {
-                            log.info("[@SOCKET-{}:USER-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
-                        }
+                        unregisUser(uuid);
+                        log.info("[@SOCKET-{}:USER-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
                     }
-
-
                 }
             }
         } catch (Exception e) {
@@ -58,11 +52,8 @@ public class UserManager implements Runnable {
         return userResourceMap.put(uuid, userInfo) == null;
     }
 
-    public boolean unregisUser(String uuid) {
-        if (uuid == null) {
-            return false;
-        }
-        return userResourceMap.remove(uuid) == null;
+    public void unregisUser(String uuid) {
+        userResourceMap.remove(uuid);
     }
 
     public void replaceStatus(String uuid, UserInfo userInfo) {

@@ -55,9 +55,9 @@ public class ThreadBranch extends ModuleProcess {
                     }
                 }
             }
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
+            log.warn(e.getMessage());
             shoutDown();
-            e.printStackTrace();
         }
     }
 

@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 class ThreadFilterTest {
@@ -37,6 +38,7 @@ class ThreadFilterTest {
     void setUp() {
         uuid = UUID.randomUUID().toString();
         broker = spy(new BrokerImpl(socketManager));
+        userManager = mock(UserManager.class);
         threadFilter = spy(new ThreadFilter(broker, uuid, userManager));
         filterThread = spy(new Thread(threadFilter));
         filterThread.start();
@@ -320,15 +322,20 @@ class ThreadFilterTest {
         // when
         broker.publish(expected);
         Thread.sleep(1000L);
-        Object actual = broker.subscribe(InternalDataType.OUTBOUND);
-        InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
-        Object object = actualAfter.getPayload().getData();
-        ErrorPayload errorDto = (ErrorPayload) object;
 
         // then
-        assertThat(actual).isInstanceOf(InternalDataOutBound.class);
-        assertThat(actualAfter.getPayload().getType()).isEqualTo(PayloadType.BAD_SEND);
-        assertThat(errorDto.getReason()).isEqualTo("Invalid Send value");
+        Object object = broker.subscribe(InternalDataType.OUTBOUND);
+        assertThat(object).isInstanceOf(InternalDataOutBound.class);
+        InternalDataOutBound actual = (InternalDataOutBound) object;
+        assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(uuid);
+        assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.BAD_SEND);
+        assertThat(actual.getPayload().getMessageUuid()).isEqualTo("123123");
+
+        assertThat(actual.getPayload().getData()).isInstanceOf(ErrorPayload.class);
+        ErrorPayload errorPayload = (ErrorPayload) actual.getPayload().getData();
+        assertThat(errorPayload.getReason()).isEqualTo("Invalid Send value");
+
+
     }
 
     @DisplayName("validation - PayloadData : Send 형식일 경우 Id가 0보다 작을 때 실패가 되어야 한다")
@@ -342,15 +349,19 @@ class ThreadFilterTest {
         // when
         broker.publish(expected);
         Thread.sleep(1000L);
-        Object actual = broker.subscribe(InternalDataType.OUTBOUND);
-        InternalDataOutBound actualAfter = (InternalDataOutBound) actual;
-        Object object = actualAfter.getPayload().getData();
-        ErrorPayload errorDto = (ErrorPayload) object;
+
 
         // then
-        assertThat(actual).isInstanceOf(InternalDataOutBound.class);
-        assertThat(actualAfter.getPayload().getType()).isEqualTo(PayloadType.BAD_SEND);
-        assertThat(errorDto.getReason()).isEqualTo("Invalid Send value");
+        Object object = broker.subscribe(InternalDataType.OUTBOUND);
+        assertThat(object).isInstanceOf(InternalDataOutBound.class);
+        InternalDataOutBound actual = (InternalDataOutBound) object;
+        assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(uuid);
+        assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.BAD_SEND);
+        assertThat(actual.getPayload().getMessageUuid()).isEqualTo("123123");
+
+        assertThat(actual.getPayload().getData()).isInstanceOf(ErrorPayload.class);
+        ErrorPayload errorPayload = (ErrorPayload) actual.getPayload().getData();
+        assertThat(errorPayload.getReason()).isEqualTo("Invalid Send value");
     }
 
     @DisplayName("validation - PayloadData : Send 형식일 경우 Sender_name이 null 일 경우 실패 되어야 한다")

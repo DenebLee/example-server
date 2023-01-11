@@ -32,7 +32,6 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 
@@ -153,7 +152,8 @@ class ThreadCarrierTest {
         assertThat(actual.getPayload().getData()).isInstanceOf(ErrorPayload.class);
 
         ErrorPayload errorPayload = (ErrorPayload) actual.getPayload().getData();
-        assertThat(errorPayload.getReason()).isEqualTo("Companymessage insert failed");
+        assertThat(errorPayload.getReason()).isEqualTo("ERROR: insert or update on table \"company_message\" violates foreign key constraint \"company_message_client_message_id_fkey\"\n" +
+                "  Detail: Key (client_message_id)=(3) is not present in table \"client_message\".");
     }
 
 }

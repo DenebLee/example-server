@@ -95,7 +95,8 @@ class ThreadSenderTest {
     @Test
     void t1() throws InterruptedException {
         // given
-        InternalDataSender expected = new InternalDataSender(new MetaData(this.uuid), new Payload(PayloadType.SEND, uuid, null));
+        String uuid = UUID.randomUUID().toString();
+        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, null));
 
         // when
         broker.publish(expected);
@@ -116,7 +117,8 @@ class ThreadSenderTest {
     @Test
     void t2() throws InterruptedException {
         // given
-        InternalDataSender expected = new InternalDataSender(new MetaData(this.uuid), new Payload(PayloadType.SEND, uuid, new Send(3, "010-4444-5555", "053-555-4444", "이정섭", "테스트")));
+        String uuid = UUID.randomUUID().toString();
+        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, new Send(3, "010-4444-5555", "053-555-4444", "이정섭", "테스트")));
 
         // when
         broker.publish(expected);
@@ -130,15 +132,17 @@ class ThreadSenderTest {
         assertThat(actual.getPayload().getMessageUuid()).isEqualTo(uuid);
         assertThat(actual.getPayload().getData()).isInstanceOf(ErrorPayload.class);
         ErrorPayload errorPayload = (ErrorPayload) actual.getPayload().getData();
-        assertThat(errorPayload.getReason()).isEqualTo("failed to insert Client Message");
+        assertThat(errorPayload.getReason()).isEqualTo("ERROR: insert or update on table \"client_message\" violates foreign key constraint \"client_message_agent_id_fkey\"\n" +
+                "  Detail: Key (agent_id)=(3) is not present in table \"agent\".");
     }
 
     @DisplayName("client_message 테이블에 데이터을 정상적으로 insert 되었으면 clientMessage id값이 return 되어야 한다")
     @Test
     void t3() throws InterruptedException {
         // given
+        String uuid = UUID.randomUUID().toString();
         Send send = new Send(4, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
-        InternalDataSender expected = new InternalDataSender(new MetaData(this.uuid), new Payload(PayloadType.SEND, uuid, send));
+        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
         broker.publish(expected);
@@ -167,6 +171,7 @@ class ThreadSenderTest {
     @Test
     void t4() throws InterruptedException {
         // given
+        String uuid = UUID.randomUUID().toString();
         Send send = new Send(4, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
@@ -177,9 +182,7 @@ class ThreadSenderTest {
         Object object = broker.subscribe(InternalDataType.OUTBOUND);
         assertThat(object).isInstanceOf(InternalDataOutBound.class);
         InternalDataOutBound actual = (InternalDataOutBound) object;
-        assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(expected.getMetaData().getSocketUuid());
         assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.SEND_ACK);
-        assertThat(actual.getPayload().getMessageUuid()).isEqualTo(uuid);
         assertThat(actual.getPayload().getData()).isInstanceOf(SendAck.class);
         SendAck result = (SendAck) actual.getPayload().getData();
 

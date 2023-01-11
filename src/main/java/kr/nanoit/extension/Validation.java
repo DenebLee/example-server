@@ -19,7 +19,6 @@ public class Validation {
         if (send.getAgent_id() == 0 || send.getAgent_id() < 0) {
             if (userManager.isExistsUserInfo(internalDataFilter.UUID(), send.getAgent_id()) == false) {
                 return false;
-                //TODO 해당 로직은 모듈이 독립하게 되면 앞단에서 검증 확인여부가 필요하게 되어 여기서도 다시 접속자의 uuid의 접속자 정보가 일치하는지에 대한 검증을 해야 하는가
             }
             return false;
         }

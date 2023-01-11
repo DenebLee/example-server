@@ -18,13 +18,12 @@ import kr.nanoit.module.mapper.ThreadMapper;
 import kr.nanoit.module.outbound.ThreadOutBound;
 import kr.nanoit.module.sender.ThreadSender;
 import kr.nanoit.scheduler.Executor;
-import kr.nanoit.scheduler.Task;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
 @Slf4j
-public class TcpServerApplicationAfter {
+public class TcpServerApplication {
     public static int port = 12323;
 
     public static void main(String[] args) throws ClassNotFoundException {
@@ -66,9 +65,9 @@ public class TcpServerApplicationAfter {
         userManagerThread.start();
 
         System.out.println("");
-        System.out.println("==========================================================================================================================================");
-        System.out.println("                                                     ECHO TEST SERVER START  ");
-        System.out.println("==========================================================================================================================================");
+        System.out.println("====================================================================================================================================================================================");
+        System.out.println("                                                                       ECHO TEST SERVER START  ");
+        System.out.println("=============================================================================================================================================================================");
         System.out.println("");
 
     }

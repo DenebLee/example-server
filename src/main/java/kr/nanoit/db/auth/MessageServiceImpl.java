@@ -43,11 +43,13 @@ public class MessageServiceImpl implements MessageService {
                     return user;
                 }
             }
-            return null;
         } catch (SQLException e) {
             log.error("failed to find user", e);
-            throw new FindFailedException("failed to find User");
+            throw new FindFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -63,7 +65,9 @@ public class MessageServiceImpl implements MessageService {
         } catch (SQLException e) {
             log.error("failed to insert Member Info");
             e.printStackTrace();
-            throw new InsertFailedException("failed to insert Member Info");
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -90,11 +94,13 @@ public class MessageServiceImpl implements MessageService {
                     return agentEntity;
                 }
             }
-            return null;
         } catch (SQLException e) {
             log.error("failed to find Agent", e);
-            throw new FindFailedException("failed to find Agent");
+            throw new FindFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -109,8 +115,9 @@ public class MessageServiceImpl implements MessageService {
             }
         } catch (SQLException e) {
             log.error("failed to insert Agent", e);
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
-            throw new InsertFailedException("failed to insert Agent");
         }
         return false;
     }
@@ -124,7 +131,9 @@ public class MessageServiceImpl implements MessageService {
             }
         } catch (SQLException e) {
             log.error("failed to update Agent Status", e);
-            throw new UpdateFailedException("failed to update Agent Status");
+            throw new UpdateFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -135,8 +144,11 @@ public class MessageServiceImpl implements MessageService {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.findAccessList(accessListId));
             return preparedStatement.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -164,8 +176,11 @@ public class MessageServiceImpl implements MessageService {
             return null;
         } catch (SQLException e) {
             log.error("failed to find message", e);
-            throw new FindFailedException("failed to find message");
+            throw new FindFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     @Override
@@ -179,8 +194,11 @@ public class MessageServiceImpl implements MessageService {
             return false;
         } catch (SQLException e) {
             log.error("failed to delete message", e);
-            throw new DeleteFailedException("failed to delete message");
+            throw new DeleteFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -197,9 +215,8 @@ public class MessageServiceImpl implements MessageService {
                 rs.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             log.error("failed to insert Client Message");
-            throw new InsertFailedException("failed to insert Client Message");
+            throw new InsertFailedException(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -215,7 +232,7 @@ public class MessageServiceImpl implements MessageService {
             }
         } catch (SQLException e) {
             log.error("failed to update Client Message");
-            throw new UpdateFailedException("failed to update Client Message");
+            throw new UpdateFailedException(e.getMessage());
         }
         return false;
     }
@@ -227,6 +244,8 @@ public class MessageServiceImpl implements MessageService {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -237,6 +256,8 @@ public class MessageServiceImpl implements MessageService {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -247,6 +268,8 @@ public class MessageServiceImpl implements MessageService {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -260,8 +283,9 @@ public class MessageServiceImpl implements MessageService {
                 return true;
             }
         } catch (SQLException e) {
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
-            throw new InsertFailedException("Companymessage insert failed");
         }
         return false;
     }
@@ -273,12 +297,13 @@ public class MessageServiceImpl implements MessageService {
             int result = preparedStatement.executeUpdate();
             if (result == 1) {
                 return true;
-            } else {
-                return false;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -288,12 +313,13 @@ public class MessageServiceImpl implements MessageService {
             int result = preparedStatement.executeUpdate();
             if (result == 1) {
                 return true;
-            } else {
-                return false;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new UpdateFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -303,12 +329,13 @@ public class MessageServiceImpl implements MessageService {
             int result = preparedStatement.executeUpdate();
             if (result == 1) {
                 return true;
-            } else {
-                return false;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -318,12 +345,13 @@ public class MessageServiceImpl implements MessageService {
             int result = preparedStatement.executeUpdate();
             if (result == 1) {
                 return true;
-            } else {
-                return false;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -333,12 +361,13 @@ public class MessageServiceImpl implements MessageService {
             int result = preparedStatement.executeUpdate();
             if (result == 1) {
                 return true;
-            } else {
-                return false;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
     @Override
@@ -350,9 +379,9 @@ public class MessageServiceImpl implements MessageService {
                 return true;
             }
         } catch (SQLException e) {
+            throw new InsertFailedException(e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
-            throw new InsertFailedException("Insert relaycompany data Failed");
-
         }
         return false;
     }

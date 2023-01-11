@@ -97,12 +97,13 @@ class SocketManagerTest {
         SocketManager socketManager = spy(new SocketManager());
         SocketResource socketResource = mock(SocketResource.class);
         Socket socket = mock(Socket.class);
+        String uuid = UUID.randomUUID().toString();
 
         // when
         when(socketResource.getSocket()).thenReturn(socket);
         when(socket.isBound()).thenReturn(true);
         when(socket.isClosed()).thenReturn(false);
-        when(socketResource.getUuid()).thenReturn(UUID.randomUUID().toString());
+        when(socketResource.getUuid()).thenReturn(uuid);
 
         // then
         assertThat(socketManager.register(socketResource)).isTrue();
@@ -233,19 +234,18 @@ class SocketManagerTest {
         when(socket.isBound()).thenReturn(true);
         when(socket.isClosed()).thenReturn(false);
         when(socketResource.getUuid()).thenReturn(UUID.randomUUID().toString());
+        testSocketManager.start();
         socketManager.register(socketResource);
         int actual = socketManager.getSocketResourcesMapSize();
 
         // when
-        when(socketResource.getSocket()).thenReturn(socket);
         when(socketResource.isTerminated()).thenReturn(true);
         when(socketResource.isSocketInputStreamClose()).thenReturn(true);
         when(socketResource.isSocketOutputStreamClose()).thenReturn(true);
-        when(socketResource.getSocket().isClosed()).thenReturn(true);
-        testSocketManager.start();
+        when(socketResource.isSocketClose()).thenReturn(true);
+
         Thread.sleep(2000);
         int expected = socketManager.getSocketResourcesMapSize();
-        testSocketManager.interrupt();
 
         // then
         assertThat(actual).isEqualTo(1);

@@ -7,6 +7,7 @@ import kr.nanoit.db.query.MessageServicePostgreSqlQuerys;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
+import kr.nanoit.exception.InsertFailedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -292,13 +293,13 @@ class MessageServiceImplTest {
 
             messageService.insertUser(memberData);
             messageService.insertAgent(agentData);
-        }).isInstanceOf(RuntimeException.class)
-                .hasMessage("org.postgresql.util.PSQLException: ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_member_id_fkey\"\n" +
+        }).isInstanceOf(InsertFailedException.class)
+                .hasMessage("ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_member_id_fkey\"\n" +
                         "  Detail: Key (member_id)=(3) is not present in table \"member\".");
     }
 
 
-    @DisplayName("agent => access_list에 없는 id를 가진 agent를 insert할 시 RuntimeException 발생")
+    @DisplayName("agent => access_list에 없는 id를 가진 agent를 insert할 시 InsertFailedException 발생")
     @Test
     void t13() {
         try (Connection connection = dbcp.getConnection()) {
@@ -316,8 +317,8 @@ class MessageServiceImplTest {
 
                 preparedStatement.executeUpdate();
                 messageService.insertAgent(expected);
-            }).isInstanceOf(RuntimeException.class)
-                    .hasMessage("org.postgresql.util.PSQLException: ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_access_list_id_fkey\"\n" +
+            }).isInstanceOf(InsertFailedException.class)
+                    .hasMessage("ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_access_list_id_fkey\"\n" +
                             "  Detail: Key (access_list_id)=(5) is not present in table \"access_list\".");
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -343,8 +344,8 @@ class MessageServiceImplTest {
             AgentEntity agentData = new AgentEntity(11, 3, 1, null, timestamp, timestamp);
 
             messageService.insertAgent(agentData);
-        }).isInstanceOf(RuntimeException.class)
-                .hasMessage("org.postgresql.util.PSQLException: ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_status_fkey\"\n" +
+        }).isInstanceOf(InsertFailedException.class)
+                .hasMessage("ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_status_fkey\"\n" +
                         "  Detail: Key (status)=(null) is not present in table \"agent_status\".");
     }
 

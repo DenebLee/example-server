@@ -1,7 +1,5 @@
 package kr.nanoit.module.inbound.thread.gateway;
 
-import kr.nanoit.db.auth.AuthenticaionStatus;
-import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
@@ -19,14 +17,14 @@ public class WriteStreamThread implements Runnable {
     private final String uuid;
     private final LinkedBlockingQueue<String> writeBuffer;
     private String payload;
-    private final AtomicBoolean authSate;
+    private final AtomicBoolean authState;
 
-    public WriteStreamThread(Consumer<String> cleaner, BufferedWriter bufferedWriter, String uuid, LinkedBlockingQueue<String> writeBuffer, AtomicBoolean authSate) {
+    public WriteStreamThread(Consumer<String> cleaner, BufferedWriter bufferedWriter, String uuid, LinkedBlockingQueue<String> writeBuffer, AtomicBoolean authState) {
         this.cleaner = cleaner;
         this.bufferedWriter = bufferedWriter;
         this.uuid = uuid;
         this.writeBuffer = writeBuffer;
-        this.authSate = authSate;
+        this.authState = authState;
     }
 
 
@@ -34,14 +32,14 @@ public class WriteStreamThread implements Runnable {
     public void run() {
         log.info("[SERVER : SOCKET : {}] WRITE START", uuid.substring(0, 7));
         try {
-            while (true) { // BUSY WAITING : 리소스
+            while (true) {
                 payload = writeBuffer.poll(1, TimeUnit.SECONDS);
                 if (payload != null) {
-                    if (authSate.get() == false) {
+                    if (authState.get() == false) {
                         send(payload);
-                        throw new Throwable();
+                        payload = null;
                     }
-                    if (send(payload)) {
+                    if (send(payload) && payload != null) {
                         log.info("[SERVER : SOCKET : {}] WRITE SUCCESS! => Payload : {}", uuid.substring(0, 7), payload);
                     }
                 }

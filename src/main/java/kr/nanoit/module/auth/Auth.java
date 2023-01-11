@@ -56,21 +56,21 @@ public class Auth {
                             if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Connect Success"))))) {
                             }
                         } else {
-                            BadSend("Server Error", internalDataBranch, null);
+                            sendAuthenticationResult("Server Error", internalDataBranch, null);
                         }
                     } else {
-                        BadSend("This Agent already connected", internalDataBranch, null);
+                        sendAuthenticationResult("This Agent already connected", internalDataBranch, null);
                     }
                 } else {
-                    BadSend("Agent does not exist", internalDataBranch, null);
+                    sendAuthenticationResult("Agent does not exist", internalDataBranch, null);
                 }
             } else {
-                BadSend("Failed to Authentication", internalDataBranch, null);
+                sendAuthenticationResult("Failed to Authentication", internalDataBranch, null);
             }
         } catch (FindFailedException e) {
-            BadSend("Authentication failure Account information verification required", internalDataBranch, e);
+            sendAuthenticationResult("Authentication failure Account information verification required", internalDataBranch, e);
         } catch (Exception e) {
-            BadSend("unknown error", internalDataBranch, e);
+            sendAuthenticationResult("unknown error", internalDataBranch, e);
         }
     }
 
@@ -81,7 +81,7 @@ public class Auth {
         return false;
     }
 
-    private void BadSend(String reason, InternalDataBranch internalDataBranch, Exception exception) {
+    private void sendAuthenticationResult(String reason, InternalDataBranch internalDataBranch, Exception exception) {
         userManager.replaceStatus(internalDataBranch.UUID(), new UserInfo().setStatus(AuthenticaionStatus.FAILED));
         if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
             log.warn("[AUTH] key={} {}", internalDataBranch.getMetaData().getSocketUuid(), reason, exception);

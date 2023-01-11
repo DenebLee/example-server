@@ -39,13 +39,16 @@ public class SocketManager implements Runnable {
                 }
                 Thread.sleep(1000L);
             }
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (
+                InterruptedException e) {
             flag = false;
             log.error("[SOCKET-MANAGER] ERROR => ", e);
             throw new RuntimeException(e);
         }
+
     }
 
 
@@ -59,18 +62,25 @@ public class SocketManager implements Runnable {
 
     public boolean register(SocketResource socketResource) {
         if (socketResource.getSocket() == null) {
+            System.out.println("통과1");
             return false;
         }
         if (!socketResource.getSocket().isBound()) {
+            System.out.println("통과2");
+
             return false;
         }
         if (socketResource.getSocket().isClosed()) {
+            System.out.println("통과3");
+
             return false;
         }
-        if (socketResource.uuid == null) {
+        if (socketResource.getUuid() == null) {
+            System.out.println("통과4");
+
             return false;
         }
-        return socketResources.put(socketResource.uuid, socketResource) == null;
+        return socketResources.put(socketResource.getUuid(), socketResource) == null;
     }
 
     public SocketResource getSocketResource(String uuid) {

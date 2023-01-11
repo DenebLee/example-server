@@ -47,7 +47,7 @@ class ThreadMapperTest {
         mapperThread.interrupt();
     }
 
-    @DisplayName("Payload : String 값으로 넘겼을 때 Mapping 되어 InternalDataFilter 형태로 Filter로 전송되어야 함ㄴ")
+    @DisplayName("Payload : String 값으로 넘겼을 때 Mapping 되어 InternalDataFilter 형태로 Filter로 전송되어야 함")
     @Test
     void t1() throws InterruptedException, JsonProcessingException {
         // given
@@ -61,9 +61,9 @@ class ThreadMapperTest {
         InternalDataFilter expected = (InternalDataFilter) object;
 
         // then
-        assertThat(actual.getPayload()).isEqualTo(objectMapper.writeValueAsString(expected.getPayload()));
+        assertThat(actual.getPayload()).isEqualTo(objectMapper.writeValueAsString(expected.getPayload()).trim());
     }
-    
+
 
     public String randomString(int targetLength) {
         int leftLimit = 97; // letter 'a'

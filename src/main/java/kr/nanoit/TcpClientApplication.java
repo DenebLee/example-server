@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClientApplication {
 
-    public static final int TOTAL_COUNT = 1000;
+    public static final int TOTAL_COUNT = 1000000;
     private static final AtomicInteger readCounter = new AtomicInteger(0);
     private static final AtomicInteger writeCounter = new AtomicInteger(0);
 
@@ -50,26 +50,17 @@ public class TcpClientApplication {
             Thread writeThread = new Thread(() -> {
                 for (int i = 0; i < TOTAL_COUNT; i++) {
                     try {
-//
                         dataOutputStream.write(payload1);
                         writeCounter.incrementAndGet();
                         Thread.sleep(500);
                         if (i == 2) {
-                            System.out.println("인증 메시지 전송 완료");
                             dataOutputStream.write(payload);
                             writeCounter.incrementAndGet();
-
                         }
                     } catch (IOException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-//                        if (i == 0) {
-//                            dataOutputStream.write(payload);
-//                            writeCounter.incrementAndGet();
-//                        } else if (i > 0) {
-//                            dataOutputStream.write(payload1);
-//                            writeCounter.incrementAndGet();
-//                        }
+//
                 }
                 countDownLatch.countDown();
             });
