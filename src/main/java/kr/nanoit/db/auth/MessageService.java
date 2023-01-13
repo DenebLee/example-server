@@ -58,6 +58,8 @@ public interface MessageService {
 
     boolean insertCompanyMessage(CompanyMessageEntity companyMessageEntity) throws InsertFailedException;
 
+    int getCountMessageList();
+
 
     // Access_list
     boolean insertAccessList(long id, String address);

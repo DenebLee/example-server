@@ -10,6 +10,7 @@ import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -21,17 +22,17 @@ public class ReadStreamThread implements Runnable {
     private final BufferedReader bufferedReader;
     private final String uuid;
     private boolean isAuth;
-    private final AtomicBoolean test;
     private final UserManager userManager;
+    private AtomicBoolean readThreadStatus;
 
 
-    public ReadStreamThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid, AtomicBoolean resultAuth, UserManager userManager) {
+    public ReadStreamThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid, UserManager userManager, AtomicBoolean readThreadStatus) {
         this.cleaner = cleaner;
         this.broker = broker;
         this.bufferedReader = bufferedReader;
         this.uuid = uuid;
-        this.test = resultAuth;
         this.userManager = userManager;
+        this.readThreadStatus = readThreadStatus;
     }
 
     @Override
@@ -42,37 +43,47 @@ public class ReadStreamThread implements Runnable {
             long startTime = System.currentTimeMillis();
             isAuth = false;
 
-            while (true) {
+            while (readThreadStatus.get()) {
                 if (isAuth == false && (System.currentTimeMillis() - startTime) / 1000 == 5) { // 5초
                     throw new Exception("Authentication Timeout");
                 }
+
                 String payload = bufferedReader.readLine();
-                if (payload != null) {
-                    if (payload.contains("AUTHENTICATION") && isAuth == false && count == 0) {
-                        log.info("[@SOCKET:READ:{}@] Authentication message Receive", uuid);
-                        broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
-                        isAuth = true;
+                if (payload.contains("AUTHENTICATION") && isAuth == false && count == 0) {
 
-                        UserInfo userInfo = new UserInfo();
-                        // 우선적으로 AuthenticationStatus에만 값을 넣는다
-                        userInfo.setStatus(AuthenticaionStatus.BEFORE);
+                    log.info("[@SOCKET:READ:{}@] Authentication message Receive", uuid);
+                    broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
+                    isAuth = true;
 
-                        if (userManager.registUser(uuid, userInfo)) {
-                            log.info("[@SOCKET:READ:{}@] Usermanager register Success", uuid);
-                        }
-                    }
-                    if (isAuth == true && count > 0) {
-                        broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
-                    }
-                    if (isAuth == true && test.get() == true) {
-                        count++;
+                    UserInfo userInfo = new UserInfo();
+                    // 우선적으로 AuthenticationStatus에만 값을 넣는다
+                    userInfo.setAuthenticaionStatus(AuthenticaionStatus.BEFORE);
+
+                    if (userManager.registUser(uuid, userInfo)) {
+                        log.info("[@SOCKET:READ:{}@] Usermanager register Success", uuid);
                     }
                 }
+
+                if (isAuth == true && count > 0) {
+                    broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
+                }
+
+                if (isAuth == true && userManager.getUserInfo(uuid).getAuthenticaionStatus() == AuthenticaionStatus.COMPLETE) {
+                    count++;
+                    System.out.println("카운트  증가");
+                }
+//                } else {
+//                    log.error("[@SOCKET:READ:{}@] Payload Data null", uuid);
+//                }
             }
-        } catch (Throwable e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            log.info("[@SOCKET:READ:{}@] terminating...", uuid);
+            log.error("왜 여기서 오류나는건데");
+        } catch (Exception e) {
+            log.error("[@SOCKET:READ:{}@] terminating...", uuid, e);
             cleaner.accept(this.getClass().getName());
         }
+
+        log.info("[@SOCKET:READ:{}@] Close Success", uuid);
     }
 }

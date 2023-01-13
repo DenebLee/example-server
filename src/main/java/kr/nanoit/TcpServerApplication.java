@@ -27,18 +27,18 @@ public class TcpServerApplication {
     public static int port = 12323;
 
     public static void main(String[] args) throws ClassNotFoundException {
-
-        SocketManager socketManager = new SocketManager();
-        UserManager userManager = new UserManager(socketManager);
-        Broker broker = new BrokerImpl(socketManager);
         DataBaseConfig dataBaseConfig = new DataBaseConfig()
-                .setIp("localhost")
+                .setIp("192.168.0.64")
                 .setPort(5432)
-                .setDatabaseName("test")
-                .setUsername("test")
-                .setPassword("lee");
+                .setDatabaseName("lee")
+                .setUsername("lee")
+                .setPassword("1234qwer");
         PostgreSqlDbcp dbcp = new PostgreSqlDbcp(dataBaseConfig);
         MessageService messageService = MessageService.createPostgreSqL(dbcp);
+        SocketManager socketManager = new SocketManager();
+        UserManager userManager = new UserManager(socketManager, messageService);
+        Broker broker = new BrokerImpl(socketManager);
+
 
         Executor executor = new Executor();
         executor.startExecutor();
@@ -73,7 +73,7 @@ public class TcpServerApplication {
     }
 
     private static String getRandomUuid() {
-        return UUID.randomUUID().toString().substring(0, 7);
+        return UUID.randomUUID().toString();
     }
 
 }

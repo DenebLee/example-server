@@ -3,7 +3,6 @@ package kr.nanoit.module.inbound.socket;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.thread.gateway.ReadStreamThread;
 import kr.nanoit.module.inbound.thread.gateway.WriteStreamThread;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +26,9 @@ public class SocketResource {
     private final BufferedWriter bufferedWriter;
     private final InputStreamReader inputStreamReader;
     private final OutputStreamWriter outputStreamWriter;
-    private boolean readThreadStatus = true;
-    private boolean writeThreadStatus = true;
-    @Setter
-    public AtomicBoolean isAuthComplete = new AtomicBoolean(false);
+    private AtomicBoolean readThreadStatus;
+    private AtomicBoolean writeThreadStatus;
+
 
     public SocketResource(Socket socket, Broker broker, UserManager userManager) throws IOException {
         this.uuid = UUID.randomUUID().toString();
@@ -42,9 +40,12 @@ public class SocketResource {
         this.bufferedReader = new BufferedReader(this.inputStreamReader);
         this.bufferedWriter = new BufferedWriter(this.outputStreamWriter);
 
-        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, bufferedReader, uuid, isAuthComplete, userManager));
+        this.readThreadStatus = new AtomicBoolean(true);
+        this.writeThreadStatus = new AtomicBoolean(true);
+
+        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, bufferedReader, uuid, userManager, readThreadStatus));
         readStreamThread.setName(uuid + "-read");
-        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, bufferedWriter, uuid, writeBuffer, isAuthComplete));
+        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, bufferedWriter, uuid, writeBuffer, userManager, writeThreadStatus));
         writeStreamThread.setName(uuid + "-write");
         socket.setSoTimeout(100000);
 
@@ -63,10 +64,11 @@ public class SocketResource {
 
     public void readThreadCleaner(String calledClassName) {
         try {
-            writeThreadStatus = false;
+            log.info("[@SOCKET:RESOURCE@] key={} name={} called cleaner", uuid, calledClassName);
+            writeThreadStatus.compareAndSet(true, false);
             writeStreamThread.interrupt();
             this.socket.shutdownInput();
-            readThreadStatus = false;
+            readThreadStatus.compareAndSet(true, false);
         } catch (IOException e) {
             log.error("[@SOCKET:RESOURCE@] key={} SOCKET INPUT STREAM CLOSE FAILED", uuid, e);
         }
@@ -74,12 +76,13 @@ public class SocketResource {
 
     public void writeThreadCleaner(String calledClassName) {
         try {
-            readThreadStatus = false;
+            log.info("[@SOCKET:RESOURCE@] key={} name={} called cleaner", uuid, calledClassName);
+            readThreadStatus.compareAndSet(true, false);
             readStreamThread.interrupt();
             this.socket.shutdownOutput();
-            writeThreadStatus = false;
+            writeThreadStatus.compareAndSet(true, false);
         } catch (IOException e) {
-            log.error("[@SOCKET:RESOURCE@] key={} SOCKET OUT STREAM CLOSE FAILED", uuid, e);
+            log.error("[@SOCKET:RESOURCE@] key={} name={} SOCKET OUT STREAM CLOSE FAILED", uuid, calledClassName, e);
         }
 
     }

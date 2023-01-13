@@ -112,4 +112,8 @@ public final class MessageServicePostgreSqlQuerys {
     public static String insertRelayCompany(Timestamp created_at, Timestamp last_modified_at) {
         return "INSERT INTO relay_company (created_at, last_modified_at) VALUES ('" + created_at + "', '" + last_modified_at + "' )";
     }
+
+    public static String getMessageCount() {
+        return "SELECT COUNT (*) FROM client_message";
+    }
 }

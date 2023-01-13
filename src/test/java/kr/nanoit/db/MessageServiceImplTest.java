@@ -193,7 +193,7 @@ class MessageServiceImplTest {
 
     @DisplayName("member => saveUser Method를 실행 하였을때 userDto가 DB에 저장되어야 한다")
     @Test
-    void t8() throws SQLException {
+    void t8() {
         // given
         createTable(CreateTable.createMemberTable);
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -372,13 +372,6 @@ class MessageServiceImplTest {
             throw new SQLException(e);
         }
     }
-
-    @DisplayName("client_message => id값으로 select된 ClientMessae가 있을 경우 ClientMessage")
-    @Test
-    void t16() {
-
-    }
-
 
     private void createTable(String query) {
         try (Connection connection = dbcp.getConnection()) {

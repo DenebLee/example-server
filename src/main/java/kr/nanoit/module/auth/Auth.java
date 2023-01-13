@@ -49,11 +49,11 @@ public class Auth {
                             userInfo.setAgent_id(agentEntity.getId())
                                     .setMemberId(agentEntity.getMember_id())
                                     .setUsername(memberDto.getUsername())
-                                    .setStatus(AuthenticaionStatus.COMPLETE);
+                                    .setAuthenticaionStatus(AuthenticaionStatus.COMPLETE);
 
                             userManager.replaceStatus(internalDataBranch.UUID(), userInfo);
 
-                            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Connect Success"))))) {
+                            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Authentication Success"))))) {
                             }
                         } else {
                             sendAuthenticationResult("Server Error", internalDataBranch, null);
@@ -82,7 +82,7 @@ public class Auth {
     }
 
     private void sendAuthenticationResult(String reason, InternalDataBranch internalDataBranch, Exception exception) {
-        userManager.replaceStatus(internalDataBranch.UUID(), new UserInfo().setStatus(AuthenticaionStatus.FAILED));
+        userManager.replaceStatus(internalDataBranch.UUID(), new UserInfo().setAuthenticaionStatus(AuthenticaionStatus.FAILED));
         if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
             log.warn("[AUTH] key={} {}", internalDataBranch.getMetaData().getSocketUuid(), reason, exception);
         }

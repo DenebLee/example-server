@@ -267,6 +267,7 @@ class ThreadFilterTest {
         assertThat(errorDto.getReason()).isEqualTo("Invalid Send value");
     }
 
+    
     @DisplayName("validation - PayloadData : Send 형식일 경우 Content 가 null 일 경우 실패가 되어야 한다")
     @Test
     void t11() throws InterruptedException {

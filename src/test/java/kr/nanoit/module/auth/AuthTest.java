@@ -64,7 +64,7 @@ class AuthTest {
                 .setPassword(postgreSQLContainer.getPassword());
         postgreSqlDbcp = new PostgreSqlDbcp(dataBaseConfig);
         messageService = new MessageServiceImpl(postgreSqlDbcp);
-        userManager = spy(new UserManager(socketManager));
+        userManager = spy(new UserManager(socketManager, messageService));
         broker = spy(new BrokerImpl(socketManager));
 
         auth = new Auth(broker, userManager);
@@ -88,7 +88,7 @@ class AuthTest {
     void setUp() {
         uuid = UUID.randomUUID().toString();
         UserInfo userInfo = new UserInfo();
-        userInfo.setStatus(AuthenticaionStatus.BEFORE);
+        userInfo.setAuthenticaionStatus(AuthenticaionStatus.BEFORE);
         userManager.registUser(uuid, userInfo);
     }
 

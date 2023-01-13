@@ -291,6 +291,20 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
+    public int getCountMessageList() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.getMessageCount());
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new FindFailedException(e.getMessage());
+        }
+        return 0;
+    }
+
+    @Override
     public boolean insertAccessList(long id, String address) {
         try (Connection connection = dbcp.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.insertAccessList(id, address));

@@ -1,23 +1,27 @@
 package kr.nanoit.module.inbound.socket;
 
 import kr.nanoit.db.auth.AuthenticaionStatus;
+import kr.nanoit.db.auth.MessageService;
+import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.dto.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.Timestamp;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public class UserManager implements Runnable {
 
     private final Map<String, UserInfo> userResourceMap;
     private final SocketManager socketManager;
+    private final MessageService messageService;
 
-    public UserManager(SocketManager socketManager) {
+    public UserManager(SocketManager socketManager, MessageService messageService) {
         this.userResourceMap = new ConcurrentHashMap<>();
         this.socketManager = socketManager;
+        this.messageService = messageService;
     }
 
     @Override
@@ -25,19 +29,13 @@ public class UserManager implements Runnable {
         try {
             while (true) {
                 for (Map.Entry<String, UserInfo> entry : userResourceMap.entrySet()) {
-                    SocketResource socketResource = socketManager.getSocketResource(entry.getKey());
-                    if (entry.getValue().getStatus().equals(AuthenticaionStatus.FAILED)) {
-                        socketResource.setIsAuthComplete(new AtomicBoolean(false));
-                    }
-                    if (entry.getValue().getStatus().equals(AuthenticaionStatus.COMPLETE)) {
-                        socketResource.setIsAuthComplete(new AtomicBoolean(true));
-                    }
-
                     String uuid = socketManager.forwardUserMap.poll(1, TimeUnit.SECONDS);
                     if (uuid != null) {
                         unregisUser(uuid);
+                        messageService.updateAgentStatus(entry.getValue().getAgent_id(), entry.getValue().getMemberId(), AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()));
                         log.info("[@SOCKET-{}:USER-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
                     }
+
                 }
             }
         } catch (Exception e) {
@@ -61,8 +59,9 @@ public class UserManager implements Runnable {
     }
 
     public AuthenticaionStatus getAuthenticationStatus(String uuid) {
-        return userResourceMap.get(uuid).getStatus();
+        return userResourceMap.get(uuid).getAuthenticaionStatus();
     }
+
 
     public UserInfo getUserInfo(String uuid) {
         return userResourceMap.get(uuid);
@@ -70,6 +69,10 @@ public class UserManager implements Runnable {
 
     public boolean isExistsUserInfo(String uuid, long agentId) {
         return userResourceMap.get(uuid).getAgent_id() == agentId;
+    }
+
+    public int getUserResourceMapSize() {
+        return userResourceMap.size();
     }
 
 }

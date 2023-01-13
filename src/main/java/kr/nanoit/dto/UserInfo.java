@@ -17,5 +17,5 @@ public class UserInfo {
     private String username;
     private long MemberId;
     private long agent_id;
-    private AuthenticaionStatus status;
+    private AuthenticaionStatus authenticaionStatus;
 }

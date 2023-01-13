@@ -35,6 +35,7 @@ public class ModuleProcessManagerImpl {
                 thread.start();
                 entry.getValue().status = ModuleProcess.Status.RUN;
                 threadMap.put(entry.getKey(), thread);
+                System.out.println("등록완료");
             }
         }
 
@@ -42,6 +43,7 @@ public class ModuleProcessManagerImpl {
             if (!objectMap.containsKey(threadEntry.getKey()) && threadMap.containsKey(threadEntry)) {
                 if (interruptThread(threadEntry.getKey())) {
                     threadMap.remove(threadEntry.getKey());
+                    System.out.println("삭제완료 ");
                 }
             }
             if (threadEntry.getValue().getState().equals(Thread.State.TERMINATED) && objectMap.containsKey(threadEntry.getKey())) {
@@ -132,8 +134,7 @@ public class ModuleProcessManagerImpl {
         if (uuid == null) {
             return false;
         }
-        threadMap.get(uuid).interrupt();
-        return true;
+        return threadMap.get(uuid).getState() == Thread.State.TERMINATED;
     }
 
     public void shutDown() {

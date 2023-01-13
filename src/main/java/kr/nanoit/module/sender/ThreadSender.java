@@ -24,6 +24,7 @@ public class ThreadSender extends ModuleProcess {
     private final MessageService messageService;
     private InternalDataSender internalDataSender;
 
+
     public ThreadSender(Broker broker, String uuid, MessageService messageService) {
         super(broker, uuid);
         this.messageService = messageService;

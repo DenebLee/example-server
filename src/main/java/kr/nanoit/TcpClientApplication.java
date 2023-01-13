@@ -20,10 +20,10 @@ public class TcpClientApplication {
 
         try {
             String data = "{\"type\": \"SEND\",\"messageUuid\": \"1\",\"data\": " +
-                    "{\"agent_id\": 1, \"sender_num\": \"01044445555\", \"sender_callback\": \"053555444\", \"sender_name\": \"이정섭\"," +
+                    "{\"agent_id\": 1, \"sender_num\": \"010-4444-5555\", \"sender_callback\": \"053-555-4444\", \"sender_name\": \"이정섭\"," +
                     "\"content\": \" 테스트중\"}}" + "\r\n";
 
-            String authData = "{\"type\": \"AUTHENTICATION\",\"messageUuid\": \"1\",\"data\": {\"agent_id\":\"2\",\"username\":\"이정섭\", \"password\": \"이정섭\", \"email\": \"test@test.com\"}}" + "\r\n";
+            String authData = "{\"type\": \"AUTHENTICATION\",\"messageUuid\": \"1\",\"data\": {\"agent_id\":\"1\",\"username\":\"이정섭\", \"password\": \"이정섭\", \"email\": \"test@test.com\"}}" + "\r\n";
             byte[] payload = authData.getBytes(StandardCharsets.UTF_8);
             byte[] payload1 = data.getBytes(StandardCharsets.UTF_8);
 
@@ -50,13 +50,15 @@ public class TcpClientApplication {
             Thread writeThread = new Thread(() -> {
                 for (int i = 0; i < TOTAL_COUNT; i++) {
                     try {
-                        dataOutputStream.write(payload1);
-                        writeCounter.incrementAndGet();
-                        Thread.sleep(500);
-                        if (i == 2) {
+                        if (i == 0) {
                             dataOutputStream.write(payload);
                             writeCounter.incrementAndGet();
                         }
+                        dataOutputStream.write(payload1);
+                        writeCounter.incrementAndGet();
+                        Thread.sleep(2000);
+
+
                     } catch (IOException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -73,9 +75,9 @@ public class TcpClientApplication {
                         String readPayload = bufferedReader.readLine();
                         System.out.println(readPayload);
                         readCounter.incrementAndGet();
-                        if (readPayload == null) {
-                            socket.close();
-                        }
+//                        if (readPayload == null) {
+//                            socket.close();
+//                        }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
