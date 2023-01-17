@@ -10,6 +10,7 @@ import kr.nanoit.domain.payload.Send;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
+import kr.nanoit.module.inbound.socket.UserManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +29,7 @@ class ThreadOutBoundTest {
 
     @Mock
     private SocketManager socketManager;
+
 
     private Broker broker;
     private String uuid;

@@ -16,13 +16,11 @@ public class ThreadTcpServer extends ModuleProcess {
     private final SocketManager socketManager;
     private boolean flag;
     private final int port;
-    private final UserManager userManager;
 
-    public ThreadTcpServer(SocketManager socketManager, Broker broker, int port, String uuid, UserManager userManager) {
+    public ThreadTcpServer(SocketManager socketManager, Broker broker, int port, String uuid) {
         super(broker, uuid);
         this.socketManager = socketManager;
         this.port = port;
-        this.userManager = userManager;
     }
 
 
@@ -33,7 +31,7 @@ public class ThreadTcpServer extends ModuleProcess {
             ServerSocket serverSocket = new ServerSocket(this.port);
             while (flag) {
                 Socket socket = serverSocket.accept();
-                SocketResource socketResource = new SocketResource(socket, broker, userManager);
+                SocketResource socketResource = new SocketResource(socket, broker);
                 log.info("[TCPSERVER : SOCKET : {}] ACCEPT => ADDRESS = {}", uuid, socket.getRemoteSocketAddress().toString());
                 if (socketManager.register(socketResource)) {
                     socketResource.serve();

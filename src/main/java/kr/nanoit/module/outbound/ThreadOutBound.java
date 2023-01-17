@@ -10,6 +10,7 @@ import kr.nanoit.domain.payload.AuthenticationAck;
 import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -30,12 +31,15 @@ ThreadOutBound extends ModuleProcess {
             while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.OUTBOUND);
                 if (object != null && object instanceof InternalDataOutBound) {
-                    String payload = toJSON(object);
+                    InternalDataOutBound internalDataOutBound = (InternalDataOutBound) object;
+                    String payload = toJSON(internalDataOutBound);
+
                     if (broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload)) {
                     }
                 }
             }
         } catch (InterruptedException | JsonProcessingException ex) {
+            shoutDown();
             ex.printStackTrace();
             throw new RuntimeException(ex);
         }
@@ -52,8 +56,8 @@ ThreadOutBound extends ModuleProcess {
         Thread.sleep(1000);
     }
 
-    private String toJSON(Object object) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(((InternalDataOutBound) object).getPayload());
+    private String toJSON(InternalDataOutBound internalDataOutBound) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(internalDataOutBound.getPayload());
     }
 
     @Override

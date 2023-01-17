@@ -95,8 +95,8 @@ public class MessageServiceImpl implements MessageService {
                 }
             }
         } catch (SQLException e) {
-            log.error("failed to find Agent", e);
-            throw new FindFailedException(e.getMessage());
+            log.error(e.getMessage());
+            throw new FindFailedException("failed to find Agent");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -114,8 +114,8 @@ public class MessageServiceImpl implements MessageService {
                 return false;
             }
         } catch (SQLException e) {
-            log.error("failed to insert Agent", e);
-            throw new InsertFailedException(e.getMessage());
+            log.error(e.getMessage());
+            throw new InsertFailedException("failed to insert Agent");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -130,8 +130,8 @@ public class MessageServiceImpl implements MessageService {
                 return true;
             }
         } catch (SQLException e) {
-            log.error("failed to update Agent Status", e);
-            throw new UpdateFailedException(e.getMessage());
+            log.error(e.getMessage());
+            throw new UpdateFailedException("failed to update Agent Status");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -175,8 +175,8 @@ public class MessageServiceImpl implements MessageService {
             }
             return null;
         } catch (SQLException e) {
-            log.error("failed to find message", e);
-            throw new FindFailedException(e.getMessage());
+            log.error(e.getMessage());
+            throw new FindFailedException("failed to find message");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -193,8 +193,8 @@ public class MessageServiceImpl implements MessageService {
             }
             return false;
         } catch (SQLException e) {
-            log.error("failed to delete message", e);
-            throw new DeleteFailedException(e.getMessage());
+            log.error(e.getMessage());
+            throw new DeleteFailedException("failed to delete message");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -215,8 +215,8 @@ public class MessageServiceImpl implements MessageService {
                 rs.close();
             }
         } catch (SQLException e) {
-            log.error("failed to insert Client Message");
-            throw new InsertFailedException(e.getMessage());
+            log.error(e.getMessage());
+            throw new InsertFailedException("failed to insert Client Message");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -231,8 +231,8 @@ public class MessageServiceImpl implements MessageService {
                 return true;
             }
         } catch (SQLException e) {
-            log.error("failed to update Client Message");
-            throw new UpdateFailedException(e.getMessage());
+            log.error(e.getMessage());
+            throw new UpdateFailedException("failed to update Client Message");
         }
         return false;
     }
@@ -398,5 +398,15 @@ public class MessageServiceImpl implements MessageService {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public void deleteAllData() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteAllData());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

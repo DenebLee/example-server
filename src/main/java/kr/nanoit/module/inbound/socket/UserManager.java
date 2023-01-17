@@ -4,6 +4,7 @@ import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.db.auth.MessageService;
 import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.dto.UserInfo;
+import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Timestamp;
@@ -17,11 +18,13 @@ public class UserManager implements Runnable {
     private final Map<String, UserInfo> userResourceMap;
     private final SocketManager socketManager;
     private final MessageService messageService;
+    private final Broker broker;
 
-    public UserManager(SocketManager socketManager, MessageService messageService) {
+    public UserManager(SocketManager socketManager, MessageService messageService, Broker broker) {
         this.userResourceMap = new ConcurrentHashMap<>();
         this.socketManager = socketManager;
         this.messageService = messageService;
+        this.broker = broker;
     }
 
     @Override
@@ -58,6 +61,10 @@ public class UserManager implements Runnable {
         userResourceMap.replace(uuid, userInfo);
     }
 
+    public boolean isExist(String uuid) {
+        return userResourceMap.containsKey(uuid);
+    }
+
     public AuthenticaionStatus getAuthenticationStatus(String uuid) {
         return userResourceMap.get(uuid).getAuthenticaionStatus();
     }
@@ -65,10 +72,6 @@ public class UserManager implements Runnable {
 
     public UserInfo getUserInfo(String uuid) {
         return userResourceMap.get(uuid);
-    }
-
-    public boolean isExistsUserInfo(String uuid, long agentId) {
-        return userResourceMap.get(uuid).getAgent_id() == agentId;
     }
 
     public int getUserResourceMapSize() {

@@ -26,26 +26,30 @@ public class SocketResource {
     private final BufferedWriter bufferedWriter;
     private final InputStreamReader inputStreamReader;
     private final OutputStreamWriter outputStreamWriter;
+
+    private final DataOutputStream dataOutputStream;
     private AtomicBoolean readThreadStatus;
     private AtomicBoolean writeThreadStatus;
 
 
-    public SocketResource(Socket socket, Broker broker, UserManager userManager) throws IOException {
+    public SocketResource(Socket socket, Broker broker) throws IOException {
         this.uuid = UUID.randomUUID().toString();
         this.socket = socket;
         this.writeBuffer = new LinkedBlockingQueue<>();
+        this.dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
         this.inputStreamReader = new InputStreamReader(socket.getInputStream());
         this.outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+
         this.bufferedReader = new BufferedReader(this.inputStreamReader);
         this.bufferedWriter = new BufferedWriter(this.outputStreamWriter);
 
         this.readThreadStatus = new AtomicBoolean(true);
         this.writeThreadStatus = new AtomicBoolean(true);
 
-        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, bufferedReader, uuid, userManager, readThreadStatus));
+        this.readStreamThread = new Thread(new ReadStreamThread(this::readThreadCleaner, broker, bufferedReader, uuid, readThreadStatus));
         readStreamThread.setName(uuid + "-read");
-        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, bufferedWriter, uuid, writeBuffer, userManager, writeThreadStatus));
+        this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, dataOutputStream, uuid, writeBuffer, writeThreadStatus));
         writeStreamThread.setName(uuid + "-write");
         socket.setSoTimeout(100000);
 

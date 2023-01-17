@@ -17,7 +17,6 @@ import kr.nanoit.module.inbound.socket.UserManager;
 import kr.nanoit.module.mapper.ThreadMapper;
 import kr.nanoit.module.outbound.ThreadOutBound;
 import kr.nanoit.module.sender.ThreadSender;
-import kr.nanoit.scheduler.Executor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
@@ -36,22 +35,18 @@ public class TcpServerApplication {
         PostgreSqlDbcp dbcp = new PostgreSqlDbcp(dataBaseConfig);
         MessageService messageService = MessageService.createPostgreSqL(dbcp);
         SocketManager socketManager = new SocketManager();
-        UserManager userManager = new UserManager(socketManager, messageService);
         Broker broker = new BrokerImpl(socketManager);
-
-
-        Executor executor = new Executor();
-        executor.startExecutor();
+        UserManager userManager = new UserManager(socketManager, messageService,broker);
 
 
         new ThreadMapper(broker, getRandomUuid());
         new ThreadFilter(broker, getRandomUuid(), userManager);
         new ThreadBranch(broker, getRandomUuid(), messageService, userManager);
-        new ThreadSender(broker, getRandomUuid(), messageService);
+        new ThreadSender(broker, getRandomUuid(), messageService, userManager);
         new ThreadOutBound(broker, getRandomUuid());
         new ThreadCarrier(broker, getRandomUuid(), messageService);
 
-        new ThreadTcpServer(socketManager, broker, port, getRandomUuid(), userManager);
+        new ThreadTcpServer(socketManager, broker, port, getRandomUuid());
 
         Thread socketManagerThread = new Thread(socketManager);
         Thread userManagerThread = new Thread(userManager);
@@ -65,9 +60,9 @@ public class TcpServerApplication {
         userManagerThread.start();
 
         System.out.println("");
-        System.out.println("====================================================================================================================================================================================");
+        System.out.println("==========================================================================================================================================================================================");
         System.out.println("                                                                       ECHO TEST SERVER START  ");
-        System.out.println("=============================================================================================================================================================================");
+        System.out.println("==========================================================================================================================================================================================");
         System.out.println("");
 
     }

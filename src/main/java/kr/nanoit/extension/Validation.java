@@ -12,26 +12,22 @@ public class Validation {
     public boolean verificationSendData(InternalDataFilter internalDataFilter, UserManager userManager) {
         Send send = (Send) internalDataFilter.getPayload().getData();
         if (send.getAgent_id() == 0 || send.getAgent_id() < 0) {
-            if (userManager.isExistsUserInfo(internalDataFilter.UUID(), send.getAgent_id()) == false) {
-                return false;
-            }
-
             return false;
         }
+
         if (!isPhoneNum(send.getSender_num()) || send.getSender_num() == null || send.getSender_num().contains(" ") || send.getSender_num().equals("")) {
-
             return false;
         }
+
         if (!isCallBackByPhone(send.getSender_callback()) || send.getSender_callback() == null || send.getSender_callback().contains(" ") || send.getSender_callback().equals("")) {
-
             return false;
         }
+
         if (send.getSender_name() == null || send.getSender_name().equals("") || send.getSender_name().contains(" ") || send.getSender_name().length() > 8) {
-
             return false;
         }
-        if (send.getContent() == null || send.getContent().equals("")) {
 
+        if (send.getContent() == null || send.getContent().equals("")) {
             return false;
         }
 

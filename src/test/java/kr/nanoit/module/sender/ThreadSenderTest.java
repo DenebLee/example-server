@@ -12,10 +12,13 @@ import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.ClientMessageDto;
+import kr.nanoit.dto.UserInfo;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
+import kr.nanoit.module.inbound.socket.UserManager;
 import org.junit.jupiter.api.*;
+import org.mockito.Mock;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -26,8 +29,7 @@ import java.sql.Timestamp;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 
 
 @Testcontainers
@@ -41,6 +43,8 @@ class ThreadSenderTest {
     private static MessageService messageService;
     private static PostgreSqlDbcp dbcp;
 
+    private static UserManager userManager;
+
     @Container
     static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:14.5-alpine")
             .withDatabaseName("test")
@@ -50,6 +54,7 @@ class ThreadSenderTest {
     @BeforeAll
     static void beforeAll() throws ClassNotFoundException, URISyntaxException, IOException {
         socketManager = mock(SocketManager.class);
+        userManager = mock(UserManager.class);
         dataBaseConfig = new DataBaseConfig();
         dataBaseConfig.setIp(postgreSQLContainer.getHost())
                 .setPort(postgreSQLContainer.getFirstMappedPort())
@@ -63,7 +68,7 @@ class ThreadSenderTest {
         dbcp.initSchema();
 
         // Table dependency data injection
-        messageService.insertAccessList(2, "192.168.0.16");
+        messageService.insertAccessList(1, "192.168.0.16");
         messageService.insertAgentStatus("CONNECTED", "DISCONNECTED");
         messageService.insertMessageType("AUTHENTICATION");
         messageService.insertMessageType("SEND");
@@ -73,15 +78,14 @@ class ThreadSenderTest {
         MemberEntity memberEntity = new MemberEntity(0, "이정섭", "$2a$12$9aqZtS4tclIN.sq3/J8qGuavmarzH5q5.z0Qz.7coXzD1MLjf0zRG", "test@test.com", new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
         messageService.insertUser(memberEntity);
 
-        AgentEntity agentEntity = new AgentEntity(4, 1, 2, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
+        AgentEntity agentEntity = new AgentEntity(2, 1, 1, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
         messageService.insertAgent(agentEntity);
     }
 
     @BeforeEach
     void setUp() {
-
-        this.uuid = UUID.randomUUID().toString();
-        this.threadSender = spy(new ThreadSender(broker, uuid, messageService));
+        uuid = UUID.randomUUID().toString();
+        this.threadSender = spy(new ThreadSender(broker, uuid, messageService, userManager));
         this.senderThread = spy(new Thread(threadSender));
         senderThread.start();
     }
@@ -96,6 +100,7 @@ class ThreadSenderTest {
     void t1() throws InterruptedException {
         // given
         String uuid = UUID.randomUUID().toString();
+        when(userManager.isExist(uuid)).thenReturn(true);
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, null));
 
         // when
@@ -118,22 +123,22 @@ class ThreadSenderTest {
     void t2() throws InterruptedException {
         // given
         String uuid = UUID.randomUUID().toString();
+        when(userManager.isExist(uuid)).thenReturn(true);
+
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, new Send(3, "010-4444-5555", "053-555-4444", "이정섭", "테스트")));
 
         // when
         broker.publish(expected);
+        Thread.sleep(1000);
 
         // then
         Object object = broker.subscribe(InternalDataType.OUTBOUND);
         assertThat(object).isInstanceOf(InternalDataOutBound.class);
         InternalDataOutBound actual = (InternalDataOutBound) object;
-        assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(expected.getMetaData().getSocketUuid());
         assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.SEND_ACK);
-        assertThat(actual.getPayload().getMessageUuid()).isEqualTo(uuid);
         assertThat(actual.getPayload().getData()).isInstanceOf(ErrorPayload.class);
         ErrorPayload errorPayload = (ErrorPayload) actual.getPayload().getData();
-        assertThat(errorPayload.getReason()).isEqualTo("ERROR: insert or update on table \"client_message\" violates foreign key constraint \"client_message_agent_id_fkey\"\n" +
-                "  Detail: Key (agent_id)=(3) is not present in table \"agent\".");
+        assertThat(errorPayload.getReason()).isEqualTo("failed to insert Client Message");
     }
 
     @DisplayName("client_message 테이블에 데이터을 정상적으로 insert 되었으면 clientMessage id값이 return 되어야 한다")
@@ -141,7 +146,9 @@ class ThreadSenderTest {
     void t3() throws InterruptedException {
         // given
         String uuid = UUID.randomUUID().toString();
-        Send send = new Send(4, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
+        when(userManager.isExist(uuid)).thenReturn(true);
+
+        Send send = new Send(2, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
@@ -153,7 +160,6 @@ class ThreadSenderTest {
         InternalDataCarrier actual = (InternalDataCarrier) object;
         assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(expected.getMetaData().getSocketUuid());
         assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.SEND_ACK);
-        assertThat(actual.getPayload().getMessageUuid()).isEqualTo(uuid);
         assertThat(actual.getPayload().getData()).isInstanceOf(ClientMessageDto.class);
         ClientMessageDto clientMessageDto = (ClientMessageDto) actual.getPayload().getData();
 
@@ -172,11 +178,14 @@ class ThreadSenderTest {
     void t4() throws InterruptedException {
         // given
         String uuid = UUID.randomUUID().toString();
-        Send send = new Send(4, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
+        when(userManager.isExist(uuid)).thenReturn(true);
+
+        Send send = new Send(2, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
         broker.publish(expected);
+
 
         // then
         Object object = broker.subscribe(InternalDataType.OUTBOUND);

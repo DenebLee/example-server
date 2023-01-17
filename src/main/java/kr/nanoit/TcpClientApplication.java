@@ -1,5 +1,7 @@
 package kr.nanoit;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,20 +14,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClientApplication {
 
-    public static final int TOTAL_COUNT = 1000000;
+    public static final int TOTAL_COUNT = 100;
     private static final AtomicInteger readCounter = new AtomicInteger(0);
     private static final AtomicInteger writeCounter = new AtomicInteger(0);
 
     public static void main(String[] args) {
 
         try {
-            String data = "{\"type\": \"SEND\",\"messageUuid\": \"1\",\"data\": " +
-                    "{\"agent_id\": 1, \"sender_num\": \"010-4444-5555\", \"sender_callback\": \"053-555-4444\", \"sender_name\": \"이정섭\"," +
-                    "\"content\": \" 테스트중\"}}" + "\r\n";
+
 
             String authData = "{\"type\": \"AUTHENTICATION\",\"messageUuid\": \"1\",\"data\": {\"agent_id\":\"1\",\"username\":\"이정섭\", \"password\": \"이정섭\", \"email\": \"test@test.com\"}}" + "\r\n";
             byte[] payload = authData.getBytes(StandardCharsets.UTF_8);
-            byte[] payload1 = data.getBytes(StandardCharsets.UTF_8);
 
             Socket socket = new Socket();
             socket.connect(new InetSocketAddress("localhost", 12323));
@@ -40,9 +39,11 @@ public class TcpClientApplication {
                     try {
                         Thread.sleep(600L);
                     } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
+                        break;
                     }
                 }
+                System.out.println("Monitor Thread 정상 종료");
             });
             monitor.setDaemon(true);
             monitor.start();
@@ -52,21 +53,27 @@ public class TcpClientApplication {
                     try {
                         if (i == 0) {
                             dataOutputStream.write(payload);
+                            dataOutputStream.flush();
                             writeCounter.incrementAndGet();
                         }
-                        dataOutputStream.write(payload1);
-                        writeCounter.incrementAndGet();
-                        Thread.sleep(2000);
+                        if (i > 0) {
+                            String data = "{\"type\": \"SEND\",\"messageUuid\": \"" + i + "\"  ,\"data\": " +
+                                    "{\"agent_id\": 1, \"sender_num\": \"010-4444-5555\", \"sender_callback\": \"053-555-4444\", \"sender_name\": \"이정섭\"," +
+                                    "\"content\": \" 테스트중 \"}}" + "\r\n";
+                            byte[] payload1 = data.getBytes(StandardCharsets.UTF_8);
 
-
-                    } catch (IOException | InterruptedException e) {
-                        throw new RuntimeException(e);
+                            dataOutputStream.write(payload1);
+                            dataOutputStream.flush();
+                            writeCounter.incrementAndGet();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
 //
                 }
                 countDownLatch.countDown();
+                System.out.println("Write Thread 정상 종료");
             });
-            writeThread.setDaemon(true);
             writeThread.start();
 
             Thread readThread = new Thread(() -> {
@@ -75,19 +82,21 @@ public class TcpClientApplication {
                         String readPayload = bufferedReader.readLine();
                         System.out.println(readPayload);
                         readCounter.incrementAndGet();
-//                        if (readPayload == null) {
-//                            socket.close();
-//                        }
+                        if (readPayload == null) {
+                            socket.close();
+                        }
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
                     }
                     countDownLatch.countDown();
                 }
+                System.out.println("ReadThread 정상 종료");
             });
-            readThread.setDaemon(true);
             readThread.start();
 
             countDownLatch.await();
+
+            System.out.println("정상 종료");
         } catch (Exception e) {
             e.printStackTrace();
         }

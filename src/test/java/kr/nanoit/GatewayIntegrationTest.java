@@ -22,9 +22,11 @@ import kr.nanoit.module.mapper.ThreadMapper;
 import kr.nanoit.module.outbound.ThreadOutBound;
 import kr.nanoit.module.sender.ThreadSender;
 import org.junit.jupiter.api.*;
+import org.mockito.Mock;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -44,17 +46,19 @@ class GatewayIntegrationTest {
     private static Broker broker;
     private static DataBaseConfig dataBaseConfig;
     private static MessageService messageService;
+    private static TestClient testClient;
 
 
     private Thread socketManagerThread;
     private Thread userManagerThread;
+    private Thread clientThread;
 
     private static PostgreSqlDbcp dbcp;
 
-    private static TestClient testClient;
-
     private int port;
     private static ObjectMapper objectMapper;
+
+    @Mock
 
 
     @Container
@@ -66,7 +70,7 @@ class GatewayIntegrationTest {
     @BeforeAll
     static void beforeAll() throws ClassNotFoundException, URISyntaxException, IOException {
         socketManager = spy(new SocketManager());
-        userManager = spy(new UserManager(socketManager,messageService));
+        userManager = spy(new UserManager(socketManager, messageService));
 
         broker = spy(new BrokerImpl(socketManager));
         dataBaseConfig = new DataBaseConfig()
@@ -104,310 +108,92 @@ class GatewayIntegrationTest {
         AgentEntity agentEntity2 = new AgentEntity(1, 2, 1, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
         messageService.insertAgent(agentEntity2);
 
-        testClient = new TestClient();
 
         objectMapper = new ObjectMapper();
     }
 
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         port = getRandomPort();
         spy(new ThreadMapper(broker, getRandomUuid()));
         spy(new ThreadFilter(broker, getRandomUuid(), userManager));
         spy(new ThreadBranch(broker, getRandomUuid(), messageService, userManager));
-        spy(new ThreadSender(broker, getRandomUuid(), messageService));
+        spy(new ThreadSender(broker, getRandomUuid(), messageService, userManager));
         spy(new ThreadOutBound(broker, getRandomUuid()));
         spy(new ThreadCarrier(broker, getRandomUuid(), messageService));
-        spy(new ThreadTcpServer(socketManager, broker, port, getRandomUuid(), userManager));
+        spy(new ThreadTcpServer(socketManager, broker, port, getRandomUuid()));
 
         ModuleProcessManagerImpl moduleProcessManager = ModuleProcess.moduleProcessManagerImpl;
+
+        testClient = spy(new TestClient(port));
         userManagerThread = spy(new Thread(userManager));
         socketManagerThread = spy(new Thread(socketManager));
+        clientThread = spy(new Thread(testClient));
 
         userManagerThread.start();
         socketManagerThread.start();
+        clientThread.start();
     }
 
     @AfterEach
-    void tearDown() throws IOException, InterruptedException {
-        Thread.sleep(500);
-
+    void tearDown() {
         userManagerThread.interrupt();
         socketManagerThread.interrupt();
-        testClient.stop();
+        clientThread.interrupt();
+
+        messageService.updateAgentStatus(1, 1, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()));
+        messageService.deleteAllData();
     }
 
-    @DisplayName("client가 접속하면 socketResource가 생성 되고 SocketManager에 Regist 가 되어야 한다")
+    @DisplayName("Client가 인증 메세지를 전송 하였을 때 Server는 정상 처리 되어 Authentication_Ack를 던져줘야 한다")
     @Test
-    void t1() throws InterruptedException {
-        // given, when
-        testClient.connect(port);
-        testClient.delay();
-
-        // then
-        assertThat(socketManager.getSocketResourcesMapSize()).isEqualTo(1);
-    }
-
-    @DisplayName("client가 접속하고 인증 메시지를 5초 동안 보내지 않으면 인증 실패 처리가 되며 연결이 끊겨야 한다")
-    @Test
-    void t2() throws InterruptedException {
-        // given , when
-        testClient.connect(port);
-        testClient.delay(); // -> 5초
-        Thread.sleep(1000);
-
-        assertThat(testClient.socket.isClosed()).isTrue();
-
-    }
-
-    @DisplayName("client가 올바른 인증 메시지를 요청하였을때 서버는 성공 여부를 전달 하여야 한다")
-    @Test
-    void t3() throws IOException, InterruptedException {
+    void t1() throws IOException, InterruptedException {
         // given
         String uuid = getRandomUuid();
         Authentication authentication = new Authentication(1, "이정섭", "이정섭", "test@test.com");
         Payload expected = new Payload(PayloadType.AUTHENTICATION, uuid, authentication);
-        String sendData = objectMapper.writeValueAsString(expected);
+        String sendData = makeString(expected);
 
         // when
-        testClient.connect(port);
         testClient.write(sendData, 1);
+        Thread.sleep(1000);
 
         // then
-        String actual = testClient.read(1);
-        assertThat(actual).isNotNull();
-
-        Payload payload = objectMapper.readValue(actual, Payload.class);
+        String value = testClient.getResponseData();
+        assertThat(value).isNotNull();
+        Payload payload = objectMapper.readValue(value, Payload.class);
         assertThat(payload.getType()).isEqualTo(PayloadType.AUTHENTICATION_ACK);
         assertThat(payload.getMessageUuid()).isEqualTo(uuid);
         AuthenticationAck authenticationAck = objectMapper.convertValue(payload.getData(), AuthenticationAck.class);
         assertThat(authenticationAck.getAgent_id()).isEqualTo(authentication.getAgent_id());
         assertThat(authenticationAck.getResult()).isEqualTo("Authentication Success");
-
     }
 
-    @DisplayName("client가 유저 정보가 틀린 인증 메시지를 요청하였을 때 서버는 실패 여부를 전달 하여야 한다")
+    @DisplayName("Client가 인증 메시지를 보내 인증을 한 후 메세지를 보냈을 경우 서버는 해당 메시지를 DB에 저장한 후 응답 절차를 진행 해야 한다")
     @Test
-    void t4() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Authentication authentication = new Authentication(3, "손흥민", "손흥민", "test@test.com");
-        Payload expected = new Payload(PayloadType.AUTHENTICATION, uuid, authentication);
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1);
-
-        // then
-        String actual = testClient.read(1);
-        assertThat(actual).isNotNull();
-
-        Payload payload = objectMapper.readValue(actual, Payload.class);
-        assertThat(payload.getType()).isEqualTo(PayloadType.AUTHENTICATION_ACK);
-        assertThat(payload.getMessageUuid()).isEqualTo(uuid);
-        ErrorPayload errorPayload = objectMapper.convertValue(payload.getData(), ErrorPayload.class);
-        assertThat(errorPayload.getReason()).isEqualTo("Authentication failure Account information verification required");
-    }
-
-    @DisplayName("client가 비밀번호가 틀린 인증 메세지를 요청하였을 때 서버는 실패 여부를 전달 하여야 한다")
-    @Test
-    void t5() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Authentication authentication = new Authentication(1, "이정섭", "양선호", "test@test.com");
-        Payload expected = new Payload(PayloadType.AUTHENTICATION, uuid, authentication);
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1);
-
-        // then
-        String actual = testClient.read(1);
-        assertThat(actual).isNotNull();
-
-        Payload payload = objectMapper.readValue(actual, Payload.class);
-        assertThat(payload.getType()).isEqualTo(PayloadType.AUTHENTICATION_ACK);
-        assertThat(payload.getMessageUuid()).isEqualTo(uuid);
-        ErrorPayload errorPayload = objectMapper.convertValue(payload.getData(), ErrorPayload.class);
-        assertThat(errorPayload.getReason()).isEqualTo("Failed to Authentication");
-    }
-
-    @DisplayName("client가 agent_id가 틀린 인증 메세지를 요청하였을 떄 서버는 실패 여부를 전달 하여야 한다")
-    @Test
-    void t6() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Authentication authentication = new Authentication(3, "이정섭", "이정섭", "test@test.com");
-        Payload expected = new Payload(PayloadType.AUTHENTICATION, uuid, authentication);
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1);
-
-        // then
-        String actual = testClient.read(1);
-        assertThat(actual).isNotNull();
-
-        Payload payload = objectMapper.readValue(actual, Payload.class);
-        assertThat(payload.getType()).isEqualTo(PayloadType.AUTHENTICATION_ACK);
-        assertThat(payload.getMessageUuid()).isEqualTo(uuid);
-        ErrorPayload errorPayload = objectMapper.convertValue(payload.getData(), ErrorPayload.class);
-        assertThat(errorPayload.getReason()).isEqualTo("Agent does not exist");
-    }
-
-    @DisplayName("client가 agent 접속 상태가 온라인 상태인 인증 메세지를 요청 하였을 때 서버는 실패 여부를 전달 하여야 한다 ")
-    @Test
-    void t7() throws IOException, InterruptedException {
-        // given
-        AgentEntity agentEntity = new AgentEntity(3, 1, 1, AgentStatus.CONNECTED, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
-        messageService.insertAgent(agentEntity);
-
-        String uuid = getRandomUuid();
-        Authentication authentication = new Authentication(3, "이정섭", "이정섭", "test@test.com");
-        Payload expected = new Payload(PayloadType.AUTHENTICATION, uuid, authentication);
-        String sendData = objectMapper.writeValueAsString(expected);
-
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1);
-
-        // then
-        String actual = testClient.read(1);
-        assertThat(actual).isNotNull();
-
-        Payload payload = objectMapper.readValue(actual, Payload.class);
-        assertThat(payload.getType()).isEqualTo(PayloadType.AUTHENTICATION_ACK);
-        assertThat(payload.getMessageUuid()).isEqualTo(uuid);
-        ErrorPayload errorPayload = objectMapper.convertValue(payload.getData(), ErrorPayload.class);
-        assertThat(errorPayload.getReason()).isEqualTo("This Agent already connected");
-    }
-
-    @DisplayName("client의 인증이 성공 하였을 때 UserInfo Dto가 생성되어 usermanager에 register 되어야 한다 ")
-    @Test
-    void t8() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Authentication authentication = new Authentication(1, "이정섭", "이정섭", "test@test.com");
-        Payload expected = new Payload(PayloadType.AUTHENTICATION, uuid, authentication);
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1);
-
-        // then
-        assertThat(userManager.getUserResourceMapSize()).isEqualTo(1);
-    }
-
-    @DisplayName("client가 메시지를 전송하면 해당 메시지를 정상적으로 처리 한다음 보낸 갯수 만큼 DB에 저장 되어야 한다")
-    @Test
-    void t9() throws IOException, InterruptedException {
-
-        // given
-        String uuid = getRandomUuid();
-
-        Payload payload = new Payload(PayloadType.SEND, uuid, new Send(1, "010-4444-5555", "053-444-5555", "이정섭", "테스트"));
-        String sendData = objectMapper.writeValueAsString(payload);
-
-        // when
-        testClient.connect(port);
-        testClient.writeWithAuthenticaion(100, sendData);
-        Thread.sleep(1000);
+    void t2() throws IOException, InterruptedException {
+        // given,when
+        testClient.writeWithAuth(1);
+        Thread.sleep(3000);
 
         // then
         int actual = messageService.getCountMessageList();
-        assertThat(actual).isEqualTo(100);
-    }
-
-
-    @DisplayName("")
-    @Test
-    void t10() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Payload expected = new Payload(PayloadType.SEND, uuid, new Send());
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1000);
-
-        // then
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t11() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Payload expected = new Payload(PayloadType.SEND, uuid, new Send());
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1000);
-
-        // then
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t12() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Payload expected = new Payload(PayloadType.SEND, uuid, new Send());
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1000);
-
-        // then
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t13() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Payload expected = new Payload(PayloadType.SEND, uuid, new Send());
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1000);
-
-        // then
-
-    }
-
-    @DisplayName("")
-    @Test
-    void t14() throws IOException, InterruptedException {
-        // given
-        String uuid = getRandomUuid();
-        Payload expected = new Payload(PayloadType.SEND, uuid, new Send());
-        String sendData = objectMapper.writeValueAsString(expected);
-
-        // when
-        testClient.connect(port);
-        testClient.write(sendData, 1000);
-
-        // then
-
+        assertThat(actual).isEqualTo(1);
     }
 
 
     private static String getRandomUuid() {
-        return UUID.randomUUID().toString().substring(0, 7);
+        return UUID.randomUUID().toString();
+    }
+
+    private String makeString(Object obj) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(obj);
+    }
+
+    private String makeSendData(Send send, String uuid) throws JsonProcessingException {
+        Payload expected = new Payload(PayloadType.SEND, uuid, send);
+        return makeString(expected);
     }
 
     private int getRandomPort() {

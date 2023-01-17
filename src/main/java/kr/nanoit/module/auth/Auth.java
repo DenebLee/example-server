@@ -36,41 +36,42 @@ public class Auth {
             Payload payload = internalDataBranch.getPayload();
             Authentication authentication = objectMapper.convertValue(payload.getData(), Authentication.class);
             MemberEntity user = messageService.findUser(authentication.getUsername());
-            if (user == null) throw new FindFailedException("not found username=" + authentication.getUsername());
+            if (user == null) throw new FindFailedException("not found username = " + authentication.getUsername());
+
             MemberDto memberDto = user.toDto();
-            if (isMatchedPw(authentication.getPassword(), memberDto.getPassword()) == true) {
-                AgentEntity agentEntity = messageService.findAgent(authentication.getAgent_id());
-                if (agentEntity != null) {
-                    if (agentEntity.getStatus() == AgentStatus.DISCONNECTED) {
-                        if (messageService.updateAgentStatus(agentEntity.getId(), agentEntity.getMember_id(), AgentStatus.CONNECTED, new Timestamp(System.currentTimeMillis())) != false) {
 
-
-                            UserInfo userInfo = userManager.getUserInfo(internalDataBranch.UUID());
-                            userInfo.setAgent_id(agentEntity.getId())
-                                    .setMemberId(agentEntity.getMember_id())
-                                    .setUsername(memberDto.getUsername())
-                                    .setAuthenticaionStatus(AuthenticaionStatus.COMPLETE);
-
-                            userManager.replaceStatus(internalDataBranch.UUID(), userInfo);
-
-                            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Authentication Success"))))) {
-                            }
-                        } else {
-                            sendAuthenticationResult("Server Error", internalDataBranch, null);
-                        }
-                    } else {
-                        sendAuthenticationResult("This Agent already connected", internalDataBranch, null);
-                    }
-                } else {
-                    sendAuthenticationResult("Agent does not exist", internalDataBranch, null);
-                }
-            } else {
+            if (!isMatchedPw(authentication.getPassword(), memberDto.getPassword())) {
                 sendAuthenticationResult("Failed to Authentication", internalDataBranch, null);
             }
+
+            AgentEntity agentEntity = messageService.findAgent(authentication.getAgent_id());
+
+            if (agentEntity == null || agentEntity.getId() == 0) {
+                sendAuthenticationResult("Agent does not exist", internalDataBranch, null);
+            }
+            if (agentEntity.getStatus() != AgentStatus.DISCONNECTED) {
+                sendAuthenticationResult("This Agent already connected", internalDataBranch, null);
+            }
+
+            if (!messageService.updateAgentStatus(agentEntity.getId(), agentEntity.getMember_id(), AgentStatus.CONNECTED, new Timestamp(System.currentTimeMillis()))) {
+                sendAuthenticationResult("Server Error", internalDataBranch, null);
+            }
+
+            UserInfo userInfo = new UserInfo();
+            userInfo.setAgent_id(agentEntity.getId())
+                    .setMemberId(agentEntity.getMember_id())
+                    .setUsername(memberDto.getUsername())
+                    .setAuthenticaionStatus(AuthenticaionStatus.COMPLETE);
+
+            userManager.registUser(internalDataBranch.UUID(), userInfo);
+
+            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Authentication Success"))))) {
+            }
+
         } catch (FindFailedException e) {
             sendAuthenticationResult("Authentication failure Account information verification required", internalDataBranch, e);
         } catch (Exception e) {
-            sendAuthenticationResult("unknown error", internalDataBranch, e);
+            e.printStackTrace();
         }
     }
 
@@ -82,7 +83,6 @@ public class Auth {
     }
 
     private void sendAuthenticationResult(String reason, InternalDataBranch internalDataBranch, Exception exception) {
-        userManager.replaceStatus(internalDataBranch.UUID(), new UserInfo().setAuthenticaionStatus(AuthenticaionStatus.FAILED));
         if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
             log.warn("[AUTH] key={} {}", internalDataBranch.getMetaData().getSocketUuid(), reason, exception);
         }

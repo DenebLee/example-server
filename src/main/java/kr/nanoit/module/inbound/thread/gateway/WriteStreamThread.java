@@ -5,8 +5,10 @@ import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,19 +18,18 @@ import java.util.function.Consumer;
 public class WriteStreamThread implements Runnable {
 
     private final Consumer<String> cleaner;
-    private final BufferedWriter bufferedWriter;
+    //    private final BufferedWriter bufferedWriter;
     private final String uuid;
     private final LinkedBlockingQueue<String> writeBuffer;
-    private final UserManager userManager;
     private AtomicBoolean writeThreadStatus;
+    private DataOutputStream dataOutputStream;
 
 
-    public WriteStreamThread(Consumer<String> cleaner, BufferedWriter bufferedWriter, String uuid, LinkedBlockingQueue<String> writeBuffer, UserManager userManager, AtomicBoolean writeThreadStatus) {
+    public WriteStreamThread(Consumer<String> cleaner, DataOutputStream dataOutputStream, String uuid, LinkedBlockingQueue<String> writeBuffer, AtomicBoolean writeThreadStatus) {
         this.cleaner = cleaner;
-        this.bufferedWriter = bufferedWriter;
+        this.dataOutputStream = dataOutputStream;
         this.uuid = uuid;
         this.writeBuffer = writeBuffer;
-        this.userManager = userManager;
         this.writeThreadStatus = writeThreadStatus;
     }
 
@@ -39,22 +40,12 @@ public class WriteStreamThread implements Runnable {
         try {
             while (writeThreadStatus.get()) {
                 String payload = writeBuffer.poll(1, TimeUnit.SECONDS);
-
                 if (payload != null) {
-                    if (userManager.getUserInfo(uuid).getAuthenticaionStatus() == AuthenticaionStatus.FAILED) {
-                        if (send(payload)) {
-                            log.info("[SERVER : SOCKET : {}] Authenticaion Failed Send SUCCESS! => Payload : {}", uuid, payload);
-                            throw new Exception();
-                        }
-                    } else if (userManager.getUserInfo(uuid).getAuthenticaionStatus() == AuthenticaionStatus.COMPLETE) {
-                        if (send(payload)) {
-                            log.info("[SERVER : SOCKET : {}] WRITE SUCCESS! => Payload : {}", uuid, payload);
-                        }
+                    if (send(payload)) {
+                        log.info("[SERVER : SOCKET : {}] WRITE SUCCESS! => Payload : {}", uuid, payload);
                     } else {
-                        log.info("discard {}", payload);
+                        log.error("[@SOCKET:WRITE:{}@] Send Error", uuid);
                     }
-                } else {
-                    log.error("[@SOCKET:WRITE:{}@] Payload Data null", uuid);
                 }
             }
         } catch (Exception e) {
@@ -66,8 +57,10 @@ public class WriteStreamThread implements Runnable {
     }
 
     private boolean send(String data) throws IOException {
-        bufferedWriter.write(data + "\r\n");
-        bufferedWriter.flush();
+        data = data + "\n";
+        byte[] paylaod = data.getBytes(StandardCharsets.UTF_8);
+        dataOutputStream.write(paylaod);
+        dataOutputStream.flush();
         return true;
     }
 }

@@ -1,11 +1,9 @@
 package kr.nanoit.module.sender;
 
 import kr.nanoit.abst.ModuleProcess;
+import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.db.auth.MessageService;
-import kr.nanoit.domain.broker.InternalDataCarrier;
-import kr.nanoit.domain.broker.InternalDataOutBound;
-import kr.nanoit.domain.broker.InternalDataSender;
-import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.domain.payload.*;
@@ -14,6 +12,7 @@ import kr.nanoit.exception.FindFailedException;
 import kr.nanoit.exception.InsertFailedException;
 import kr.nanoit.exception.UpdateFailedException;
 import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Timestamp;
@@ -23,11 +22,13 @@ public class ThreadSender extends ModuleProcess {
 
     private final MessageService messageService;
     private InternalDataSender internalDataSender;
+    private final UserManager userManager;
 
 
-    public ThreadSender(Broker broker, String uuid, MessageService messageService) {
+    public ThreadSender(Broker broker, String uuid, MessageService messageService, UserManager userManager) {
         super(broker, uuid);
         this.messageService = messageService;
+        this.userManager = userManager;
     }
 
     @Override
@@ -38,25 +39,27 @@ public class ThreadSender extends ModuleProcess {
                 Object object = broker.subscribe(InternalDataType.SENDER);
                 if (object != null && object instanceof InternalDataSender) {
                     internalDataSender = (InternalDataSender) object;
-                    Send send = (Send) internalDataSender.getPayload().getData();
+                    if (userManager.isExist(internalDataSender.UUID())) {
+                        Send send = (Send) internalDataSender.getPayload().getData();
 
-                    if (send == null || send.getContent().isEmpty() || send.getSender_num().isEmpty() || send.getSender_name().isEmpty() || send.getSender_callback().isEmpty() || send.getAgent_id() == 0) {
-                        sendResult("SendMessage is null", internalDataSender, new Exception());
-                    } else {
+                        if (send == null || send.getContent().isEmpty() || send.getSender_num().isEmpty() || send.getSender_name().isEmpty() || send.getSender_callback().isEmpty() || send.getAgent_id() == 0) {
+                            sendResult("SendMessage is null", internalDataSender, new Exception());
+                        }
+
                         ClientMessageDto messageDto = makeMessage(send);
                         long id = messageService.insertClientMessage(messageDto.toEntity());
                         messageDto.setId(id);
-                        // Carrier 로 보낼때는 Payload에 ClinetMessageDto 적재
-                        if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
-                            // 전송 완료 시 status receive -> sent로 업데이트 후
-                            if (messageService.updateMessageStatus(id, MessageStatus.SENT)) {
-                                // 업데이트 성공 완료되면 outBound로 전송
-                                if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS)))))
-                                    ;
-                            }
+
+                        if (!broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
+                            log.error("[@SOCKET-{}:SENDER@] Broker Publish Error", internalDataSender.UUID());
+                        }
+                        if (!messageService.updateMessageStatus(id, MessageStatus.SENT)) {
+                            log.error("[@SOCKET-{}:SENDER@] Broker Publish Error", internalDataSender.UUID());
+                        }
+                        if (!broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS))))) {
+                            log.error("[@SOCKET-{}:SENDER@] Broker Publish Error", internalDataSender.UUID());
                         }
                     }
-
                 }
             }
         } catch (InsertFailedException e) {
@@ -67,13 +70,13 @@ public class ThreadSender extends ModuleProcess {
             sendResult(e.getReason(), internalDataSender, e);
         } catch (Exception e) {
             e.printStackTrace();
-            sendResult("unknown Error", internalDataSender, e);
             shoutDown();
         }
 
     }
 
     private void sendResult(String reason, InternalDataSender internalDataSender, Exception exception) {
+        System.out.println("dksltlqkf dho : " + reason);
         if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
             log.warn("[SENDER]   key = {} reason = {}", internalDataSender.getMetaData().getSocketUuid(), reason, exception);
         }

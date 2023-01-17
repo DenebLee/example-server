@@ -7,7 +7,6 @@ import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.domain.message.MessageStatus;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 
 public final class MessageServicePostgreSqlQuerys {
@@ -115,5 +114,9 @@ public final class MessageServicePostgreSqlQuerys {
 
     public static String getMessageCount() {
         return "SELECT COUNT (*) FROM client_message";
+    }
+
+    public static String deleteAllData() {
+        return "DROP TABLE IF EXISTS company_message, client_message";
     }
 }
