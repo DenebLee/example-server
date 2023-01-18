@@ -18,13 +18,11 @@ public class UserManager implements Runnable {
     private final Map<String, UserInfo> userResourceMap;
     private final SocketManager socketManager;
     private final MessageService messageService;
-    private final Broker broker;
 
-    public UserManager(SocketManager socketManager, MessageService messageService, Broker broker) {
+    public UserManager(SocketManager socketManager, MessageService messageService) {
         this.userResourceMap = new ConcurrentHashMap<>();
         this.socketManager = socketManager;
         this.messageService = messageService;
-        this.broker = broker;
     }
 
     @Override
@@ -38,7 +36,7 @@ public class UserManager implements Runnable {
                         messageService.updateAgentStatus(entry.getValue().getAgent_id(), entry.getValue().getMemberId(), AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()));
                         log.info("[@SOCKET-{}:USER-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
                     }
-
+                    Thread.sleep(700L);
                 }
             }
         } catch (Exception e) {
@@ -55,10 +53,6 @@ public class UserManager implements Runnable {
 
     public void unregisUser(String uuid) {
         userResourceMap.remove(uuid);
-    }
-
-    public void replaceStatus(String uuid, UserInfo userInfo) {
-        userResourceMap.replace(uuid, userInfo);
     }
 
     public boolean isExist(String uuid) {

@@ -120,7 +120,7 @@ class GatewayIntegrationTest {
         spy(new ThreadFilter(broker, getRandomUuid(), userManager));
         spy(new ThreadBranch(broker, getRandomUuid(), messageService, userManager));
         spy(new ThreadSender(broker, getRandomUuid(), messageService, userManager));
-        spy(new ThreadOutBound(broker, getRandomUuid()));
+        spy(new ThreadOutBound(broker, getRandomUuid(), socketManager, userManager));
         spy(new ThreadCarrier(broker, getRandomUuid(), messageService));
         spy(new ThreadTcpServer(socketManager, broker, port, getRandomUuid()));
 
@@ -143,7 +143,9 @@ class GatewayIntegrationTest {
         clientThread.interrupt();
 
         messageService.updateAgentStatus(1, 1, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()));
-        messageService.deleteAllData();
+        messageService.deleteCompanyMessageTable();
+        messageService.deleteClientMessageTable();
+        testClient.deleteList();
     }
 
     @DisplayName("Client가 인증 메세지를 전송 하였을 때 Server는 정상 처리 되어 Authentication_Ack를 던져줘야 한다")
@@ -170,7 +172,7 @@ class GatewayIntegrationTest {
         assertThat(authenticationAck.getResult()).isEqualTo("Authentication Success");
     }
 
-    @DisplayName("Client가 인증 메시지를 보내 인증을 한 후 메세지를 보냈을 경우 서버는 해당 메시지를 DB에 저장한 후 응답 절차를 진행 해야 한다")
+    @DisplayName("인증이 완료된 상태에서 Clinet가 보낸 Message가 정상 처리되어 Db에 저장되고 ack를 던져줘야 한다 -> 갯수 1개")
     @Test
     void t2() throws IOException, InterruptedException {
         // given,when
@@ -180,6 +182,7 @@ class GatewayIntegrationTest {
         // then
         int actual = messageService.getCountMessageList();
         assertThat(actual).isEqualTo(1);
+        assertThat(testClient.getResponseData().length()).isEqualTo(2);
     }
 
 

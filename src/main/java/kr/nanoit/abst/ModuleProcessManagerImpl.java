@@ -118,6 +118,7 @@ public class ModuleProcessManagerImpl {
         }
         objectMap.remove(uuid);
         if (!interruptThread(uuid)) {
+            System.out.println("통과3");
             return false;
         }
         interruptThread(uuid);

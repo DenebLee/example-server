@@ -5,11 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.domain.payload.Authentication;
-import kr.nanoit.domain.payload.AuthenticationAck;
-import kr.nanoit.domain.payload.ErrorPayload;
-import kr.nanoit.domain.payload.Payload;
+import kr.nanoit.domain.payload.*;
 import kr.nanoit.module.broker.Broker;
+import kr.nanoit.module.inbound.socket.SocketManager;
 import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,10 +16,14 @@ public class
 ThreadOutBound extends ModuleProcess {
 
     private final ObjectMapper objectMapper;
+    private final SocketManager socketManager;
+    private final UserManager userManager;
 
-    public ThreadOutBound(Broker broker, String uuid) {
+    public ThreadOutBound(Broker broker, String uuid, SocketManager socketManager, UserManager userManager) {
         super(broker, uuid);
         this.objectMapper = new ObjectMapper();
+        this.socketManager = socketManager;
+        this.userManager = userManager;
     }
 
     @Override
@@ -33,8 +35,11 @@ ThreadOutBound extends ModuleProcess {
                 if (object != null && object instanceof InternalDataOutBound) {
                     InternalDataOutBound internalDataOutBound = (InternalDataOutBound) object;
                     String payload = toJSON(internalDataOutBound);
-
                     if (broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload)) {
+                        log.debug("[OUTBOUND]   SEND DATA TO FILTER => [TYPE : {} DATA : {}]", internalDataOutBound.getPayload().getType(), internalDataOutBound.getPayload());
+                        if (internalDataOutBound.getPayload().getType() == PayloadType.AUTHENTICATION_ACK && !userManager.isExist(internalDataOutBound.UUID())) {
+                            socketManager.shutdownSocketResource(internalDataOutBound.UUID());
+                        }
                     }
                 }
             }
@@ -48,7 +53,7 @@ ThreadOutBound extends ModuleProcess {
     @Override
     public void shoutDown() {
         this.flag = false;
-        log.warn("[OUTBOUND   THIS THREAD SHUTDOWN]");
+        log.warn("[OUTBOUND]   THIS THREAD SHUTDOWN");
     }
 
     @Override

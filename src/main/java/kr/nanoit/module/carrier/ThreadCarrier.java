@@ -43,13 +43,12 @@ public class ThreadCarrier extends ModuleProcess {
                 if (object != null && object instanceof InternalDataCarrier) {
                     internalDataCarrier = (InternalDataCarrier) object;
                     if (internalDataCarrier.getPayload().getData() instanceof ClientMessageDto) {
-
                         ClientMessageDto clientMessageDto = (ClientMessageDto) internalDataCarrier.getPayload().getData();
                         if (clientMessageDto != null) {
                             CompanyMessageDto companyMessageDto = makeCompanyMessageDto(clientMessageDto);
                             if (messageService.insertCompanyMessage(companyMessageDto.toEntity())) {
                                 Thread.sleep(100);
-                                broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.UUID(), new Report(clientMessageDto.getAgent_id(), MessageResult.SUCCESS))));
+                                broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.getPayload().getMessageUuid(), new Report(clientMessageDto.getAgent_id(), MessageResult.SUCCESS))));
                             }
                         }
                     }

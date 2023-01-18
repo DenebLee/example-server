@@ -49,7 +49,7 @@ public class WriteStreamThread implements Runnable {
                 }
             }
         } catch (Exception e) {
-            log.error("[@SOCKET:WRITE:{}@] terminating...", uuid, e);
+            log.warn("[@SOCKET:WRITE:{}@] terminating...", uuid, e);
             cleaner.accept(this.getClass().getName());
         }
 

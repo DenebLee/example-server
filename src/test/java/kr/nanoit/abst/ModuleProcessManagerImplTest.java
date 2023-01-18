@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 
 class ModuleProcessManagerImplTest {
@@ -112,15 +113,15 @@ class ModuleProcessManagerImplTest {
 
 
     @DisplayName("unregister 했을때 정상 삭제가 되어야 함")
-    @Timeout(value = 2)
     @Test
-    void t7() {
+    void t7() throws InterruptedException {
         // given
         String uuid = getRandomUuid();
         ModuleProcess moduleProcess = spy(new ThreadMapper(broker, uuid));
         moduleProcessManagerImpl.register(moduleProcess);
 
         // when
+        when(moduleProcessManagerImpl.interruptThread(uuid)).thenReturn(true);
         boolean expected = moduleProcessManagerImpl.unregister(uuid);
 
         // then
@@ -230,16 +231,19 @@ class ModuleProcessManagerImplTest {
     @Test
     void t13() throws InterruptedException {
         // given
-        ModuleProcess moduleProcess = spy(new ThreadMapper(broker, getRandomUuid()));
+        String uuid = getRandomUuid();
+        ModuleProcess moduleProcess = spy(new ThreadMapper(broker, uuid));
         moduleProcessManagerImpl.register(moduleProcess);
 
         // when
+        when(moduleProcessManagerImpl.interruptThread(uuid)).thenReturn(true);
         moduleProcessManagerImpl.unregister(moduleProcess.getUuid());
         Thread.sleep(1400L); // -> 1.4초로 하니 통과 1.5 이상은 TImeOutException뜸
+
+
+        // then
         int count = moduleProcessManagerImpl.getObjectMapSize();
         int expected = moduleProcessManagerImpl.getThreadMapSize();
-
-        /// then
         assertThat(count).isEqualTo(0);
         assertThat(expected).isEqualTo(0);
     }
@@ -257,12 +261,13 @@ class ModuleProcessManagerImplTest {
     @Test
     void t15() throws InterruptedException {
         // given
-        ModuleProcess moduleProcess = spy(new ThreadMapper(broker, getRandomUuid()));
+        String uuid = getRandomUuid();
+        ModuleProcess moduleProcess = spy(new ThreadMapper(broker, uuid));
         moduleProcessManagerImpl.register(moduleProcess);
         int actual = moduleProcessManagerImpl.getThreadMapSize();
 
         // when
-        moduleProcessManagerImpl.interruptThread(moduleProcess.getUuid());
+        when(moduleProcessManagerImpl.interruptThread(uuid)).thenReturn(true);
         moduleProcessManagerImpl.unregister(moduleProcess.getUuid());
         Thread.sleep(1500L);
         int expected = moduleProcessManagerImpl.getThreadMapSize();

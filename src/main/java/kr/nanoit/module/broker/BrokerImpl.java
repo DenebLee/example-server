@@ -83,21 +83,24 @@ public class BrokerImpl implements Broker {
 
     @Override
     public Object subscribe(InternalDataType type) throws InterruptedException {
-        return brokerQueue.get(type).poll(1, TimeUnit.SECONDS);
+        return brokerQueue.get(type).poll(600, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public boolean outBound(String uuid, String payload) {
         if (uuid == null || uuid == "" || uuid.contains(" ")) {
-            System.out.println("uuid 오류");
+            log.error("[BROKER] uuid Value abnormal");
             return false;
         }
         if (payload == null || payload == "") {
-            System.out.println("payload 오류");
+            log.error("[BROKER] Payload Value abnormal");
             return false;
         }
 
         SocketResource socketResource = socketManager.getSocketResource(uuid);
+        if (socketResource == null) {
+            return false;
+        }
         socketResource.write(payload);
         return true;
     }

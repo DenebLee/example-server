@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class SocketManager implements Runnable {
@@ -27,13 +26,11 @@ public class SocketManager implements Runnable {
             while (flag) {
                 for (Map.Entry<String, SocketResource> entry : socketResources.entrySet()) {
                     if (entry.getValue().isTerminated()) {
-                        if (entry.getValue().isSocketInputStreamClose() && entry.getValue().isSocketOutputStreamClose()) {
-                            entry.getValue().connectClose();
-                            if (entry.getValue().isSocketClose()) {
-                                socketResources.remove(entry.getKey());
-                                forwardUserMap.offer(entry.getKey());
-                                log.info("[@SOCKET-{}:SOCKET-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
-                            }
+                        entry.getValue().connectClose();
+                        if (entry.getValue().isSocketClose()) {
+                            socketResources.remove(entry.getKey());
+                            forwardUserMap.offer(entry.getKey());
+                            log.info("[@SOCKET-{}:SOCKET-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
                         }
                     }
                 }
@@ -62,21 +59,17 @@ public class SocketManager implements Runnable {
 
     public boolean register(SocketResource socketResource) {
         if (socketResource.getSocket() == null) {
-            System.out.println("통과1");
             return false;
         }
         if (!socketResource.getSocket().isBound()) {
-            System.out.println("통과2");
 
             return false;
         }
         if (socketResource.getSocket().isClosed()) {
-            System.out.println("통과3");
 
             return false;
         }
         if (socketResource.getUuid() == null) {
-            System.out.println("통과4");
 
             return false;
         }
@@ -91,5 +84,10 @@ public class SocketManager implements Runnable {
             return null;
         }
         return socketResources.get(uuid);
+    }
+
+    public void shutdownSocketResource(String uuid) {
+        getSocketResource(uuid).getReadStreamThread().interrupt();
+        getSocketResource(uuid).getWriteStreamThread().interrupt();
     }
 }

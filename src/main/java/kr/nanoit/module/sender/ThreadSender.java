@@ -39,6 +39,7 @@ public class ThreadSender extends ModuleProcess {
                 Object object = broker.subscribe(InternalDataType.SENDER);
                 if (object != null && object instanceof InternalDataSender) {
                     internalDataSender = (InternalDataSender) object;
+
                     if (userManager.isExist(internalDataSender.UUID())) {
                         Send send = (Send) internalDataSender.getPayload().getData();
 
@@ -56,7 +57,9 @@ public class ThreadSender extends ModuleProcess {
                         if (!messageService.updateMessageStatus(id, MessageStatus.SENT)) {
                             log.error("[@SOCKET-{}:SENDER@] Broker Publish Error", internalDataSender.UUID());
                         }
-                        if (!broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS))))) {
+                        if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS))))) {
+                            log.debug("[OUTBOUND]   SEND DATA TO CARRIER => [TYPE : {} DATA : {}]", internalDataSender.getPayload().getType(), internalDataSender.getPayload());
+                        } else {
                             log.error("[@SOCKET-{}:SENDER@] Broker Publish Error", internalDataSender.UUID());
                         }
                     }
@@ -76,7 +79,6 @@ public class ThreadSender extends ModuleProcess {
     }
 
     private void sendResult(String reason, InternalDataSender internalDataSender, Exception exception) {
-        System.out.println("dksltlqkf dho : " + reason);
         if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
             log.warn("[SENDER]   key = {} reason = {}", internalDataSender.getMetaData().getSocketUuid(), reason, exception);
         }

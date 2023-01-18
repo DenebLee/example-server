@@ -4,6 +4,10 @@ import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.broker.MetaData;
+import kr.nanoit.domain.payload.Authentication;
+import kr.nanoit.domain.payload.Payload;
+import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.domain.payload.Send;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
@@ -35,7 +39,7 @@ class ThreadMapperTest {
     @BeforeEach
     void setUp() {
         broker = spy(new BrokerImpl(socketManager));
-        uuid = UUID.randomUUID().toString().substring(0, 7);
+        uuid = UUID.randomUUID().toString();
         this.objectMapper = new ObjectMapper();
         threadMapper = spy(new ThreadMapper(broker, uuid));
         mapperThread = new Thread(threadMapper);
@@ -47,21 +51,62 @@ class ThreadMapperTest {
         mapperThread.interrupt();
     }
 
-    @DisplayName("Payload : String 값으로 넘겼을 때 Mapping 되어 InternalDataFilter 형태로 Filter로 전송되어야 함")
+    @DisplayName("Payload : Authenticaion 메시지를 String 값으로 넘겼을 때 Mapping 되어 InternalDataFilter 안에 data는 Authentication 형태로 Filter로 전송되어야 함")
     @Test
     void t1() throws InterruptedException, JsonProcessingException {
         // given
-        String data = "{\"type\":\"SEND\",\"messageUuid\":\"test01\",\"data\":{\"id\":123123,\"phone\":\"01044445555\",\"callback\":\"053555444\",\"content\":\" 안녕하세요\"}}";
-        InternalDataMapper actual = new InternalDataMapper(new MetaData(randomString(5)), data);
+        String uuid = UUID.randomUUID().toString();
+        Authentication authentication = new Authentication(1, "이정섭", "이정섭", "test@test.com");
+        Payload expected = new Payload(PayloadType.AUTHENTICATION, "1", authentication);
+        String sendData = objectMapper.writeValueAsString(expected);
+
+        InternalDataMapper actual = new InternalDataMapper(new MetaData(uuid), sendData);
 
         // when
         broker.publish(actual);
         Thread.sleep(1000L);
-        Object object = broker.subscribe(InternalDataType.FILTER);
-        InternalDataFilter expected = (InternalDataFilter) object;
+
 
         // then
-        assertThat(actual.getPayload()).isEqualTo(objectMapper.writeValueAsString(expected.getPayload()).trim());
+        Object object = broker.subscribe(InternalDataType.FILTER);
+        assertThat(object).isInstanceOf(InternalDataFilter.class);
+        InternalDataFilter internalDataFilter = (InternalDataFilter) object;
+        assertThat(internalDataFilter.getMetaData()).isEqualTo(actual.getMetaData());
+        assertThat(internalDataFilter.getPayload().getType()).isEqualTo(PayloadType.AUTHENTICATION);
+        assertThat(internalDataFilter.getPayload().getMessageUuid()).isEqualTo(expected.getMessageUuid());
+        assertThat(internalDataFilter.getPayload().getData()).isInstanceOf(Authentication.class);
+        Authentication dataAcutal = (Authentication) internalDataFilter.getPayload().getData();
+        assertThat(dataAcutal).usingRecursiveComparison().isEqualTo(authentication);
+
+    }
+
+    @DisplayName("Payload : Send 메시지를 String 값으로 넘겼을 때 Mapping 되어 InternalDataFilter 안에 data는 Send 형태로 Filter로 전송되어야 함")
+    @Test
+    void t2() throws InterruptedException, JsonProcessingException {
+        // given
+        String uuid = UUID.randomUUID().toString();
+        Send send = new Send(1, "010-4444-5555", "053-444-555", "이정섭", "테스트");
+        Payload expected = new Payload(PayloadType.SEND, "1", send);
+        String sendData = objectMapper.writeValueAsString(expected);
+
+        InternalDataMapper actual = new InternalDataMapper(new MetaData(uuid), sendData);
+
+        // when
+        broker.publish(actual);
+        Thread.sleep(1000L);
+
+
+        // then
+        Object object = broker.subscribe(InternalDataType.FILTER);
+        assertThat(object).isInstanceOf(InternalDataFilter.class);
+        InternalDataFilter internalDataFilter = (InternalDataFilter) object;
+        assertThat(internalDataFilter.getMetaData()).isEqualTo(actual.getMetaData());
+        assertThat(internalDataFilter.getPayload().getType()).isEqualTo(PayloadType.SEND);
+        assertThat(internalDataFilter.getPayload().getMessageUuid()).isEqualTo(expected.getMessageUuid());
+        assertThat(internalDataFilter.getPayload().getData()).isInstanceOf(Send.class);
+        Send dataAcutal = (Send) internalDataFilter.getPayload().getData();
+        assertThat(dataAcutal).usingRecursiveComparison().isEqualTo(send);
+
     }
 
 

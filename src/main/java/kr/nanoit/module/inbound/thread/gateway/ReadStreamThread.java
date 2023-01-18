@@ -1,19 +1,12 @@
 package kr.nanoit.module.inbound.thread.gateway;
 
 
-import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.domain.broker.InternalDataMapper;
-import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.MetaData;
-import kr.nanoit.domain.payload.Payload;
-import kr.nanoit.domain.payload.PayloadType;
-import kr.nanoit.dto.UserInfo;
 import kr.nanoit.module.broker.Broker;
-import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -25,6 +18,7 @@ public class ReadStreamThread implements Runnable {
     private final BufferedReader bufferedReader;
     private final String uuid;
     private AtomicBoolean readThreadStatus;
+    private boolean isAuth;
 
 
     public ReadStreamThread(Consumer<String> cleaner, Broker broker, BufferedReader bufferedReader, String uuid, AtomicBoolean readThreadStatus) {
@@ -39,15 +33,25 @@ public class ReadStreamThread implements Runnable {
     public void run() {
         log.info("[SERVER : SOCKET : {}] READ START", uuid);
         try {
+            long startTime = System.currentTimeMillis();
+            isAuth = false;
             while (readThreadStatus.get()) {
+                if (isAuth == false && (System.currentTimeMillis() - startTime) / 1000 == 5) { // 5초
+                    throw new Exception("Authentication Timeout");
+                }
+
                 String payload = bufferedReader.readLine();
                 if (payload != null) {
+                    if (payload.contains("AUTHENTICATION")) {
+                        isAuth = true;
+                    }
                     broker.publish(new InternalDataMapper(new MetaData(uuid), payload));
                     log.debug("[@SOCKET:READ:{}@] Receive DATA ", uuid);
                 }
             }
-        } catch (Exception e) {
-            log.error("[@SOCKET:READ:{}@] terminating...", uuid, e);
+        } catch (
+                Exception e) {
+            log.warn("[@SOCKET:READ:{}@] terminating...", uuid, e);
             cleaner.accept(this.getClass().getName());
         }
 

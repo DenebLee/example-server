@@ -78,7 +78,12 @@ public interface MessageService {
     boolean insertRelayCompany() throws InsertFailedException;
 
     // For Test
-    void deleteAllData();
+    void dropMessageTable();
+
+    void deleteClientMessageTable();
+
+    void deleteCompanyMessageTable();
+
 
 }
 

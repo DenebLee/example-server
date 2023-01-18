@@ -11,6 +11,7 @@ import kr.nanoit.domain.broker.InternalDataMapper;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.payload.Authentication;
 import kr.nanoit.domain.payload.Payload;
+import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.domain.payload.Send;
 import kr.nanoit.module.broker.Broker;
 import lombok.Data;
@@ -40,7 +41,9 @@ public class ThreadMapper extends ModuleProcess {
                     switch (payload.getType()) {
                         case SEND:
                             Send send = objectMapper.convertValue(payload.getData(), Send.class);
-                            broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), new Payload(payload.getType(), payload.getMessageUuid(), send)));
+                            if (broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), new Payload(payload.getType(), payload.getMessageUuid(), send)))) {
+                                log.debug("[BRANCH]   SEND DATA TO FILTER => [TYPE : {} DATA : {}]", PayloadType.SEND, internalDataMapper.getPayload());
+                            }
                             break;
 
                         case REPORT_ACK:
@@ -51,7 +54,7 @@ public class ThreadMapper extends ModuleProcess {
 
                         case AUTHENTICATION:
                             Authentication authentication = objectMapper.convertValue(payload.getData(), Authentication.class);
-                            broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), new Payload(payload.getType( ), payload.getMessageUuid(), authentication)));
+                            broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), new Payload(payload.getType(), payload.getMessageUuid(), authentication)));
                     }
 
 

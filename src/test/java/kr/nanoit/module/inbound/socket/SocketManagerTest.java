@@ -214,8 +214,6 @@ class SocketManagerTest {
         // when
         when(socketResource.getSocket()).thenReturn(socket);
         when(socketResource.isTerminated()).thenReturn(true);
-        when(socketResource.isSocketInputStreamClose()).thenReturn(true);
-        when(socketResource.isSocketOutputStreamClose()).thenReturn(true);
         boolean expected = socketResource.getSocket().isConnected();
 
         // then
@@ -240,8 +238,6 @@ class SocketManagerTest {
 
         // when
         when(socketResource.isTerminated()).thenReturn(true);
-        when(socketResource.isSocketInputStreamClose()).thenReturn(true);
-        when(socketResource.isSocketOutputStreamClose()).thenReturn(true);
         when(socketResource.isSocketClose()).thenReturn(true);
 
         Thread.sleep(2000);

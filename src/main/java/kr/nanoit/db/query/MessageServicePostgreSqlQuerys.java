@@ -116,7 +116,15 @@ public final class MessageServicePostgreSqlQuerys {
         return "SELECT COUNT (*) FROM client_message";
     }
 
-    public static String deleteAllData() {
+    public static String dropMessageTable() {
         return "DROP TABLE IF EXISTS company_message, client_message";
+    }
+
+    public static String deleteClientMessageTable() {
+        return "DELETE FROM client_message";
+    }
+
+    public static String deleteCompanyMessageTable() {
+        return "DELETE FROM company_message";
     }
 }

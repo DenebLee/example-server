@@ -14,14 +14,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClientApplication {
 
-    public static final int TOTAL_COUNT = 100;
+    public static final int TOTAL_COUNT = 1000;
     private static final AtomicInteger readCounter = new AtomicInteger(0);
     private static final AtomicInteger writeCounter = new AtomicInteger(0);
 
     public static void main(String[] args) {
 
         try {
-
 
             String authData = "{\"type\": \"AUTHENTICATION\",\"messageUuid\": \"1\",\"data\": {\"agent_id\":\"1\",\"username\":\"이정섭\", \"password\": \"이정섭\", \"email\": \"test@test.com\"}}" + "\r\n";
             byte[] payload = authData.getBytes(StandardCharsets.UTF_8);
@@ -49,9 +48,10 @@ public class TcpClientApplication {
             monitor.start();
 
             Thread writeThread = new Thread(() -> {
+
                 for (int i = 0; i < TOTAL_COUNT; i++) {
                     try {
-                        if (i == 0) {
+                        if (i == 4) {
                             dataOutputStream.write(payload);
                             dataOutputStream.flush();
                             writeCounter.incrementAndGet();
@@ -64,8 +64,13 @@ public class TcpClientApplication {
 
                             dataOutputStream.write(payload1);
                             dataOutputStream.flush();
+                            Thread.sleep(500L);
                             writeCounter.incrementAndGet();
                         }
+//                        dataOutputStream.write(payload);
+//                        dataOutputStream.flush();
+//                        writeCounter.incrementAndGet();
+//                        Thread.sleep(10000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

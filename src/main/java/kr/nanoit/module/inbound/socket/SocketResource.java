@@ -88,24 +88,17 @@ public class SocketResource {
         } catch (IOException e) {
             log.error("[@SOCKET:RESOURCE@] key={} name={} SOCKET OUT STREAM CLOSE FAILED", uuid, calledClassName, e);
         }
-
     }
 
     public boolean isTerminated() {
-        return readStreamThread.getState().equals(Thread.State.TERMINATED) && writeStreamThread.getState().equals(Thread.State.TERMINATED);
+        if (writeStreamThread.getState().equals(Thread.State.TERMINATED) && readStreamThread.getState().equals(Thread.State.TERMINATED)) {
+            return true;
+        }
+        return false;
     }
 
     public void connectClose() throws IOException {
         this.socket.close();
-    }
-
-    public boolean isSocketInputStreamClose() {
-        return socket.isInputShutdown();
-    }
-
-
-    public boolean isSocketOutputStreamClose() {
-        return socket.isOutputShutdown();
     }
 
     public int getWriteBufferQueueSize() {

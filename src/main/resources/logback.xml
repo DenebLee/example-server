@@ -4,11 +4,12 @@
         <!-- encoders are  by default assigned the type
              ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%42.42thread] %highlight(%-5level) %cyan(%18.18logger{0})  %boldWhite([%C{0}.%M:%yellow(%L)])- %msg %n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%42.42thread] %highlight(%-5level) %cyan(%18.18logger{0}) %boldWhite([%C{0}.%M:%yellow(%L)])-    %msg %n
+            </pattern>
         </encoder>
     </appender>
     <!--    debug-->
-    <root level="info">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

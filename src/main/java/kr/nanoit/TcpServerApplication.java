@@ -19,13 +19,17 @@ import kr.nanoit.module.outbound.ThreadOutBound;
 import kr.nanoit.module.sender.ThreadSender;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
 public class TcpServerApplication {
     public static int port = 12323;
+    public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd H:mm:ss");
 
     public static void main(String[] args) throws ClassNotFoundException {
+
         DataBaseConfig dataBaseConfig = new DataBaseConfig()
                 .setIp("192.168.0.64")
                 .setPort(5432)
@@ -36,14 +40,13 @@ public class TcpServerApplication {
         MessageService messageService = MessageService.createPostgreSqL(dbcp);
         SocketManager socketManager = new SocketManager();
         Broker broker = new BrokerImpl(socketManager);
-        UserManager userManager = new UserManager(socketManager, messageService,broker);
-
+        UserManager userManager = new UserManager(socketManager, messageService);
 
         new ThreadMapper(broker, getRandomUuid());
         new ThreadFilter(broker, getRandomUuid(), userManager);
         new ThreadBranch(broker, getRandomUuid(), messageService, userManager);
         new ThreadSender(broker, getRandomUuid(), messageService, userManager);
-        new ThreadOutBound(broker, getRandomUuid());
+        new ThreadOutBound(broker, getRandomUuid(), socketManager, userManager);
         new ThreadCarrier(broker, getRandomUuid(), messageService);
 
         new ThreadTcpServer(socketManager, broker, port, getRandomUuid());
@@ -61,7 +64,7 @@ public class TcpServerApplication {
 
         System.out.println("");
         System.out.println("==========================================================================================================================================================================================");
-        System.out.println("                                                                       ECHO TEST SERVER START  ");
+        System.out.println("                                                                    ECHO TEST SERVER START " + SIMPLE_DATE_FORMAT.format(new Date()));
         System.out.println("==========================================================================================================================================================================================");
         System.out.println("");
 

@@ -1,6 +1,5 @@
 package kr.nanoit.db.auth;
 
-import com.google.inject.spi.Message;
 import kr.nanoit.db.PostgreSqlDbcp;
 import kr.nanoit.db.query.MessageServicePostgreSqlQuerys;
 import kr.nanoit.domain.entity.AgentEntity;
@@ -215,6 +214,7 @@ public class MessageServiceImpl implements MessageService {
                 rs.close();
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             log.error(e.getMessage());
             throw new InsertFailedException("failed to insert Client Message");
         } catch (Exception e) {
@@ -401,9 +401,29 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void deleteAllData() {
+    public void dropMessageTable() {
         try (Connection connection = dbcp.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteAllData());
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.dropMessageTable());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteClientMessageTable() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteClientMessageTable());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void deleteCompanyMessageTable() {
+        try (Connection connection = dbcp.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(MessageServicePostgreSqlQuerys.deleteCompanyMessageTable());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -40,16 +40,17 @@ public class ThreadBranch extends ModuleProcess {
                             break;
                         case SEND:
                             if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
+                                log.debug("[BRANCH]   SEND DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
                             }
                             break;
                         case REPORT_ACK:
                             if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
-                                log.info("[BRANCH]   REPORT_ACK DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
+                                log.debug("[BRANCH]   REPORT_ACK DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
                             }
                             break;
                         case ALIVE:
                             if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
-                                log.info("[BRANCH]   ALIVE DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
+                                log.debug("[BRANCH]   ALIVE DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
                             }
                             break;
                     }

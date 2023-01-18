@@ -294,8 +294,7 @@ class MessageServiceImplTest {
             messageService.insertUser(memberData);
             messageService.insertAgent(agentData);
         }).isInstanceOf(InsertFailedException.class)
-                .hasMessage("ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_member_id_fkey\"\n" +
-                        "  Detail: Key (member_id)=(3) is not present in table \"member\".");
+                .hasMessage("failed to insert Agent");
     }
 
 
@@ -318,8 +317,7 @@ class MessageServiceImplTest {
                 preparedStatement.executeUpdate();
                 messageService.insertAgent(expected);
             }).isInstanceOf(InsertFailedException.class)
-                    .hasMessage("ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_access_list_id_fkey\"\n" +
-                            "  Detail: Key (access_list_id)=(5) is not present in table \"access_list\".");
+                    .hasMessage("failed to insert Agent");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -345,8 +343,7 @@ class MessageServiceImplTest {
 
             messageService.insertAgent(agentData);
         }).isInstanceOf(InsertFailedException.class)
-                .hasMessage("ERROR: insert or update on table \"agent\" violates foreign key constraint \"agent_status_fkey\"\n" +
-                        "  Detail: Key (status)=(null) is not present in table \"agent_status\".");
+                .hasMessage("failed to insert Agent");
     }
 
     @DisplayName("access_list => access_list_id를 제공하였을 때 데이터가 있을 경우 true가 되어야 함")

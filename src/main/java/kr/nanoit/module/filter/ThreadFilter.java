@@ -67,6 +67,7 @@ public class ThreadFilter extends ModuleProcess {
                             break;
                     }
                     if (broker.publish(new InternalDataBranch(internalDataFilter.getMetaData(), internalDataFilter.getPayload()))) {
+                        log.debug("[OUTBOUND]   DATA TO FILTER => [TYPE : {} DATA : {}]", internalDataFilter.getPayload().getType(), internalDataFilter.getPayload());
                     }
                 }
             }

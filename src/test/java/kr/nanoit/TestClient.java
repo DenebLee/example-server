@@ -31,6 +31,7 @@ public class TestClient implements Runnable {
             while (true) {
                 String value = bufferedReader.readLine();
                 if (value != null) {
+                    System.out.println("서버에서의 답 : " + value);
                     dataList.add(value);
                 }
             }
@@ -50,20 +51,20 @@ public class TestClient implements Runnable {
 
     public void writeWithAuth(int count) throws IOException, InterruptedException {
         String authData = "{\"type\": \"AUTHENTICATION\",\"messageUuid\": \"1\",\"data\": {\"agent_id\":\"1\",\"username\":\"이정섭\", \"password\": \"이정섭\", \"email\": \"test@test.com\"}}" + "\r\n";
-
         byte[] authPayload = authData.getBytes(StandardCharsets.UTF_8);
-
         dataOutputStream.write(authPayload);
         dataOutputStream.flush();
         System.out.println("인증 Data 전송 완료");
         Thread.sleep(1000);
         for (int i = 0; i < count; i++) {
-            String sendData = "{\"type\": \"SEND\",\"messageUuid\": \"1\",\"data\": " +
+            String data = "{\"type\": \"SEND\",\"messageUuid\": \"" + i + "\"  ,\"data\": " +
                     "{\"agent_id\": 1, \"sender_num\": \"010-4444-5555\", \"sender_callback\": \"053-555-4444\", \"sender_name\": \"이정섭\"," +
-                    "\"content\": \" 테스트중 '" + i + "'\"  }}" + "\n";
-            byte[] sendPayload = sendData.getBytes(StandardCharsets.UTF_8);
+                    "\"content\": \" 테스트중 \"}}" + "\r\n";
+            byte[] sendPayload = data.getBytes(StandardCharsets.UTF_8);
 
             dataOutputStream.write(sendPayload);
+            dataOutputStream.flush();
+
             System.out.println("send Data 전송 완료");
         }
     }
@@ -71,6 +72,10 @@ public class TestClient implements Runnable {
     public String getResponseData() {
         System.out.println(dataList.get(0));
         return dataList.get(0);
+    }
+
+    public void deleteList() {
+        dataList.clear();
     }
 
     public void delay() throws InterruptedException {
