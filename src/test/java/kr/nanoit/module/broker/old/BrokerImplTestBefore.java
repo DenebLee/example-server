@@ -126,11 +126,6 @@ class BrokerImplTestBefore {
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
-    @Test
-    void should_get_auth_data_when_input_auth() {
-
-    }
-
     public String randomString(int targetLength) {
         int leftLimit = 97; // letter 'a'
         int rightLimit = 122; // letter 'z'

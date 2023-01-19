@@ -28,6 +28,7 @@ public class ThreadBranch extends ModuleProcess {
     public void run() {
         try {
             flag = true;
+
             while (flag) {
                 Object object = broker.subscribe(InternalDataType.BRANCH);
                 if (object != null && object instanceof InternalDataBranch) {
@@ -37,6 +38,7 @@ public class ThreadBranch extends ModuleProcess {
                     switch (payloadType) {
                         case AUTHENTICATION:
                             auth.verificationAccount(internalDataBranch, messageService);
+                            log.debug("[BRANCH]   SEND DATA TO AUth => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
                             break;
                         case SEND:
                             if (broker.publish(new InternalDataSender(internalDataBranch.getMetaData(), internalDataBranch.getPayload()))) {
@@ -57,7 +59,7 @@ public class ThreadBranch extends ModuleProcess {
                 }
             }
         } catch (Exception e) {
-            log.warn(e.getMessage());
+            e.printStackTrace();
             shoutDown();
         }
     }

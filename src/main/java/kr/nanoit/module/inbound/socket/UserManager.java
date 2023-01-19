@@ -4,6 +4,7 @@ import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.db.auth.MessageService;
 import kr.nanoit.domain.message.AgentStatus;
 import kr.nanoit.dto.UserInfo;
+import kr.nanoit.exception.UpdateFailedException;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,8 +34,9 @@ public class UserManager implements Runnable {
                     String uuid = socketManager.forwardUserMap.poll(1, TimeUnit.SECONDS);
                     if (uuid != null) {
                         unregisUser(uuid);
-                        messageService.updateAgentStatus(entry.getValue().getAgent_id(), entry.getValue().getMemberId(), AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()));
-                        log.info("[@SOCKET-{}:USER-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
+                        if (messageService.updateAgentStatus(entry.getValue().getAgent_id(), entry.getValue().getMemberId(), AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()))) {
+                            log.info("[@SOCKET-{}:USER-MANAGER@] CLIENT DISCONNECTED COMPLETE", entry.getKey());
+                        }
                     }
                     Thread.sleep(700L);
                 }

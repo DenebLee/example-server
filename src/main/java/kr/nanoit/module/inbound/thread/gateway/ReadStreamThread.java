@@ -35,8 +35,9 @@ public class ReadStreamThread implements Runnable {
         try {
             long startTime = System.currentTimeMillis();
             isAuth = false;
+
             while (readThreadStatus.get()) {
-                if (isAuth == false && (System.currentTimeMillis() - startTime) / 1000 == 5) { // 5초
+                if (isAuth == false && (System.currentTimeMillis() - startTime) / 1000 == 5) {
                     throw new Exception("Authentication Timeout");
                 }
 
@@ -54,7 +55,6 @@ public class ReadStreamThread implements Runnable {
             log.warn("[@SOCKET:READ:{}@] terminating...", uuid, e);
             cleaner.accept(this.getClass().getName());
         }
-
         log.info("[@SOCKET:READ:{}@] Close Success", uuid);
     }
 }

@@ -200,7 +200,7 @@ class SocketManagerTest {
     @DisplayName("SocketResource 가 Terminated, Input Output Stream 이 닫혔을 때 socket 연결이 끊겨야함")
     @Timeout(value = 2)
     @Test
-    void t10() throws IOException {
+    void t10() {
         // given
         SocketManager socketManager = spy(new SocketManager());
         SocketResource socketResource = mock(SocketResource.class);

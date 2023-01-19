@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
-import kr.nanoit.domain.payload.*;
+import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.SocketManager;
 import kr.nanoit.module.inbound.socket.UserManager;
@@ -47,6 +47,8 @@ ThreadOutBound extends ModuleProcess {
             shoutDown();
             ex.printStackTrace();
             throw new RuntimeException(ex);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

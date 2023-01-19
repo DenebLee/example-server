@@ -1,14 +1,11 @@
 package kr.nanoit.module.filter;
 
 import kr.nanoit.abst.ModuleProcess;
-import kr.nanoit.domain.broker.InternalDataBranch;
-import kr.nanoit.domain.broker.InternalDataFilter;
-import kr.nanoit.domain.broker.InternalDataOutBound;
-import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
-import kr.nanoit.dto.UserInfo;
+import kr.nanoit.exception.DataNullException;
 import kr.nanoit.extension.Validation;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.UserManager;
@@ -33,25 +30,26 @@ public class ThreadFilter extends ModuleProcess {
                 Object object = broker.subscribe(InternalDataType.FILTER);
                 if (object instanceof InternalDataFilter) {
                     InternalDataFilter internalDataFilter = (InternalDataFilter) object;
+
                     if (internalDataFilter.getMetaData() == null) {
-                        publishBadRequest(internalDataFilter, "MetaData is null");
-                    }
-                    if (internalDataFilter.getPayload().getMessageUuid() == null) {
-                        publishBadRequest(internalDataFilter, "MessageUuid is null");
+                        throw new DataNullException(internalDataFilter, "MetaData is null");
                     }
                     if (internalDataFilter.getPayload().getType() == null) {
-                        publishBadRequest(internalDataFilter, "Payload.Type is null");
+                        throw new DataNullException(internalDataFilter, "Payload.Type is null");
                     }
+
+                    if (internalDataFilter.getPayload().getMessageUuid() == null) {
+                        throw new DataNullException(internalDataFilter, "MessageUuid is null");
+                    }
+
                     if (internalDataFilter.getPayload().getData() == null) {
-                        publishBadRequest(internalDataFilter, "Payload.Data is null");
+                        throw new DataNullException(internalDataFilter, "Payload.Data is null");
                     }
                     switch (internalDataFilter.getPayload().getType()) {
                         case SEND:
                             if (!validation.verificationSendData(internalDataFilter, userManager)) {
                                 publishBadRequest(internalDataFilter, "Invalid Send value");
                             }
-
-
                             break;
 
                         case REPORT_ACK:
@@ -67,26 +65,29 @@ public class ThreadFilter extends ModuleProcess {
                             break;
                     }
                     if (broker.publish(new InternalDataBranch(internalDataFilter.getMetaData(), internalDataFilter.getPayload()))) {
-                        log.debug("[OUTBOUND]   DATA TO FILTER => [TYPE : {} DATA : {}]", internalDataFilter.getPayload().getType(), internalDataFilter.getPayload());
+                        log.debug("[FILTER]   DATA TO BRANCH => [TYPE : {} DATA : {}]", internalDataFilter.getPayload().getType(), internalDataFilter.getPayload());
                     }
                 }
             }
+        } catch (DataNullException e) {
+            publishBadRequest((InternalDataFilter) e.getInternalData(), e.getReason());
+            log.warn("[FILTER] @USER:{}] DataNullException Call  {} ", e.getInternalData().UUID(), e.getReason());
         } catch (InterruptedException e) {
             shoutDown();
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void publishBadRequest(InternalDataFilter internalDataFilter, String str) {
-        if (broker.publish(new InternalDataOutBound(internalDataFilter.getMetaData(), new Payload(PayloadType.BAD_SEND, internalDataFilter.getPayload().getMessageUuid(), new ErrorPayload(str))))) {
-            log.error("[FILTER]   There is null data ");
-        }
+        broker.publish(new InternalDataOutBound(internalDataFilter.getMetaData(), new Payload(PayloadType.BAD_SEND, internalDataFilter.getPayload().getMessageUuid(), new ErrorPayload(str))));
     }
 
     @Override
     public void shoutDown() {
         this.flag = false;
-        log.warn("[FILTER   THIS THREAD SHUTDOWN]");
+        log.warn("[FILTER]   THIS THREAD SHUTDOWN");
     }
 
 

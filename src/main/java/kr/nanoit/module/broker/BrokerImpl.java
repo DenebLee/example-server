@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class BrokerImpl implements Broker {
@@ -83,7 +82,7 @@ public class BrokerImpl implements Broker {
 
     @Override
     public Object subscribe(InternalDataType type) throws InterruptedException {
-        return brokerQueue.get(type).poll(600, TimeUnit.MILLISECONDS);
+        return brokerQueue.get(type).poll();
     }
 
     @Override

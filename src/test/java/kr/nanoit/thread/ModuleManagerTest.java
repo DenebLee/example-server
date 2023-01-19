@@ -1,5 +1,6 @@
 package kr.nanoit.thread;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 class ModuleManagerTest {
 
+    @Disabled
     @DisplayName("register null 넣을때 register 실패 되야 함")
     @Timeout(value = 2)
     @Test

@@ -1,0 +1,8 @@
+version: '3.9'
+
+services:
+  gw:
+    container_name: lee-gateway
+    image: lee-gateway:v1
+    ports:
+      - "12323:12323"

@@ -453,19 +453,7 @@ class ThreadFilterTest {
         assertThat(errorDto.getReason()).isEqualTo("Invalid Send value");
     }
 
-    @DisplayName("validation - PayloadData : Alive 형식일 경우")
-    @Test
-    void t20() {
-
-    }
-
-    @DisplayName("validation - PayloadData : Report_ack 형식일 경우")
-    @Test
-    void t21() {
-
-    }
-
-//    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료")
+    //    @DisplayName("shoutDown 메소드가 실행되면 스레드는 종료")
 //    @Test
 //    void t22() throws InterruptedException {
 //        // given

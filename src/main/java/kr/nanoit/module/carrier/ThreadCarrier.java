@@ -14,6 +14,7 @@ import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.domain.payload.Report;
 import kr.nanoit.dto.ClientMessageDto;
 import kr.nanoit.dto.CompanyMessageDto;
+import kr.nanoit.exception.DataNullException;
 import kr.nanoit.exception.InsertFailedException;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
@@ -42,30 +43,41 @@ public class ThreadCarrier extends ModuleProcess {
                 Object object = broker.subscribe(InternalDataType.CARRIER);
                 if (object != null && object instanceof InternalDataCarrier) {
                     internalDataCarrier = (InternalDataCarrier) object;
+
                     if (internalDataCarrier.getPayload().getData() instanceof ClientMessageDto) {
                         ClientMessageDto clientMessageDto = (ClientMessageDto) internalDataCarrier.getPayload().getData();
-                        if (clientMessageDto != null) {
-                            CompanyMessageDto companyMessageDto = makeCompanyMessageDto(clientMessageDto);
-                            if (messageService.insertCompanyMessage(companyMessageDto.toEntity())) {
-                                Thread.sleep(100);
-                                broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.getPayload().getMessageUuid(), new Report(clientMessageDto.getAgent_id(), MessageResult.SUCCESS))));
+
+                        if (clientMessageDto == null) {
+                            throw new DataNullException(internalDataCarrier, "The value received does not exist");
+                        }
+
+                        CompanyMessageDto companyMessageDto = makeCompanyMessageDto(clientMessageDto);
+
+                        if (messageService.insertCompanyMessage(companyMessageDto.toEntity())) {
+                            Thread.sleep(100);
+                            if (broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.getPayload().getMessageUuid(), new Report(clientMessageDto.getAgent_id(), MessageResult.SUCCESS))))) {
+                                log.debug("[CARRIER]   DATA TO OUTBOUND => [TYPE : {} DATA : {}]", internalDataCarrier.getPayload().getType(), internalDataCarrier.getPayload());
                             }
                         }
                     }
+
                 }
+            } catch (DataNullException e) {
+                receiveResult(e.getReason(), (InternalDataCarrier) e.getInternalData());
+                log.warn("[CARRIER] @USER:{}] DataNullException Call  {} ", e.getInternalData().UUID(), e.getReason());
             } catch (InsertFailedException e) {
                 e.printStackTrace();
-                receiveResult(e.getReason(), internalDataCarrier, e);
+                receiveResult(e.getReason(), internalDataCarrier);
+                log.warn("[CARRIER] @USER:{}] DataNullException Call  {} ", internalDataCarrier.UUID(), e.getReason());
             } catch (Exception e) {
-                receiveResult("unknown Error", internalDataCarrier, e);
+                e.printStackTrace();
+                receiveResult("unknown Error", internalDataCarrier);
             }
         }
-
     }
 
     private CompanyMessageDto makeCompanyMessageDto(ClientMessageDto clientMessageDto) {
         CompanyMessageDto companyMessageDto = new CompanyMessageDto();
-        // 정해진 게 없어서 realy_company 값은 1로 초기값 설정
         return companyMessageDto
                 .setClient_message_id(clientMessageDto.getId())
                 .setRelay_company_id(1)
@@ -96,9 +108,7 @@ public class ThreadCarrier extends ModuleProcess {
         return this.uuid;
     }
 
-    private void receiveResult(String reason, InternalDataCarrier internalDataCarrier, Exception exception) {
-        if (broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.getPayload().getMessageUuid(), new ErrorPayload(reason))))) {
-            log.warn("[CARRIER]  reason = {}", reason, exception);
-        }
+    private void receiveResult(String reason, InternalDataCarrier internalDataCarrier) {
+        broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.getPayload().getMessageUuid(), new ErrorPayload(reason))));
     }
 }

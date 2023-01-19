@@ -80,9 +80,4 @@ class ThreadBranchTest {
         assertThat(afterData.getContent()).isEqualTo(send.getContent());
     }
 
-    @DisplayName("PayloadType이 Report_ACK 일 경우 InternalDataSender로 변환후 sender로 전송 되어야 한다")
-    @Test
-    void t2() {
-
-    }
 }

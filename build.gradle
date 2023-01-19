@@ -1,6 +1,7 @@
 plugins {
     id 'java'
 }
+
 apply plugin: 'application'
 group 'kr.nanoit'
 version 'v0.0.1'
@@ -8,7 +9,10 @@ version 'v0.0.1'
 repositories {
     mavenCentral()
 }
+
 compileJava.options.encoding = 'UTF-8'
+
+sourceCompatibility = 1.8
 
 dependencies {
     implementation group: 'com.google.inject', name: 'guice', version: '4.2.2'
@@ -19,7 +23,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.4'
 
     // log
     implementation 'org.slf4j:slf4j-api:1.7.36'
@@ -27,7 +30,8 @@ dependencies {
     implementation 'ch.qos.logback:logback-core:1.2.11'
     implementation 'ch.qos.logback:logback-access:1.2.11'
 
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.4'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.4.1'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.14.1'
 
     // TEST IMPLEMENTS
     testImplementation 'org.assertj:assertj-core:3.23.1'
@@ -51,8 +55,31 @@ dependencies {
 
     // SCHEDULE
     implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
+
+    implementation group: 'org.mybatis', name: 'mybatis', version: '3.5.11'
+
 }
 
 test {
     useJUnitPlatform()
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir "./config/"
+        }
+    }
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+                'Main-Class': 'kr.nanoit.TcpServerApplication',
+//                'Class-Path': configurations.runtimeClasspath.collect{it.toURI().toString()}.join(' '),
+        )
+    }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
