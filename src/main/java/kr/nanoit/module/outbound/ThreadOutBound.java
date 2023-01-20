@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
+import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.SocketManager;
@@ -38,6 +39,9 @@ ThreadOutBound extends ModuleProcess {
                     if (broker.outBound(((InternalDataOutBound) object).getMetaData().getSocketUuid(), payload)) {
                         log.debug("[OUTBOUND]   SEND DATA TO FILTER => [TYPE : {} DATA : {}]", internalDataOutBound.getPayload().getType(), internalDataOutBound.getPayload());
                         if (internalDataOutBound.getPayload().getType() == PayloadType.AUTHENTICATION_ACK && !userManager.isExist(internalDataOutBound.UUID())) {
+                            socketManager.shutdownSocketResource(internalDataOutBound.UUID());
+                        }
+                        if (internalDataOutBound.getPayload().getData() instanceof ErrorPayload) {
                             socketManager.shutdownSocketResource(internalDataOutBound.UUID());
                         }
                     }

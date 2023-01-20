@@ -6,8 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.InternalDataFilter;
 import kr.nanoit.domain.broker.InternalDataMapper;
+import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.payload.*;
+import kr.nanoit.exception.DataNullException;
 import kr.nanoit.module.broker.Broker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ThreadMapper extends ModuleProcess {
 
     private final ObjectMapper objectMapper;
+    private InternalDataMapper internalDataMapper;
 
     public ThreadMapper(Broker broker, String uuid) {
         super(broker, uuid);
@@ -82,3 +85,20 @@ public class ThreadMapper extends ModuleProcess {
         return this.uuid;
     }
 }
+//  try {
+//          Object object = broker.subscribe(InternalDataType.MAPPER);
+//          if (object != null && object instanceof InternalDataMapper) {
+//          internalDataMapper = (InternalDataMapper) object;
+//          Payload payload = objectMapper.readValue(internalDataMapper.getPayload(), Payload.class);
+//        if (broker.publish(new InternalDataFilter(internalDataMapper.getMetaData(), new Payload(payload.getType(), payload.getMessageUuid(), payload)))) {
+//        log.debug("[MAPPER]   SEND DATA TO FILTER => [TYPE : {} DATA : {}]", payload.getType(), internalDataMapper.getPayload());
+//        }
+//        }
+//        } catch (DataNullException | JsonProcessingException e) {
+//        log.warn("[MAPPER] Error = {}", e.getMessage());
+//        } catch (InterruptedException e) {
+//        throw new RuntimeException(e);
+//        } catch (Exception e) {
+//        e.printStackTrace();
+//        shoutDown();
+//        }

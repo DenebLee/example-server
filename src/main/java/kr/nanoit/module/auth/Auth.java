@@ -13,6 +13,7 @@ import kr.nanoit.dto.MemberDto;
 import kr.nanoit.dto.UserInfo;
 import kr.nanoit.exception.FindFailedException;
 import kr.nanoit.exception.ValidationException;
+import kr.nanoit.extension.Jackson;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.UserManager;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,8 @@ public class Auth {
     public void verificationAccount(InternalDataBranch internalDataBranch, MessageService messageService) {
 
         try {
-            Payload payload = internalDataBranch.getPayload();
-            Authentication authentication = objectMapper.convertValue(payload.getData(), Authentication.class);
+            Payload payload = Jackson.getInstance().getObjectMapper().convertValue(internalDataBranch.getPayload(), Payload.class);
+            Authentication authentication = Jackson.getInstance().getObjectMapper().convertValue(payload.getData(), Authentication.class);
             MemberEntity user = messageService.findUser(authentication.getUsername());
 
             if (user == null) throw new FindFailedException("not found username=" + authentication.getUsername());

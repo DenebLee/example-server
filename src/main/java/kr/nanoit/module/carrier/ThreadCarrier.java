@@ -48,13 +48,12 @@ public class ThreadCarrier extends ModuleProcess {
                         ClientMessageDto clientMessageDto = (ClientMessageDto) internalDataCarrier.getPayload().getData();
 
                         if (clientMessageDto == null) {
-                            throw new DataNullException(internalDataCarrier, "The value received does not exist");
+                            throw new DataNullException("The value received does not exist");
                         }
 
                         CompanyMessageDto companyMessageDto = makeCompanyMessageDto(clientMessageDto);
 
                         if (messageService.insertCompanyMessage(companyMessageDto.toEntity())) {
-                            Thread.sleep(100);
                             if (broker.publish(new InternalDataOutBound(internalDataCarrier.getMetaData(), new Payload(PayloadType.REPORT, internalDataCarrier.getPayload().getMessageUuid(), new Report(clientMessageDto.getAgent_id(), MessageResult.SUCCESS))))) {
                                 log.debug("[CARRIER]   DATA TO OUTBOUND => [TYPE : {} DATA : {}]", internalDataCarrier.getPayload().getType(), internalDataCarrier.getPayload());
                             }
@@ -63,8 +62,8 @@ public class ThreadCarrier extends ModuleProcess {
 
                 }
             } catch (DataNullException e) {
-                receiveResult(e.getReason(), (InternalDataCarrier) e.getInternalData());
-                log.warn("[CARRIER] @USER:{}] DataNullException Call  {} ", e.getInternalData().UUID(), e.getReason());
+                receiveResult(e.getReason(), internalDataCarrier);
+                log.warn("[CARRIER] @USER:{}] DataNullException Call  {} ", internalDataCarrier.UUID(), e.getReason());
             } catch (InsertFailedException e) {
                 e.printStackTrace();
                 receiveResult(e.getReason(), internalDataCarrier);

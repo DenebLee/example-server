@@ -1,11 +1,13 @@
 package kr.nanoit.module.filter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import kr.nanoit.abst.ModuleProcess;
 import kr.nanoit.domain.broker.*;
 import kr.nanoit.domain.payload.ErrorPayload;
 import kr.nanoit.domain.payload.Payload;
 import kr.nanoit.domain.payload.PayloadType;
 import kr.nanoit.exception.DataNullException;
+import kr.nanoit.extension.Jackson;
 import kr.nanoit.extension.Validation;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.inbound.socket.UserManager;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ThreadFilter extends ModuleProcess {
     private final UserManager userManager;
     private final Validation validation;
+    private InternalDataFilter internalDataFilter;
 
     public ThreadFilter(Broker broker, String uuid, UserManager userManager) {
         super(broker, uuid);
@@ -29,21 +32,21 @@ public class ThreadFilter extends ModuleProcess {
             while (this.flag) {
                 Object object = broker.subscribe(InternalDataType.FILTER);
                 if (object instanceof InternalDataFilter) {
-                    InternalDataFilter internalDataFilter = (InternalDataFilter) object;
+                    internalDataFilter = (InternalDataFilter) object;
 
                     if (internalDataFilter.getMetaData() == null) {
-                        throw new DataNullException(internalDataFilter, "MetaData is null");
+                        throw new DataNullException("MetaData is null");
                     }
                     if (internalDataFilter.getPayload().getType() == null) {
-                        throw new DataNullException(internalDataFilter, "Payload.Type is null");
+                        throw new DataNullException("Payload.Type is null");
                     }
 
                     if (internalDataFilter.getPayload().getMessageUuid() == null) {
-                        throw new DataNullException(internalDataFilter, "MessageUuid is null");
+                        throw new DataNullException("MessageUuid is null");
                     }
 
                     if (internalDataFilter.getPayload().getData() == null) {
-                        throw new DataNullException(internalDataFilter, "Payload.Data is null");
+                        throw new DataNullException("Payload.Data is null");
                     }
                     switch (internalDataFilter.getPayload().getType()) {
                         case SEND:
@@ -70,8 +73,8 @@ public class ThreadFilter extends ModuleProcess {
                 }
             }
         } catch (DataNullException e) {
-            publishBadRequest((InternalDataFilter) e.getInternalData(), e.getReason());
-            log.warn("[FILTER] @USER:{}] DataNullException Call  {} ", e.getInternalData().UUID(), e.getReason());
+            publishBadRequest(internalDataFilter, e.getReason());
+            log.warn("[FILTER] @USER:{}] DataNullException Call  {} ", internalDataFilter.UUID(), e.getReason());
         } catch (InterruptedException e) {
             shoutDown();
             e.printStackTrace();

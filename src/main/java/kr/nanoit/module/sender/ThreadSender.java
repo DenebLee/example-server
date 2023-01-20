@@ -51,15 +51,19 @@ public class ThreadSender extends ModuleProcess {
                         long id = messageService.insertClientMessage(messageDto.toEntity());
                         messageDto.setId(id);
 
-                        if (!broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
-                            log.error("[SENDER] @USER:{}] Broker Publish Error", internalDataSender.UUID());
+                        if (id != 0) {
+                            if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS))))) {
+                                log.debug("[OUTBOUND]   SEND DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataSender.getPayload().getType(), internalDataSender.getPayload());
+                            } else {
+                                log.error("[SENDER] @USER:{}] Broker Publish Error", internalDataSender.UUID());
+                            }
+                            if (broker.publish(new InternalDataCarrier(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), messageDto)))) {
+                                log.debug("[OUTBOUND]   SEND DATA TO CARRIER => [TYPE : {} DATA : {}]", internalDataSender.getPayload().getType(), internalDataSender.getPayload());
+                            } else {
+                                log.error("[SENDER] @USER:{}] Broker Publish Carrier Error", internalDataSender.UUID());
+                            }
                         }
                         if (!messageService.updateMessageStatus(id, MessageStatus.SENT)) {
-                            log.error("[SENDER] @USER:{}] Broker Publish Error", internalDataSender.UUID());
-                        }
-                        if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS))))) {
-                            log.debug("[OUTBOUND]   SEND DATA TO CARRIER => [TYPE : {} DATA : {}]", internalDataSender.getPayload().getType(), internalDataSender.getPayload());
-                        } else {
                             log.error("[SENDER] @USER:{}] Broker Publish Error", internalDataSender.UUID());
                         }
                     }

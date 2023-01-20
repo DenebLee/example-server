@@ -49,6 +49,6 @@ public class Validation {
     }
 
     private boolean isCallBackByPhone(String str) {
-        return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", str) || Pattern.matches("^\\d{2,3}-\\d{3,4}-\\d{4}$", str);
+        return Pattern.matches("^\\d{2,3}\\d{3,4}\\d{4}$", str) || Pattern.matches("^\\d{2,3}-\\d{3,4}-\\d{4}$", str) || Pattern.matches("^\\d{3,4}-\\d{4}$", str);
     }
 }

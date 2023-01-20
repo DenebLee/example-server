@@ -48,7 +48,7 @@ public class SocketResource {
         readStreamThread.setName(uuid + "-read");
         this.writeStreamThread = new Thread(new WriteStreamThread(this::writeThreadCleaner, bufferedWriter, uuid, writeBuffer, writeThreadStatus));
         writeStreamThread.setName(uuid + "-write");
-        socket.setSoTimeout(500000);
+        //TODO REPORT 다 가는 시간 계산해서 다시 로직 수정
 
     }
 
