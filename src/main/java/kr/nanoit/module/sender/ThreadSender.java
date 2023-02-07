@@ -1,9 +1,11 @@
 package kr.nanoit.module.sender;
 
 import kr.nanoit.abst.ModuleProcess;
-import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.db.auth.MessageService;
-import kr.nanoit.domain.broker.*;
+import kr.nanoit.domain.broker.InternalDataCarrier;
+import kr.nanoit.domain.broker.InternalDataOutBound;
+import kr.nanoit.domain.broker.InternalDataSender;
+import kr.nanoit.domain.broker.InternalDataType;
 import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.domain.payload.*;
@@ -43,7 +45,7 @@ public class ThreadSender extends ModuleProcess {
                     if (userManager.isExist(internalDataSender.UUID())) {
                         Send send = (Send) internalDataSender.getPayload().getData();
 
-                        if (send == null || send.getContent().isEmpty() || send.getSender_num().isEmpty() || send.getSender_name().isEmpty() || send.getSender_callback().isEmpty() || send.getAgent_id() == 0) {
+                        if (send == null || send.getContent().isEmpty() || send.getSender_num().isEmpty() || send.getSender_name().isEmpty() || send.getSender_callback().isEmpty()) {
                             sendResult("SendMessage is null", internalDataSender, new Exception());
                         }
 

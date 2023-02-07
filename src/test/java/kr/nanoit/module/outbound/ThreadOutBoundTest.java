@@ -61,7 +61,7 @@ class ThreadOutBoundTest {
     void t1() throws JsonProcessingException {
 
         // given
-        Send send = new Send(1, "010-4987-5552", "056-555-6666", "이정섭", "테스트");
+        Send send = new Send("010-4987-5552", "056-555-6666", "이정섭", "테스트");
         InternalDataOutBound expected = new InternalDataOutBound(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when

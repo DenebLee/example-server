@@ -12,13 +12,11 @@ import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.message.MessageStatus;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.ClientMessageDto;
-import kr.nanoit.dto.UserInfo;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
 import kr.nanoit.module.inbound.socket.UserManager;
 import org.junit.jupiter.api.*;
-import org.mockito.Mock;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -125,7 +123,7 @@ class ThreadSenderTest {
         String uuid = UUID.randomUUID().toString();
         when(userManager.isExist(uuid)).thenReturn(true);
 
-        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, new Send(3, "010-4444-5555", "053-555-4444", "이정섭", "테스트")));
+        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, new Send("010-4444-5555", "053-555-4444", "이정섭", "테스트")));
 
         // when
         broker.publish(expected);
@@ -148,7 +146,7 @@ class ThreadSenderTest {
         String uuid = UUID.randomUUID().toString();
         when(userManager.isExist(uuid)).thenReturn(true);
 
-        Send send = new Send(2, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
+        Send send = new Send("010-4444-5555", "053-555-4444", "이정섭", "테스트");
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
@@ -165,7 +163,6 @@ class ThreadSenderTest {
 
 
         assertThat(clientMessageDto.getId()).isEqualTo(2);
-        assertThat(clientMessageDto.getAgent_id()).isEqualTo(send.getAgent_id());
         assertThat(clientMessageDto.getSender_name()).isEqualTo(send.getSender_name());
         assertThat(clientMessageDto.getSender_callback()).isEqualTo(send.getSender_callback());
         assertThat(clientMessageDto.getSender_num()).isEqualTo(send.getSender_num());
@@ -180,7 +177,7 @@ class ThreadSenderTest {
         String uuid = UUID.randomUUID().toString();
         when(userManager.isExist(uuid)).thenReturn(true);
 
-        Send send = new Send(2, "010-4444-5555", "053-555-4444", "이정섭", "테스트");
+        Send send = new Send("010-4444-5555", "053-555-4444", "이정섭", "테스트");
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when

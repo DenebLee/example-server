@@ -11,10 +11,6 @@ public class Validation {
 
     public boolean verificationSendData(InternalDataFilter internalDataFilter, UserManager userManager) {
         Send send = (Send) internalDataFilter.getPayload().getData();
-        if (send.getAgent_id() == 0 || send.getAgent_id() < 0) {
-            return false;
-        }
-
         if (!isPhoneNum(send.getSender_num()) || send.getSender_num() == null || send.getSender_num().contains(" ") || send.getSender_num().equals("")) {
             return false;
         }

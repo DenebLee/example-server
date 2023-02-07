@@ -141,7 +141,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "14-55-535", "054-745-4242", "이정섭", "테스트중")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("14-55-535", "054-745-4242", "이정섭", "테스트중")));
 
         // when
         broker.publish(expected);
@@ -163,7 +163,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, " ", "054-745-4242", "이정섭", "테스트중")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(" ", "054-745-4242", "이정섭", "테스트중")));
 
         // when
         broker.publish(expected);
@@ -185,7 +185,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "", "054-745-4242", "이정섭", "테스트중")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("", "054-745-4242", "이정섭", "테스트중")));
 
         // when
         broker.publish(expected);
@@ -207,7 +207,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "", "이정섭", "x")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "", "이정섭", "x")));
 
         // when
         broker.publish(expected);
@@ -229,7 +229,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", " ", "이정섭", "x")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", " ", "이정섭", "x")));
 
         // when
         broker.publish(expected);
@@ -251,7 +251,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "", "이정섭", "x")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "", "이정섭", "x")));
 
         // when
         broker.publish(expected);
@@ -267,14 +267,14 @@ class ThreadFilterTest {
         assertThat(errorDto.getReason()).isEqualTo("Invalid Send value");
     }
 
-    
+
     @DisplayName("validation - PayloadData : Send 형식일 경우 Content 가 null 일 경우 실패가 되어야 한다")
     @Test
     void t11() throws InterruptedException {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "이정섭", null)));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "054-745-4242", "이정섭", null)));
 
         // when
         broker.publish(expected);
@@ -296,7 +296,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "이정섭", "")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "054-745-4242", "이정섭", "")));
 
         // when
         broker.publish(expected);
@@ -318,7 +318,7 @@ class ThreadFilterTest {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(0, "010-4444-5555", "054-745-4242", "이정섭", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "054-745-4242", "이정섭", "안녕")));
 
         // when
         broker.publish(expected);
@@ -339,39 +339,13 @@ class ThreadFilterTest {
 
     }
 
-    @DisplayName("validation - PayloadData : Send 형식일 경우 Id가 0보다 작을 때 실패가 되어야 한다")
+    @DisplayName("validation - PayloadData : Send 형식일 경우 Sender_name이 null 일 경우 실패 되어야 한다")
     @Test
     void t14() throws InterruptedException {
         // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(-123, "010-4444-5555", "054-745-4242", "이정섭", "안녕")));
-
-        // when
-        broker.publish(expected);
-        Thread.sleep(1000L);
-
-
-        // then
-        Object object = broker.subscribe(InternalDataType.OUTBOUND);
-        assertThat(object).isInstanceOf(InternalDataOutBound.class);
-        InternalDataOutBound actual = (InternalDataOutBound) object;
-        assertThat(actual.getMetaData().getSocketUuid()).isEqualTo(uuid);
-        assertThat(actual.getPayload().getType()).isEqualTo(PayloadType.BAD_SEND);
-        assertThat(actual.getPayload().getMessageUuid()).isEqualTo("123123");
-
-        assertThat(actual.getPayload().getData()).isInstanceOf(ErrorPayload.class);
-        ErrorPayload errorPayload = (ErrorPayload) actual.getPayload().getData();
-        assertThat(errorPayload.getReason()).isEqualTo("Invalid Send value");
-    }
-
-    @DisplayName("validation - PayloadData : Send 형식일 경우 Sender_name이 null 일 경우 실패 되어야 한다")
-    @Test
-    void t16() throws InterruptedException {
-        // given
-        InternalDataFilter expected = new InternalDataFilter();
-        expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", null, "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "054-745-4242", null, "안녕")));
 
         // when
         broker.publish(expected);
@@ -389,11 +363,11 @@ class ThreadFilterTest {
 
     @DisplayName("validation - PayloadData : Send 형식일 경우 Sender_name에 큰따옴표만 있을 경우 실패 되어야 한다")
     @Test
-    void t17() throws InterruptedException {
+    void t15() throws InterruptedException {
 // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "054-745-4242", "", "안녕")));
 
         // when
         broker.publish(expected);
@@ -411,11 +385,11 @@ class ThreadFilterTest {
 
     @DisplayName("validation - PayloadData : Send 형식일 경우 Sender_name에 공백이 있을 경우 실패 되어야 한다")
     @Test
-    void t18() throws InterruptedException {
+    void t16() throws InterruptedException {
 // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", " ", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "054-745-4242", " ", "안녕")));
 
         // when
         broker.publish(expected);
@@ -433,11 +407,11 @@ class ThreadFilterTest {
 
     @DisplayName("validation - PayloadData : Send 형식일 경우 Sender_name이 8글자를 넘어 갈 경우 실패 되어야 한다")
     @Test
-    void t19() throws InterruptedException {
+    void t17() throws InterruptedException {
 // given
         InternalDataFilter expected = new InternalDataFilter();
         expected.setMetaData(new MetaData(uuid));
-        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send(1, "010-4444-5555", "054-745-4242", "8글자가넘어가면큰일납니다", "안녕")));
+        expected.setPayload(new Payload(PayloadType.SEND, "123123", new Send("010-4444-5555", "054-745-4242", "8글자가넘어가면큰일납니다", "안녕")));
 
         // when
         broker.publish(expected);
