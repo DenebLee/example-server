@@ -85,7 +85,7 @@ class ThreadMapperTest {
     void t2() throws InterruptedException, JsonProcessingException {
         // given
         String uuid = UUID.randomUUID().toString();
-        Send send = new Send("010-4444-5555", "053-444-555", "이정섭", "테스트");
+        Send send = new Send(1,"010-4444-5555", "053-444-555", "이정섭", "테스트");
         Payload expected = new Payload(PayloadType.SEND, "1", send);
         String sendData = objectMapper.writeValueAsString(expected);
 

@@ -123,7 +123,7 @@ class ThreadSenderTest {
         String uuid = UUID.randomUUID().toString();
         when(userManager.isExist(uuid)).thenReturn(true);
 
-        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, new Send("010-4444-5555", "053-555-4444", "이정섭", "테스트")));
+        InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, new Send(1,"010-4444-5555", "053-555-4444", "이정섭", "테스트")));
 
         // when
         broker.publish(expected);
@@ -146,7 +146,7 @@ class ThreadSenderTest {
         String uuid = UUID.randomUUID().toString();
         when(userManager.isExist(uuid)).thenReturn(true);
 
-        Send send = new Send("010-4444-5555", "053-555-4444", "이정섭", "테스트");
+        Send send = new Send(1,"010-4444-5555", "053-555-4444", "이정섭", "테스트");
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
@@ -163,9 +163,9 @@ class ThreadSenderTest {
 
 
         assertThat(clientMessageDto.getId()).isEqualTo(2);
-        assertThat(clientMessageDto.getSender_name()).isEqualTo(send.getSender_name());
-        assertThat(clientMessageDto.getSender_callback()).isEqualTo(send.getSender_callback());
-        assertThat(clientMessageDto.getSender_num()).isEqualTo(send.getSender_num());
+        assertThat(clientMessageDto.getSender_name()).isEqualTo(send.getName());
+        assertThat(clientMessageDto.getSender_callback()).isEqualTo(send.getCallback());
+        assertThat(clientMessageDto.getSender_num()).isEqualTo(send.getPhoneNum());
         assertThat(clientMessageDto.getStatus()).isEqualTo(MessageStatus.RECEIVE);
         assertThat(clientMessageDto.getType()).isEqualTo(PayloadType.SEND);
     }
@@ -177,7 +177,7 @@ class ThreadSenderTest {
         String uuid = UUID.randomUUID().toString();
         when(userManager.isExist(uuid)).thenReturn(true);
 
-        Send send = new Send("010-4444-5555", "053-555-4444", "이정섭", "테스트");
+        Send send = new Send(1,"010-4444-5555", "053-555-4444", "이정섭", "테스트");
         InternalDataSender expected = new InternalDataSender(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when

@@ -50,8 +50,8 @@ public final class MessageServicePostgreSqlQuerys {
     }
 
     public static String insertClientMessage(ClientMessageEntity clientMessageEntity) {
-        return "INSERT INTO client_message (agent_id,type,status,send_time,sender_num,sender_callback,sender_name,content,created_at, last_modified_at) VALUES ('" + clientMessageEntity.getAgent_id() +
-                "', '" + clientMessageEntity.getType() + "', '" + clientMessageEntity.getStatus() + "', '" + clientMessageEntity.getSend_time() + "', '" + clientMessageEntity.getSender_num() + "', '" + clientMessageEntity.getSender_callback() + "', '" +
+        return "INSERT INTO client_message (agent_id,type,status,send_time,message_num,sender_num,sender_callback,sender_name,content,created_at, last_modified_at) VALUES ('" + clientMessageEntity.getAgent_id() +
+                "', '" + clientMessageEntity.getType() + "', '" + clientMessageEntity.getStatus() + "', '" + clientMessageEntity.getSend_time() + "', '" + clientMessageEntity.getMessageNum() + "','" + clientMessageEntity.getSender_num() + "', '" + clientMessageEntity.getSender_callback() + "', '" +
                 "" + clientMessageEntity.getSender_name() + "', '" + clientMessageEntity.getContent() + "', '" + clientMessageEntity.getCreated_at() + "', '" + clientMessageEntity.getLast_modified_at() + "')";
     }
 
@@ -74,9 +74,9 @@ public final class MessageServicePostgreSqlQuerys {
     }
 
     public static String insertCompanyMessage(CompanyMessageEntity companyMessageEntity) {
-        return "INSERT INTO company_message (client_message_id,relay_company_id,type,status,send_time,sender_num,sender_callback,sender_name,content,created_at,last_modified_at) VALUES" +
+        return "INSERT INTO company_message (client_message_id,relay_company_id,type,status,message_num,send_time,sender_num,sender_callback,sender_name,content,created_at,last_modified_at) VALUES" +
                 " ('" + companyMessageEntity.getClient_message_id() + "','" + companyMessageEntity.getRelay_company_id() + "','" + companyMessageEntity.getType() + "'," +
-                "'" + companyMessageEntity.getStatus() + "','" + companyMessageEntity.getSend_time() + "','" + companyMessageEntity.getSender_num() + "'," +
+                "'" + companyMessageEntity.getStatus() + "','" + companyMessageEntity.getMessage_num() + "','" + companyMessageEntity.getSend_time() + "','" + companyMessageEntity.getSender_num() + "'," +
                 "'" + companyMessageEntity.getSender_callback() + "','" + companyMessageEntity.getSender_name() + "','" + companyMessageEntity.getContent() + "','" + companyMessageEntity.getCreated_at() + "','" + companyMessageEntity.getLast_modified_at() + "')";
     }
 

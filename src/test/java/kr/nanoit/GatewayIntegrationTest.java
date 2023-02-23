@@ -9,6 +9,7 @@ import kr.nanoit.db.auth.MessageServiceImpl;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
+import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.module.branch.ThreadBranch;
 import kr.nanoit.module.broker.Broker;
@@ -169,7 +170,7 @@ class GatewayIntegrationTest {
         assertThat(payload.getMessageUuid()).isEqualTo(uuid);
         AuthenticationAck authenticationAck = objectMapper.convertValue(payload.getData(), AuthenticationAck.class);
         assertThat(authenticationAck.getAgent_id()).isEqualTo(authentication.getAgent_id());
-        assertThat(authenticationAck.getResult()).isEqualTo("Authentication Success");
+        assertThat(authenticationAck.getResult()).isEqualTo(MessageResult.SUCCESS);
     }
 
     @DisplayName("인증이 완료된 상태에서 Clinet가 보낸 Message가 정상 처리되어 Db에 저장되고 ack를 던져줘야 한다 -> 갯수 1개")

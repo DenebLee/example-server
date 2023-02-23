@@ -46,6 +46,7 @@ public final class CreateTable {
             "type VARCHAR(32) NOT NULL," +
             "status VARCHAR(32) NOT NULL," +
             "send_time TIMESTAMPTZ NOT NULL," +
+            "message_num BIGINT NOT NULL," +
             "sender_num VARCHAR(32) NOT NULL," +
             "sender_callback VARCHAR(32) NOT NULL," +
             "sender_name VARCHAR(64) NOT NULL," +
@@ -61,6 +62,7 @@ public final class CreateTable {
             "type VARCHAR(32) NOT NULL," +
             "status VARCHAR(32) NOT NULL," +
             "send_time TIMESTAMPTZ NOT NULL," +
+            "message_num BIGINT NOT NULL," +
             "sender_num VARCHAR(32) NOT NULL," +
             "sender_callback VARCHAR(32) NOT NULL," +
             "sender_name VARCHAR(64) NOT NULL," +

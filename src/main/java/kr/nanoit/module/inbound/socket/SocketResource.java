@@ -50,7 +50,6 @@ public class SocketResource {
         writeStreamThread.setName(uuid + "-write");
         //TODO REPORT 다 가는 시간 계산해서 다시 로직 수정
         // 임시로 1분으로 설정
-         socket.setSoTimeout(60000);
 
     }
 

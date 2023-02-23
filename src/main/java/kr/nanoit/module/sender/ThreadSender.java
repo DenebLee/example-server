@@ -45,16 +45,16 @@ public class ThreadSender extends ModuleProcess {
                     if (userManager.isExist(internalDataSender.UUID())) {
                         Send send = (Send) internalDataSender.getPayload().getData();
 
-                        if (send == null || send.getContent().isEmpty() || send.getSender_num().isEmpty() || send.getSender_name().isEmpty() || send.getSender_callback().isEmpty()) {
+                        if (send == null || send.getContent().isEmpty() || send.getPhoneNum().isEmpty() || send.getName().isEmpty() || send.getCallback().isEmpty()) {
                             sendResult("SendMessage is null", internalDataSender, new Exception());
                         }
-
-                        ClientMessageDto messageDto = makeMessage(send);
+                        long agentId = userManager.getUserInfo(internalDataSender.UUID()).getAgent_id();
+                        ClientMessageDto messageDto = makeMessage(send, agentId);
                         long id = messageService.insertClientMessage(messageDto.toEntity());
                         messageDto.setId(id);
 
                         if (id != 0) {
-                            if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(MessageResult.SUCCESS))))) {
+                            if (broker.publish(new InternalDataOutBound(internalDataSender.getMetaData(), new Payload(PayloadType.SEND_ACK, internalDataSender.getPayload().getMessageUuid(), new SendAck(send.getMessageNum(),MessageResult.SUCCESS))))) {
                                 log.debug("[OUTBOUND]   SEND DATA TO OutBound => [TYPE : {} DATA : {}]", internalDataSender.getPayload().getType(), internalDataSender.getPayload());
                             } else {
                                 log.error("[SENDER] @USER:{}] Broker Publish Error", internalDataSender.UUID());
@@ -106,16 +106,16 @@ public class ThreadSender extends ModuleProcess {
         return this.uuid;
     }
 
-    private ClientMessageDto makeMessage(Send send) {
+    private ClientMessageDto makeMessage(Send send, long agentId) {
         ClientMessageDto clientMessageDto = new ClientMessageDto();
         clientMessageDto.setId(0);
-        clientMessageDto.setAgent_id(send.getAgent_id());
+        clientMessageDto.setAgent_id(agentId);
         clientMessageDto.setType(PayloadType.SEND);
         clientMessageDto.setStatus(MessageStatus.RECEIVE);
         clientMessageDto.setSend_time(new Timestamp(System.currentTimeMillis()));
-        clientMessageDto.setSender_num(send.getSender_num());
-        clientMessageDto.setSender_callback(send.getSender_callback());
-        clientMessageDto.setSender_name(send.getSender_name());
+        clientMessageDto.setSender_num(send.getPhoneNum());
+        clientMessageDto.setSender_callback(send.getCallback());
+        clientMessageDto.setSender_name(send.getName());
         clientMessageDto.setContent(send.getContent());
         clientMessageDto.setCreated_at(new Timestamp(System.currentTimeMillis()));
         clientMessageDto.setLast_modified_at(new Timestamp(System.currentTimeMillis()));

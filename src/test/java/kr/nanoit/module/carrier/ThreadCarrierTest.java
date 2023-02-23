@@ -81,7 +81,7 @@ class ThreadCarrierTest {
         AgentEntity agentEntity = new AgentEntity(1, 1, 2, AgentStatus.DISCONNECTED, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
         messageService.insertAgent(agentEntity);
 
-        ClientMessageEntity clientMessageEntity = new ClientMessageEntity(0, 1, PayloadType.SEND, MessageStatus.RECEIVE, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "064-444-5555", "이정섭", "테스트", new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
+        ClientMessageEntity clientMessageEntity = new ClientMessageEntity(0, 1, PayloadType.SEND, MessageStatus.RECEIVE,1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "064-444-5555", "이정섭", "테스트", new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
         messageService.insertClientMessage(clientMessageEntity);
 
         messageService.insertRelayCompany();
@@ -104,7 +104,7 @@ class ThreadCarrierTest {
     @Test
     void t1() throws InterruptedException {
         // given
-        ClientMessageEntity clientMessageEntity = new ClientMessageEntity(1, 1, PayloadType.SEND, MessageStatus.RECEIVE, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "064-444-5555", "이정섭", "테스트", new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
+        ClientMessageEntity clientMessageEntity = new ClientMessageEntity(1, 1, PayloadType.SEND, MessageStatus.RECEIVE, 1, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "064-444-5555", "이정섭", "테스트", new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
         InternalDataCarrier expected = new InternalDataCarrier(new MetaData(uuid), new Payload(PayloadType.SEND_ACK, uuid, clientMessageEntity.toDto()));
 
         // when
@@ -136,7 +136,7 @@ class ThreadCarrierTest {
     @Test
     void t3() throws InterruptedException {
         // given
-        ClientMessageEntity clientMessageEntity = new ClientMessageEntity(3, 1, PayloadType.SEND, MessageStatus.RECEIVE, new Timestamp(System.currentTimeMillis()), "010-4444-5555", "064-444-5555", "이정섭", "테스트", new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
+        ClientMessageEntity clientMessageEntity = new ClientMessageEntity(3, 1, PayloadType.SEND, MessageStatus.RECEIVE, 1,new Timestamp(System.currentTimeMillis()), "010-4444-5555", "064-444-5555", "이정섭", "테스트", new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()));
         InternalDataCarrier expected = new InternalDataCarrier(new MetaData(uuid), new Payload(PayloadType.SEND_ACK, uuid, clientMessageEntity.toDto()));
 
         // when

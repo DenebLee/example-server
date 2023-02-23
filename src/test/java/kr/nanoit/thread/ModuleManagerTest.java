@@ -94,32 +94,4 @@ class ModuleManagerTest {
         assertThat(expected).isTrue();
         assertThat(moduleManager.moduleTotal()).isEqualTo(3);
     }
-
-//    @DisplayName("register 3개가 동시에 입력될때 uuid가 중복되면 3개 모두 등록 실패 되야 됨")
-//    @Timeout(value = 2)
-//    @Test
-//    void t6() {
-//        // given
-//        ModuleManager moduleManager = new ModuleManagerImpl();
-//
-//        // when
-//        String uuid = UUID.randomUUID().toString();
-//        moduleManager.register(new TestModule(uuid));
-//
-//        // then
-//        assertThat(moduleManager.register(new TestModule(UUID.randomUUID().toString()), new TestModule(UUID.randomUUID().toString()), new TestModule(uuid))).isFalse();
-//        assertThat(moduleManager.moduleTotal()).isEqualTo(1);
-//    }
-//
-//    @DisplayName("register 3개가 동시에 입력될때 한개가 uuid가 null 이면 모두 등록 실패 되야 됨")
-//    @Timeout(value = 2)
-//    @Test
-//    void t7() {
-//        // given
-//        ModuleManager moduleManager = new ModuleManagerImpl();
-//
-//        // when, then
-//        assertThat(moduleManager.register(new TestModule(UUID.randomUUID().toString()), new TestModule(UUID.randomUUID().toString()), new TestModule(null))).isFalse();
-//        assertThat(moduleManager.moduleTotal()).isEqualTo(0);
-//    }
 }

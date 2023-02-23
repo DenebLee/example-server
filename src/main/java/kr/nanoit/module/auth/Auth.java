@@ -8,6 +8,7 @@ import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.entity.AgentEntity;
 import kr.nanoit.domain.entity.MemberEntity;
 import kr.nanoit.domain.message.AgentStatus;
+import kr.nanoit.domain.message.MessageResult;
 import kr.nanoit.domain.payload.*;
 import kr.nanoit.dto.MemberDto;
 import kr.nanoit.dto.UserInfo;
@@ -65,7 +66,7 @@ public class Auth {
 
             userManager.registUser(internalDataBranch.UUID(), userInfo);
 
-            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), "Authentication Success"))))) {
+            if (broker.publish(new InternalDataOutBound(internalDataBranch.getMetaData(), new Payload(PayloadType.AUTHENTICATION_ACK, internalDataBranch.getPayload().getMessageUuid(), new AuthenticationAck(agentEntity.getId(), MessageResult.SUCCESS))))) {
                 log.debug("[AUTH]   DATA TO FILTER => [TYPE : {} DATA : {}]", internalDataBranch.getPayload().getType(), internalDataBranch.getPayload());
             }
 

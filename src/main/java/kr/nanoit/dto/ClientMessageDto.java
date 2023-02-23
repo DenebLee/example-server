@@ -19,6 +19,7 @@ public class ClientMessageDto {
     private long agent_id;
     private PayloadType type;
     private MessageStatus status;
+    private long messageNum;
     private Timestamp send_time;
     private String sender_num;
     private String sender_callback;
@@ -28,6 +29,6 @@ public class ClientMessageDto {
     private Timestamp last_modified_at;
 
     public ClientMessageEntity toEntity() {
-        return new ClientMessageEntity(id, agent_id, type, status, send_time, sender_num, sender_callback, sender_name, content, created_at, last_modified_at);
+        return new ClientMessageEntity(id, agent_id, type, status, messageNum, send_time, sender_num, sender_callback, sender_name, content, created_at, last_modified_at);
     }
 }

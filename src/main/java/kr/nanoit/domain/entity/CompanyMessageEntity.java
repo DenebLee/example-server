@@ -23,8 +23,8 @@ public class CompanyMessageEntity {
     private long relay_company_id;
     private PayloadType type;
     private MessageStatus status;
-
     private Timestamp send_time;
+    private long message_num;
     private String sender_num;
     private String sender_callback;
     private String sender_name;
@@ -33,6 +33,6 @@ public class CompanyMessageEntity {
     private Timestamp last_modified_at;
 
     public CompanyMessageDto toDto() {
-        return new CompanyMessageDto(client_message_id, relay_company_id, type, status, send_time, sender_num, sender_callback, sender_name, content, created_at, last_modified_at);
+        return new CompanyMessageDto(client_message_id, relay_company_id, type, status, send_time, message_num, sender_num, sender_callback, sender_name, content, created_at, last_modified_at);
     }
 }

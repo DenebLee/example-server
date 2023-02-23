@@ -11,15 +11,18 @@ public class Validation {
 
     public boolean verificationSendData(InternalDataFilter internalDataFilter, UserManager userManager) {
         Send send = (Send) internalDataFilter.getPayload().getData();
-        if (!isPhoneNum(send.getSender_num()) || send.getSender_num() == null || send.getSender_num().contains(" ") || send.getSender_num().equals("")) {
+        if (send.getMessageNum() == 0) {
+            return false;
+        }
+        if (!isPhoneNum(send.getPhoneNum()) || send.getPhoneNum() == null || send.getPhoneNum().contains(" ") || send.getPhoneNum().equals("")) {
             return false;
         }
 
-        if (!isCallBackByPhone(send.getSender_callback()) || send.getSender_callback() == null || send.getSender_callback().contains(" ") || send.getSender_callback().equals("")) {
+        if (!isCallBackByPhone(send.getCallback()) || send.getCallback() == null || send.getCallback().contains(" ") || send.getCallback().equals("")) {
             return false;
         }
 
-        if (send.getSender_name() == null || send.getSender_name().equals("") || send.getSender_name().contains(" ") || send.getSender_name().length() > 8) {
+        if (send.getName() == null || send.getName().equals("") || send.getName().contains(" ") || send.getName().length() > 8) {
             return false;
         }
 

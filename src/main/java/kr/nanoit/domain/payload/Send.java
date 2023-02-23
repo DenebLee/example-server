@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class Send {
-    private String sender_num;
-    private String sender_callback;
-    private String sender_name;
+    private long messageNum;
+    private String phoneNum;
+    private String callback;
+    private String name;
     private String content;
 }

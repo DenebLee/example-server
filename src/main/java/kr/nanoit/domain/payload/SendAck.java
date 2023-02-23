@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SendAck {
+    private long messageNum;
     private MessageResult result;
 }

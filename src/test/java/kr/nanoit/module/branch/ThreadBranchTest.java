@@ -58,7 +58,7 @@ class ThreadBranchTest {
     @Test
     void t1() throws InterruptedException {
         // given
-        Send send = new Send("010-4081-1475", "053-676-5555", "이정섭", "테스트");
+        Send send = new Send(2,"010-4081-1475", "053-676-5555", "이정섭", "테스트");
         InternalDataBranch expected = new InternalDataBranch(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
@@ -73,9 +73,9 @@ class ThreadBranchTest {
         assertThat(actual.getPayload().getMessageUuid()).isEqualTo(expected.getPayload().getMessageUuid());
         assertThat(actual.getPayload().getData()).isInstanceOf(Send.class);
         Send afterData = (Send) actual.getPayload().getData();
-        assertThat(afterData.getSender_num()).isEqualTo(send.getSender_num());
-        assertThat(afterData.getSender_callback()).isEqualTo(send.getSender_callback());
-        assertThat(afterData.getSender_name()).isEqualTo(send.getSender_name());
+        assertThat(afterData.getPhoneNum()).isEqualTo(send.getPhoneNum());
+        assertThat(afterData.getCallback()).isEqualTo(send.getCallback());
+        assertThat(afterData.getName()).isEqualTo(send.getName());
         assertThat(afterData.getContent()).isEqualTo(send.getContent());
     }
 

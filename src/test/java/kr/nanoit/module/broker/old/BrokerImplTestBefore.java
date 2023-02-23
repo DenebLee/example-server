@@ -15,7 +15,6 @@ import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingExcept
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;

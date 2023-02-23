@@ -2,11 +2,11 @@ package kr.nanoit.module.outbound;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kr.nanoit.db.auth.AuthenticaionStatus;
 import kr.nanoit.domain.broker.InternalDataOutBound;
 import kr.nanoit.domain.broker.MetaData;
-import kr.nanoit.domain.payload.*;
-import kr.nanoit.dto.UserInfo;
+import kr.nanoit.domain.payload.Payload;
+import kr.nanoit.domain.payload.PayloadType;
+import kr.nanoit.domain.payload.Send;
 import kr.nanoit.module.broker.Broker;
 import kr.nanoit.module.broker.BrokerImpl;
 import kr.nanoit.module.inbound.socket.SocketManager;
@@ -61,7 +61,7 @@ class ThreadOutBoundTest {
     void t1() throws JsonProcessingException {
 
         // given
-        Send send = new Send("010-4987-5552", "056-555-6666", "이정섭", "테스트");
+        Send send = new Send(1,"010-4987-5552", "056-555-6666", "이정섭", "테스트");
         InternalDataOutBound expected = new InternalDataOutBound(new MetaData(uuid), new Payload(PayloadType.SEND, uuid, send));
 
         // when
